@@ -30,7 +30,7 @@
   - Refs: AC-2
   - Outcome: GET `/api/health` returns `{"status":"ok"}`
 
-- [ ] 7. Create `backend/Dockerfile`
+- [x] 7. Create `backend/Dockerfile`
   - Refs: AC-1, AC-7
   - Outcome: Multi-stage build, hot reload support
 
