@@ -62,22 +62,22 @@
 
 ### Verification
 
-- [ ] 14. Test: `docker compose up` starts all services
+- [x] 14. Test: `docker compose up` starts all services
   - Refs: AC-1
   - Outcome: No errors, all containers healthy
 
-- [ ] 15. Test: Health endpoint returns 200
+- [x] 15. Test: Health endpoint returns 200
   - Refs: AC-2
   - Outcome: `curl localhost:8080/api/health` succeeds
 
-- [ ] 16. Test: Frontend loads in browser
+- [x] 16. Test: Frontend loads in browser
   - Refs: AC-3
   - Outcome: Dark theme visible at localhost:5173
 
-- [ ] 17. Test: Database connection logged
+- [x] 17. Test: Database connection logged
   - Refs: AC-4
   - Outcome: Backend logs show DB connected
 
-- [ ] 18. Test: Hot reload works
+- [x] 18. Test: Hot reload works
   - Refs: AC-6, AC-7
   - Outcome: Changes reflect without manual restart
