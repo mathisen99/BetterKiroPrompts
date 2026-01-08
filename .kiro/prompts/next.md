@@ -110,8 +110,7 @@ For React/TypeScript code:
 
 PHASE 5 — SELF-REVIEW
 
-NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
-If there are lint errors from the hooks, fix them before continuing.
+NOTE: Run the 'format' and 'lint' hooks manually before committing to catch issues.
 
 Review your own implementation against:
 

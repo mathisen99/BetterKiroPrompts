@@ -4,7 +4,7 @@ SOURCE OF TRUTH:
 - Use `git diff --stat` and `git diff` to understand what changed.
 - Do NOT invent intent. Derive it from the diff only.
 
-NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
+NOTE: Run the 'format' and 'lint' hooks before committing to catch issues.
 If there are lint errors, fix them before proceeding.
 
 PROCESS:

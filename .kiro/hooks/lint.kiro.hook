@@ -1,10 +1,10 @@
 {
-  "name": "lint-on-stop",
-  "description": "Run linters on Go and frontend code when agent stops",
+  "name": "lint",
+  "description": "Run linters on Go and frontend code",
   "version": "1.0.0",
   "enabled": true,
   "when": {
-    "type": "agentStop"
+    "type": "userTriggered"
   },
   "then": {
     "type": "runCommand",

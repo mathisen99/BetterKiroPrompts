@@ -44,8 +44,7 @@ After confirmation:
 
 6) SUMMARY
 
-NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
-If there are lint errors from the hooks, fix them.
+NOTE: Run the 'format' and 'lint' hooks manually before committing to catch issues.
 
 Print:
 - What was implemented

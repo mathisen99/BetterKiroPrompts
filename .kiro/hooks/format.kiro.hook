@@ -1,10 +1,10 @@
 {
-  "name": "format-on-stop",
-  "description": "Auto-format Go and frontend code when agent stops",
+  "name": "format",
+  "description": "Format Go and frontend code",
   "version": "1.0.0",
   "enabled": true,
   "when": {
-    "type": "agentStop"
+    "type": "userTriggered"
   },
   "then": {
     "type": "runCommand",
