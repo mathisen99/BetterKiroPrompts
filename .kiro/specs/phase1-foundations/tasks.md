@@ -18,7 +18,7 @@
   - Refs: AC-2
   - Outcome: `go.mod` with Go 1.25.5
 
-- [ ] 4. Create `backend/cmd/server/main.go` entry point
+- [x] 4. Create `backend/cmd/server/main.go` entry point
   - Refs: AC-2
   - Outcome: Server starts on PORT from env
 

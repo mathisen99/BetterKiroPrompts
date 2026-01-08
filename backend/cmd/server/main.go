@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"better-kiro-prompts/internal/api"
 )
 
 func main() {
@@ -12,8 +14,10 @@ func main() {
 		port = "8080"
 	}
 
+	router := api.NewRouter()
+
 	log.Printf("Server starting on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatal(err)
 	}
 }
