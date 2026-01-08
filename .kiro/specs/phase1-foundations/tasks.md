@@ -14,7 +14,7 @@
 
 ### Go Backend
 
-- [ ] 3. Initialize Go module in `backend/`
+- [x] 3. Initialize Go module in `backend/`
   - Refs: AC-2
   - Outcome: `go.mod` with Go 1.25.5
 
