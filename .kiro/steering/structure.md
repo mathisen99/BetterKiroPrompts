@@ -44,3 +44,5 @@ inclusion: always
 - No dumping ground folders (`utils/`, `helpers/`, `misc/`)
 - One concern per file
 - Keep flat until nesting is necessary
+- Use MCP server for ShadCN UI components
+- Use MCP server for Godoc for go syntax when needed 
