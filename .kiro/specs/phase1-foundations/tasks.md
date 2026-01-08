@@ -26,7 +26,7 @@
   - Refs: AC-2
   - Outcome: Router mounts `/api/*` routes
 
-- [ ] 6. Create `backend/internal/api/health.go` handler
+- [x] 6. Create `backend/internal/api/health.go` handler
   - Refs: AC-2
   - Outcome: GET `/api/health` returns `{"status":"ok"}`
 
