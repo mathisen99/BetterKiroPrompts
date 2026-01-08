@@ -56,7 +56,7 @@
   - Refs: AC-1, AC-6
   - Outcome: Dev server with hot reload
 
-- [ ] 13. Update `frontend/src/App.tsx` with basic layout
+- [x] 13. Update `frontend/src/App.tsx` with basic layout
   - Refs: AC-3
   - Outcome: Displays app title with shadcn styling
 
