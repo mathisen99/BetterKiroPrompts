@@ -42,9 +42,25 @@ After confirmation:
 - Write minimal code to satisfy the task
 - Do not add features beyond the task scope
 
-6) SUMMARY
+6) QUALITY GATES
 
-NOTE: Run the 'format' and 'lint' hooks manually before committing to catch issues.
+Run checks before finishing:
+
+Backend (if Go files were created/modified):
+```
+go fmt ./...
+go vet ./...
+```
+
+Frontend (if TS/TSX files were created/modified):
+```
+pnpm typecheck
+pnpm lint
+```
+
+If checks fail, fix the issues before continuing.
+
+7) SUMMARY
 
 Print:
 - What was implemented

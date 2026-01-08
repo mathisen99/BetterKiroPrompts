@@ -108,9 +108,31 @@ For React/TypeScript code:
 
 ---
 
-PHASE 5 — SELF-REVIEW
+PHASE 5 — QUALITY GATES
 
-NOTE: Run the 'format' and 'lint' hooks manually before committing to catch issues.
+Run checks in order. If ANY fail, fix before continuing.
+
+Backend (if Go files were created/modified):
+```
+go fmt ./...
+go vet ./...
+```
+
+Frontend (if TS/TSX files were created/modified):
+```
+pnpm typecheck
+pnpm lint
+```
+
+If a check fails:
+- Print the error clearly
+- Fix the issue
+- Re-run the failed check
+- Continue only when all checks pass
+
+---
+
+PHASE 6 — SELF-REVIEW
 
 Review your own implementation against:
 
@@ -152,7 +174,7 @@ Concerns or notes:
 
 ---
 
-PHASE 6 — COMMIT DECISION
+PHASE 7 — COMMIT DECISION
 
 Run and print:
 ```
@@ -181,7 +203,7 @@ Type 'FIX <description>' to address an issue first.
 
 ---
 
-PHASE 7A — IF YES (COMMIT AND COMPLETE)
+PHASE 8A — IF YES (COMMIT AND COMPLETE)
 
 1) Stage and commit:
 ```
@@ -205,7 +227,7 @@ Run /next for the next task.
 
 ---
 
-PHASE 7B — IF NO (COMPLETE WITHOUT COMMIT)
+PHASE 8B — IF NO (COMPLETE WITHOUT COMMIT)
 
 1) Mark task complete in tasks.md (same logic as above)
 
@@ -218,11 +240,11 @@ PHASE 7B — IF NO (COMPLETE WITHOUT COMMIT)
 
 ---
 
-PHASE 7C — IF FIX (ADDRESS ISSUE)
+PHASE 8C — IF FIX (ADDRESS ISSUE)
 
 1) Parse what needs fixing from user input
 2) Make the fix
-3) Return to PHASE 5 (self-review) and continue from there
+3) Return to PHASE 5 (quality gates) and continue from there
 
 ---
 

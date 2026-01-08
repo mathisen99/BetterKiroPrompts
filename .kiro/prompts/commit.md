@@ -4,8 +4,10 @@ SOURCE OF TRUTH:
 - Use `git diff --stat` and `git diff` to understand what changed.
 - Do NOT invent intent. Derive it from the diff only.
 
-NOTE: Run the 'format' and 'lint' hooks before committing to catch issues.
-If there are lint errors, fix them before proceeding.
+NOTE: Run quality gates before committing:
+- Backend: go fmt ./... && go vet ./...
+- Frontend: pnpm typecheck && pnpm lint
+If there are errors, fix them before proceeding.
 
 PROCESS:
 
