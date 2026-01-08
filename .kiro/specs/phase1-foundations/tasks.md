@@ -52,7 +52,7 @@
   - Refs: AC-3
   - Outcome: Dark theme, blue base color
 
-- [ ] 12. Create `frontend/Dockerfile`
+- [x] 12. Create `frontend/Dockerfile`
   - Refs: AC-1, AC-6
   - Outcome: Dev server with hot reload
 
