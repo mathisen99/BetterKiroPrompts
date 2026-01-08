@@ -8,7 +8,7 @@
   - Refs: AC-1
   - Outcome: `docker compose up` starts all services
 
-- [ ] 2. Create `.env.example` with required environment variables
+- [x] 2. Create `.env.example` with required environment variables
   - Refs: AC-4
   - Outcome: Documented env vars for local dev
 
