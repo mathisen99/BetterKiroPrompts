@@ -1,0 +1,13 @@
+{
+  "name": "code-review",
+  "description": "Trigger a full code review of the codebase",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Perform a complete code review. Focus on: correctness, error handling, security (no secrets, input validation, auth boundaries), best practices, and steering compliance. Group findings by severity: Blockers, Major, Minor, Suggestions. Reference .kiro/steering/* for project rules."
+  }
+}

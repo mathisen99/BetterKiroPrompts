@@ -4,22 +4,12 @@ SOURCE OF TRUTH:
 - Use `git diff --stat` and `git diff` to understand what changed.
 - Do NOT invent intent. Derive it from the diff only.
 
+NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
+If there are lint errors, fix them before proceeding.
+
 PROCESS:
 
-1) QUALITY GATES (FAIL FAST)
-Run, in order:
-- Backend (if Go files changed):
-  - go fmt ./...
-  - go vet ./...
-  - golangci-lint run ./...
-- Frontend (if TS/TSX files changed):
-  - pnpm typecheck
-  - pnpm lint
-
-If any command fails, STOP and report the failure clearly.
-Do not stage or commit anything.
-
-2) CHANGE ANALYSIS
+1) CHANGE ANALYSIS
 Run:
 - git diff --stat
 - git diff
@@ -29,7 +19,7 @@ From the diff, determine:
 - Key areas/modules affected
 - Scope (small/medium/large)
 
-3) COMMIT MESSAGE GENERATION
+2) COMMIT MESSAGE GENERATION
 Generate a commit message in this format:
 
 <type>: <concise summary>
@@ -44,7 +34,7 @@ Rules:
 - Do NOT reference tasks, specs, or assumptions unless visible in the diff
 - Commits must be atomic (one concern per commit)
 
-4) CONFIRMATION
+3) CONFIRMATION
 Print:
 - git diff --stat
 - the proposed commit message
@@ -52,7 +42,7 @@ Print:
 Then ask:
 Type EXACTLY 'CONFIRM COMMIT' to proceed.
 
-5) COMMIT
+4) COMMIT
 Only after confirmation:
 - git add -A
 - git commit -m "<generated message>" (include body if present)

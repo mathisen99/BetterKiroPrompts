@@ -1,0 +1,13 @@
+{
+  "name": "run-tests",
+  "description": "Run test suites for backend and frontend",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "[ -d backend ] && (cd backend && go test ./... 2>&1); [ -d frontend ] && (cd frontend && pnpm test --run 2>&1); true"
+  }
+}

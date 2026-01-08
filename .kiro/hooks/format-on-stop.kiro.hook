@@ -1,0 +1,13 @@
+{
+  "name": "format-on-stop",
+  "description": "Auto-format Go and frontend code when agent stops",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "[ -d backend ] && (cd backend && go fmt ./... 2>/dev/null); [ -d frontend ] && (cd frontend && pnpm format 2>/dev/null); true"
+  }
+}

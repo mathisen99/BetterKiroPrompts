@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "godoc": {
+      "command": "/home/mathisen/go/bin/godoc-mcp",
+      "args": []
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["-y", "shadcn@latest", "mcp"]
+    }
+  }
+}

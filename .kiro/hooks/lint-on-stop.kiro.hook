@@ -1,0 +1,13 @@
+{
+  "name": "lint-on-stop",
+  "description": "Run linters on Go and frontend code when agent stops",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "[ -d backend ] && (cd backend && go vet ./... 2>&1); [ -d frontend ] && (cd frontend && pnpm typecheck 2>&1 && pnpm lint 2>&1); true"
+  }
+}

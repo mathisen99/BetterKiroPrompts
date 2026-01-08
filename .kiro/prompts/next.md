@@ -108,32 +108,10 @@ For React/TypeScript code:
 
 ---
 
-PHASE 5 — QUALITY GATES (FAIL FAST)
+PHASE 5 — SELF-REVIEW
 
-Run checks in order. If ANY fail, fix before continuing.
-
-Backend (if Go files were created/modified):
-```
-go fmt ./...
-go vet ./...
-golangci-lint run ./...
-```
-
-Frontend (if TS/TSX files were created/modified):
-```
-pnpm typecheck
-pnpm lint
-```
-
-If a check fails:
-- Print the error clearly
-- Fix the issue
-- Re-run the failed check
-- Continue only when all checks pass
-
----
-
-PHASE 6 — SELF-REVIEW
+NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
+If there are lint errors from the hooks, fix them before continuing.
 
 Review your own implementation against:
 
@@ -155,7 +133,6 @@ Review your own implementation against:
 - Error handling correct?
 - No obvious bugs?
 - No unnecessary complexity?
-- Tests needed? (note if missing but don't block)
 
 Print review summary:
 
@@ -171,14 +148,12 @@ What was implemented:
 Files changed:
 - <path> (+X -Y lines)
 
-Quality gates: <PASSED / which ones>
-
 Concerns or notes:
 - <any issues, or "None">
 
 ---
 
-PHASE 7 — COMMIT DECISION
+PHASE 6 — COMMIT DECISION
 
 Run and print:
 ```
@@ -207,7 +182,7 @@ Type 'FIX <description>' to address an issue first.
 
 ---
 
-PHASE 8A — IF YES (COMMIT AND COMPLETE)
+PHASE 7A — IF YES (COMMIT AND COMPLETE)
 
 1) Stage and commit:
 ```
@@ -231,7 +206,7 @@ Run /next for the next task.
 
 ---
 
-PHASE 8B — IF NO (COMPLETE WITHOUT COMMIT)
+PHASE 7B — IF NO (COMPLETE WITHOUT COMMIT)
 
 1) Mark task complete in tasks.md (same logic as above)
 
@@ -244,11 +219,11 @@ PHASE 8B — IF NO (COMPLETE WITHOUT COMMIT)
 
 ---
 
-PHASE 8C — IF FIX (ADDRESS ISSUE)
+PHASE 7C — IF FIX (ADDRESS ISSUE)
 
 1) Parse what needs fixing from user input
 2) Make the fix
-3) Return to PHASE 5 (quality gates) and continue from there
+3) Return to PHASE 5 (self-review) and continue from there
 
 ---
 

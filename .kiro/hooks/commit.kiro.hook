@@ -1,0 +1,13 @@
+{
+  "name": "commit",
+  "description": "Prepare and execute a git commit with quality checks",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Prepare a git commit. Steps: 1) Run git diff --stat and git diff to understand changes. 2) Generate a commit message using conventional format (feat/fix/refactor/chore/test/docs): summary under 72 chars, bullets from diff. 3) Show the proposed message and ask for 'CONFIRM COMMIT' before executing git add -A && git commit."
+  }
+}

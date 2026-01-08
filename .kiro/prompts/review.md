@@ -1,5 +1,7 @@
 Perform a complete code review of the current codebase.
 
+NOTE: This review can also be triggered via the 'code-review' hook (userTriggered).
+
 SCOPE:
 - Review the entire repo, focusing on Go backend, React frontend, tests, build config, and tooling.
 - Do not modify files unless the user explicitly asks for fixes.

@@ -42,14 +42,11 @@ After confirmation:
 - Write minimal code to satisfy the task
 - Do not add features beyond the task scope
 
-6) VERIFY
-After implementation:
-- Run relevant quality checks:
-  - Go: go fmt, go vet, golangci-lint
-  - Frontend: pnpm typecheck, pnpm lint
-- If checks fail, fix the issues.
+6) SUMMARY
 
-7) SUMMARY
+NOTE: Quality gates (formatting, linting) run automatically via hooks on agentStop.
+If there are lint errors from the hooks, fix them.
+
 Print:
 - What was implemented
 - Files changed
