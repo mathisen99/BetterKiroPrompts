@@ -38,7 +38,7 @@
   - Refs: AC-4
   - Outcome: Connection pool, logs success on startup
 
-- [ ] 9. Create `backend/migrations/` directory with README
+- [x] 9. Create `backend/migrations/` directory with README
   - Refs: AC-5
   - Outcome: Migration structure ready
 
