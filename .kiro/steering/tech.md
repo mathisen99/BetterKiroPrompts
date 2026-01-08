@@ -29,3 +29,25 @@ inclusion: always
 - No unnecessary abstractions
 - Standard library preferred over dependencies
 - Package manager: pnpm for frontend
+
+## Build & Run
+
+Use `./build.sh` for all stack operations:
+
+```bash
+./build.sh up                    # Start dev stack (hot reload)
+./build.sh --dev -d up           # Start dev in background
+./build.sh --prod --build -d up  # Build and start production
+./build.sh stop                  # Stop stack
+./build.sh down                  # Stop and remove containers
+./build.sh logs                  # Follow logs
+./build.sh status                # Show container status
+./build.sh clean                 # Remove build artifacts
+```
+
+## MCP Servers
+
+Available MCP servers for development assistance:
+
+- `godoc` - Go documentation lookup (use for Go stdlib and package docs)
+- `shadcn` - shadcn/ui component search, examples, and installation commands

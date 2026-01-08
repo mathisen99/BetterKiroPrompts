@@ -8,13 +8,16 @@ inclusion: always
 
 ```
 /
+├── build.sh
 ├── docker-compose.yml
+├── docker-compose.prod.yml
 ├── .env.example
 ├── backend/
 │   ├── cmd/server/main.go
 │   ├── internal/api/
 │   ├── migrations/
-│   └── Dockerfile
+│   ├── Dockerfile
+│   └── Dockerfile.prod
 ├── frontend/
 │   ├── src/
 │   │   ├── components/ui/
