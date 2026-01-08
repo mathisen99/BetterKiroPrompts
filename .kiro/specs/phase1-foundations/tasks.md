@@ -44,7 +44,7 @@
 
 ### React Frontend
 
-- [ ] 10. Initialize Vite + React project in `frontend/`
+- [x] 10. Initialize Vite + React project in `frontend/`
   - Refs: AC-3, AC-6
   - Outcome: `pnpm create vite` with React template
 
