@@ -34,7 +34,7 @@
   - Refs: AC-1, AC-7
   - Outcome: Multi-stage build, hot reload support
 
-- [ ] 8. Add database connection in `backend/internal/db/`
+- [x] 8. Add database connection in `backend/internal/db/`
   - Refs: AC-4
   - Outcome: Connection pool, logs success on startup
 
