@@ -4,7 +4,7 @@
 
 ### Docker Compose Setup
 
-- [ ] 1. Create `docker-compose.yml` with backend, frontend, postgres services
+- [x] 1. Create `docker-compose.yml` with backend, frontend, postgres services
   - Refs: AC-1
   - Outcome: `docker compose up` starts all services
 
