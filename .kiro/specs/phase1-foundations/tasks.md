@@ -22,7 +22,7 @@
   - Refs: AC-2
   - Outcome: Server starts on PORT from env
 
-- [ ] 5. Create `backend/internal/api/router.go` with route setup
+- [x] 5. Create `backend/internal/api/router.go` with route setup
   - Refs: AC-2
   - Outcome: Router mounts `/api/*` routes
 
