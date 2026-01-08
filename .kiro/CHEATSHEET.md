@@ -9,7 +9,7 @@
 
 ## The Loop
 ```
-/next → finds task → implements → reviews → commits → marks done
+/next → finds task → implements → quality gates → reviews → commits → marks done
 ```
 Just keep running `/next` until all tasks are complete.
 
@@ -30,23 +30,36 @@ Phase 3 done → /readme
 | `/phase1-foundations` | Generates Phase 1 spec (setup, docker, skeleton) |
 | `/phase2-features` | Generates Phase 2 spec (generators) |
 | `/phase3-polish` | Generates Phase 3 spec (polish, testing, docs) |
-| `/next` | **Full automation** - find → implement → review → commit |
+| `/next` | **Full automation** - find → implement → quality gates → review → commit |
 | `/task` | Work on specific task (manual pick) |
 | `/task-list` | View open/done tasks |
 | `/task-complete` | Mark a task done manually |
-| `/commit` | Quality gates + commit manually |
+| `/commit` | Guided commit flow |
 | `/review` | Code review anytime |
 | `/readme` | Generate/update README after phase completion |
 
 ---
 
-## Quality Gates (run before commits)
+## Hooks (Manual Triggers)
+
+All hooks are `userTriggered` — invoke from Agent Hooks panel or command palette.
+
+| Hook | What it does |
+|------|--------------|
+| `format` | Run go fmt + pnpm format |
+| `lint` | Run go vet + pnpm typecheck/lint |
+| `run-tests` | Run go test + pnpm test |
+| `commit` | Guided commit with diff analysis |
+| `code-review` | Full codebase review |
+
+---
+
+## Quality Gates (run automatically in /next before commit)
 
 **Backend (Go)**
 ```
 go fmt ./...
 go vet ./...
-golangci-lint run ./...
 ```
 
 **Frontend (React/TS)**
@@ -68,3 +81,15 @@ pnpm lint
 | `/task-complete` | `CONFIRM MARK DONE` |
 | `/commit` | `CONFIRM COMMIT` |
 | `/readme` | `CONFIRM WRITE README` |
+
+---
+
+## File Locations
+
+| Type | Path |
+|------|------|
+| Prompts | `.kiro/prompts/*.md` |
+| Hooks | `.kiro/hooks/*.kiro.hook` |
+| Steering | `.kiro/steering/*.md` |
+| Specs | `.kiro/specs/<phase>/` |
+| MCP Config | `.kiro/settings/mcp.json` |
