@@ -48,7 +48,7 @@
   - Refs: AC-3, AC-6
   - Outcome: `pnpm create vite` with React template
 
-- [ ] 11. Install and configure shadcn/ui
+- [x] 11. Install and configure shadcn/ui
   - Refs: AC-3
   - Outcome: Dark theme, blue base color
 
