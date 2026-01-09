@@ -97,7 +97,7 @@
   - Deps: 18
   - Outcome: Final questions complete
 
-- [ ] 20. Create `frontend/src/components/kickoff/PromptPreview.tsx`
+- [x] 20. Create `frontend/src/components/kickoff/PromptPreview.tsx`
   - Refs: AC-13
   - Deps: 4, 19
   - Outcome: Preview generated prompt

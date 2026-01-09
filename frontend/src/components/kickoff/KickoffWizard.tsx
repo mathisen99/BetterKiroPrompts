@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { StepIndicator } from '../shared/StepIndicator'
 import { QuestionStep } from './QuestionStep'
-import type { KickoffAnswers } from '../../lib/api'
+import { PromptPreview } from './PromptPreview'
+import { generateKickoff, type KickoffAnswers } from '../../lib/api'
 
 const STEP_LABELS = [
   'Project Identity',
@@ -34,6 +35,9 @@ const initialAnswers: KickoffAnswers = {
 export function KickoffWizard() {
   const [step, setStep] = useState(1)
   const [answers, setAnswers] = useState<KickoffAnswers>(initialAnswers)
+  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const updateAnswer = <K extends keyof KickoffAnswers>(key: K, value: KickoffAnswers[K]) => {
     setAnswers((prev) => ({ ...prev, [key]: value }))
@@ -63,6 +67,34 @@ export function KickoffWizard() {
     if (step > 1) {
       setStep(step - 1)
     }
+  }
+
+  const handleGenerate = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await generateKickoff(answers)
+      setGeneratedPrompt(response.prompt)
+    } catch {
+      setError('Failed to generate prompt. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (generatedPrompt) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Generated Kickoff Prompt</h2>
+        <PromptPreview prompt={generatedPrompt} />
+        <button
+          onClick={() => setGeneratedPrompt(null)}
+          className="rounded px-4 py-2 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80"
+        >
+          Back to Wizard
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -213,6 +245,8 @@ export function KickoffWizard() {
         )}
       </div>
 
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
       <div className="flex justify-between">
         <button
           onClick={handlePrev}
@@ -222,14 +256,24 @@ export function KickoffWizard() {
         >
           Previous
         </button>
-        <button
-          onClick={handleNext}
-          disabled={step === STEP_LABELS.length}
-          className="rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50"
-          aria-label="Next step"
-        >
-          Next
-        </button>
+        {step < STEP_LABELS.length ? (
+          <button
+            onClick={handleNext}
+            className="rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80"
+            aria-label="Next step"
+          >
+            Next
+          </button>
+        ) : (
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50"
+            aria-label="Generate prompt"
+          >
+            {loading ? 'Generating...' : 'Generate Prompt'}
+          </button>
+        )}
       </div>
     </div>
   )
