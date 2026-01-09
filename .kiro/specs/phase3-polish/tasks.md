@@ -74,7 +74,7 @@
 
 ### Unit Tests
 
-- [ ] 17. Create `backend/internal/generator/kickoff_test.go`
+- [x] 17. Create `backend/internal/generator/kickoff_test.go`
   - Refs: AC-10
   - Outcome: Tests for prompt generation logic
 
