@@ -77,7 +77,7 @@
   - Deps: 14
   - Outcome: Data sensitivity + lifecycle fields
 
-- [ ] 16. Implement Step 5-6: Auth Model, Concurrency
+- [x] 16. Implement Step 5-6: Auth Model, Concurrency
   - Refs: AC-1
   - Deps: 15
   - Outcome: Auth and concurrency questions

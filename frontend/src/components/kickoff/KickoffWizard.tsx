@@ -43,6 +43,11 @@ export function KickoffWizard() {
     setAnswers((prev) => ({ ...prev, dataLifecycle: { ...prev.dataLifecycle, [field]: value } }))
   }
 
+  const updateRisks = (field: keyof typeof answers.risksAndTradeoffs, value: string) => {
+    const arr = value.split('\n').map((s) => s.trim()).filter(Boolean)
+    setAnswers((prev) => ({ ...prev, risksAndTradeoffs: { ...prev.risksAndTradeoffs, [field]: arr } }))
+  }
+
   const canProceed = (): boolean => {
     // Validation will be implemented per-step in tasks 14-19
     return true
@@ -156,7 +161,23 @@ export function KickoffWizard() {
             placeholder="e.g., Multiple users editing same document, background email jobs"
           />
         )}
-        {step > 6 && (
+        {step === 7 && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="top-risks" className="block text-sm font-medium">Top 3 Risks</label>
+              <textarea id="top-risks" rows={3} value={answers.risksAndTradeoffs.topRisks.join('\n')} onChange={(e) => updateRisks('topRisks', e.target.value)} placeholder="One risk per line" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="mitigations" className="block text-sm font-medium">Simplest Mitigations</label>
+              <textarea id="mitigations" rows={3} value={answers.risksAndTradeoffs.mitigations.join('\n')} onChange={(e) => updateRisks('mitigations', e.target.value)} placeholder="One mitigation per line" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="not-handled" className="block text-sm font-medium">Explicitly Not Handled</label>
+              <textarea id="not-handled" rows={3} value={answers.risksAndTradeoffs.notHandled.join('\n')} onChange={(e) => updateRisks('notHandled', e.target.value)} placeholder="One item per line" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+          </div>
+        )}
+        {step > 7 && (
           <p className="text-muted-foreground">Step content coming soon...</p>
         )}
       </div>
