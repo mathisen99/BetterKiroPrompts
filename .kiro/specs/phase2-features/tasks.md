@@ -181,7 +181,7 @@
 
 ### Hooks Generator — Backend
 
-- [ ] 36. Create `backend/internal/api/hooks.go` handler
+- [x] 36. Create `backend/internal/api/hooks.go` handler
   - Refs: AC-8
   - Deps: 1
   - Outcome: POST /api/hooks/generate endpoint
