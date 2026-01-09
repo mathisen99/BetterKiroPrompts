@@ -196,17 +196,17 @@
   - Deps: 2
   - Outcome: Formatter hooks
 
-- [ ] 39. Create hook templates for Basic preset additions
+- [x] 39. Create hook templates for Basic preset additions
   - Refs: AC-10
   - Deps: 38
   - Outcome: Linter + test hooks
 
-- [ ] 40. Create hook templates for Default preset additions
+- [x] 40. Create hook templates for Default preset additions
   - Refs: AC-11
   - Deps: 39
   - Outcome: Secret scan + prompt guard hooks
 
-- [ ] 41. Create hook templates for Strict preset additions
+- [x] 41. Create hook templates for Strict preset additions
   - Refs: AC-12
   - Deps: 40
   - Outcome: Static analysis + vuln scan hooks
@@ -216,68 +216,68 @@
   - Deps: 36
   - Outcome: Route accessible at /api/hooks/generate
 
-- [ ] 43. Test: Hooks endpoint returns valid hook files
+- [x] 43. Test: Hooks endpoint returns valid hook files
   - Refs: AC-8, AC-9, AC-10, AC-11, AC-12
   - Deps: 42
   - Outcome: curl test passes with valid JSON schema
 
 ### Hooks Generator — Frontend
 
-- [ ] 44. Create `frontend/src/pages/HooksPage.tsx`
+- [x] 44. Create `frontend/src/pages/HooksPage.tsx`
   - Refs: AC-8
   - Deps: 3
   - Outcome: Page container for hooks config
 
-- [ ] 45. Create `frontend/src/components/hooks/HooksPresetSelector.tsx`
+- [x] 45. Create `frontend/src/components/hooks/HooksPresetSelector.tsx`
   - Refs: AC-9, AC-10, AC-11, AC-12
   - Outcome: Preset selection UI
 
-- [ ] 46. Create `frontend/src/components/hooks/PresetCard.tsx`
+- [x] 46. Create `frontend/src/components/hooks/PresetCard.tsx`
   - Refs: AC-9, AC-10, AC-11, AC-12
   - Outcome: Card showing preset details
 
-- [ ] 47. Create `frontend/src/components/hooks/HookFilePreview.tsx`
+- [x] 47. Create `frontend/src/components/hooks/HookFilePreview.tsx`
   - Refs: AC-13
   - Deps: 4
   - Outcome: Hook file preview
 
-- [ ] 48. Integrate hooks selector with API
+- [x] 48. Integrate hooks selector with API
   - Refs: AC-8
   - Deps: 43, 47
   - Outcome: End-to-end hooks generation
 
-- [ ] 49. Add navigation to HooksPage from App.tsx
+- [x] 49. Add navigation to HooksPage from App.tsx
   - Refs: AC-8
   - Deps: 44
   - Outcome: Hooks accessible from main app
 
 ### Integration & Polish
 
-- [ ] 50. Create main navigation component
+- [x] 50. Create main navigation component
   - Refs: Design
   - Outcome: Nav between Kickoff, Steering, Hooks pages
 
-- [ ] 51. Update App.tsx with routing
+- [x] 51. Update App.tsx with routing
   - Refs: Design
   - Deps: 22, 35, 49, 50
   - Outcome: All pages accessible via routes
 
-- [ ] 52. Implement download as zip for multi-file outputs
+- [x] 52. Implement download as zip for multi-file outputs
   - Refs: AC-15
   - Deps: 4
   - Outcome: Zip download for steering and hooks
 
-- [ ] 53. Test: Full kickoff flow end-to-end
+- [x] 53. Test: Full kickoff flow end-to-end
   - Refs: AC-1, AC-2, AC-3
   - Deps: 21
   - Outcome: Complete wizard generates valid prompt
 
-- [ ] 54. Test: Full steering flow end-to-end
+- [x] 54. Test: Full steering flow end-to-end
   - Refs: AC-4, AC-5, AC-6, AC-7
   - Deps: 34
   - Outcome: Config generates valid steering files
 
-- [ ] 55. Test: Full hooks flow end-to-end
+- [x] 55. Test: Full hooks flow end-to-end
   - Refs: AC-8, AC-9, AC-10, AC-11, AC-12
   - Deps: 48
   - Outcome: Preset generates valid hook files
