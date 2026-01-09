@@ -1,0 +1,46 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Frontend
+frontend/node_modules/
+frontend/.pnpm-store/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Backend
+backend/server
+backend/tmp/
+
+# Test
+coverage/
+*.cover
+*.out
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.cache/
