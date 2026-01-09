@@ -6,35 +6,35 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
 
 ## Tasks
 
-- [ ] 1. Backend cleanup - Remove old endpoints and generators
-  - [ ] 1.1 Remove old API handlers (kickoff.go, steering.go, hooks.go)
+- [x] 1. Backend cleanup - Remove old endpoints and generators
+  - [x] 1.1 Remove old API handlers (kickoff.go, steering.go, hooks.go)
     - Delete `internal/api/kickoff.go`
     - Delete `internal/api/steering.go`
     - Delete `internal/api/hooks.go`
     - Update router.go to remove old routes
     - _Requirements: 7.6_
 
-  - [ ] 1.2 Remove old generator package
+  - [x] 1.2 Remove old generator package
     - Delete `internal/generator/kickoff.go`
     - Delete `internal/generator/steering.go`
     - Delete `internal/generator/hooks.go`
     - _Requirements: 7.8_
 
-  - [ ] 1.3 Remove template files
+  - [x] 1.3 Remove template files
     - Delete `internal/templates/kickoff.tmpl`
     - Delete `internal/templates/steering/` directory
     - Delete `internal/templates/hooks/` directory
     - Update `internal/templates/templates.go` or remove if empty
     - _Requirements: 7.7_
 
-- [ ] 2. Backend - OpenAI client implementation
-  - [ ] 2.1 Create OpenAI client package
+- [x] 2. Backend - OpenAI client implementation
+  - [x] 2.1 Create OpenAI client package
     - Create `internal/openai/client.go`
     - Implement ChatCompletion method with timeout
     - Load API key from environment variable
     - _Requirements: 6.1, 6.6_
 
-  - [ ] 2.2 Write property test for input validation
+  - [x] 2.2 Write property test for input validation
     - **Property 7: Input Validation**
     - **Validates: Requirements 6.5**
 
