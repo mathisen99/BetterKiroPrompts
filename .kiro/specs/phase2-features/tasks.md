@@ -114,7 +114,7 @@
 
 ### Steering Document Generator — Backend
 
-- [ ] 23. Create `backend/internal/api/steering.go` handler
+- [x] 23. Create `backend/internal/api/steering.go` handler
   - Refs: AC-4, AC-5, AC-6
   - Deps: 1
   - Outcome: POST /api/steering/generate endpoint
