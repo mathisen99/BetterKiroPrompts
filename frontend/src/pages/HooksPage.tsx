@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { HooksPresetSelector } from '../components/hooks/HooksPresetSelector'
+import { HookFilePreview } from '../components/hooks/HookFilePreview'
 import { generateHooks, type HooksConfig, type GeneratedFile } from '../lib/api'
 
 export function HooksPage() {
@@ -26,9 +28,7 @@ export function HooksPage() {
       {files ? (
         <div className="space-y-6">
           <h2 className="text-xl font-semibold">Generated Hooks</h2>
-          <pre className="rounded bg-muted p-4 text-sm overflow-auto">
-            {files.map(f => f.path).join('\n')}
-          </pre>
+          <HookFilePreview files={files} />
           <button
             onClick={() => setFiles(null)}
             className="rounded px-4 py-2 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -37,16 +37,7 @@ export function HooksPage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">Select a preset to generate hooks.</p>
-          <button
-            onClick={() => handleGenerate({ preset: 'default', techStack: { hasGo: true, hasTypeScript: true, hasReact: true } })}
-            disabled={loading}
-            className="rounded px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? 'Generating...' : 'Generate Default Preset'}
-          </button>
-        </div>
+        <HooksPresetSelector onGenerate={handleGenerate} loading={loading} />
       )}
     </main>
   )
