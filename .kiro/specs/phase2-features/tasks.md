@@ -169,7 +169,7 @@
   - Deps: 4
   - Outcome: Multi-file preview with tabs
 
-- [ ] 34. Integrate steering configurator with API
+- [x] 34. Integrate steering configurator with API
   - Refs: AC-4, AC-5, AC-6
   - Deps: 29, 33
   - Outcome: End-to-end steering generation
