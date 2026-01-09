@@ -18,6 +18,7 @@ type SteeringConfig struct {
 	ProjectDescription string
 	TechStack          TechStack
 	IncludeConditional bool
+	IncludeManual      bool
 	CustomRules        map[string][]string
 }
 
@@ -73,6 +74,15 @@ func GenerateSteering(config SteeringConfig) ([]SteeringFile, error) {
 			}
 			files = append(files, SteeringFile{Path: t.path, Content: content})
 		}
+	}
+
+	// Manual files
+	if config.IncludeManual {
+		content, err := renderTemplate("steering/manual-example.tmpl", config)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, SteeringFile{Path: ".kiro/steering/manual-example.md", Content: content})
 	}
 
 	return files, nil

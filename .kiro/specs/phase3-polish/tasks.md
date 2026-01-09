@@ -48,7 +48,7 @@
 
 ### Missing Features
 
-- [ ] 11. Add manual steering option to SteeringConfigurator
+- [x] 11. Add manual steering option to SteeringConfigurator
   - Refs: AC-7
   - Outcome: Checkbox generates `inclusion: manual` files
 

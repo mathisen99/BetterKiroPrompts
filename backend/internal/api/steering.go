@@ -18,6 +18,7 @@ type SteeringConfig struct {
 	ProjectDescription string              `json:"projectDescription"`
 	TechStack          TechStack           `json:"techStack"`
 	IncludeConditional bool                `json:"includeConditional"`
+	IncludeManual      bool                `json:"includeManual"`
 	CustomRules        map[string][]string `json:"customRules"`
 }
 
@@ -60,6 +61,7 @@ func HandleSteeringGenerate(w http.ResponseWriter, r *http.Request) {
 			Database: req.Config.TechStack.Database,
 		},
 		IncludeConditional: req.Config.IncludeConditional,
+		IncludeManual:      req.Config.IncludeManual,
 		CustomRules:        req.Config.CustomRules,
 	}
 
