@@ -120,7 +120,7 @@
 
 ### Documentation
 
-- [ ] 27. Write README.md with setup and quick start
+- [x] 27. Write README.md with setup and quick start
   - Refs: AC-13
   - Outcome: New developers can start in <5 minutes
 
