@@ -34,11 +34,11 @@
   - Refs: AC-4
   - Outcome: Auto-focus on step change
 
-- [ ] 8. Add ARIA live regions for dynamic content
+- [x] 8. Add ARIA live regions for dynamic content
   - Refs: AC-5
   - Outcome: State changes announced
 
-- [ ] 9. Verify color contrast meets WCAG 2.1 AA
+- [x] 9. Verify color contrast meets WCAG 2.1 AA
   - Refs: AC-6
   - Outcome: axe-core audit passes
 
