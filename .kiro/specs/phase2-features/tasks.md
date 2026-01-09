@@ -53,7 +53,7 @@
 
 ### Kickoff Prompt Generator — Frontend
 
-- [ ] 11. Create `frontend/src/pages/KickoffPage.tsx`
+- [x] 11. Create `frontend/src/pages/KickoffPage.tsx`
   - Refs: AC-1
   - Deps: 3
   - Outcome: Page container for kickoff wizard
