@@ -4,7 +4,7 @@
 
 ### Shared Infrastructure
 
-- [ ] 1. Create `backend/internal/generator/` package structure
+- [x] 1. Create `backend/internal/generator/` package structure
   - Refs: Design
   - Outcome: Generator package ready for implementation
 
