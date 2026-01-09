@@ -134,7 +134,7 @@
   - Deps: 2
   - Outcome: Templates with fileMatch inclusion
 
-- [ ] 27. Create AGENTS.md template
+- [x] 27. Create AGENTS.md template
   - Refs: AC-6
   - Deps: 2
   - Outcome: AGENTS.md template
