@@ -7,6 +7,7 @@ const initialConfig: SteeringConfig = {
   projectDescription: '',
   techStack: { backend: '', frontend: '', database: '' },
   includeConditional: false,
+  includeManual: false,
   customRules: {},
 }
 
@@ -65,6 +66,11 @@ export function SteeringConfigurator({ onGenerate, loading }: SteeringConfigurat
       <div className="flex items-center gap-2 border-t border-border pt-4">
         <input id="include-conditional" type="checkbox" checked={config.includeConditional} onChange={(e) => updateConfig('includeConditional', e.target.checked)} className="rounded border-input" />
         <label htmlFor="include-conditional" className="text-sm">Include conditional steering files (security, quality)</label>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input id="include-manual" type="checkbox" checked={config.includeManual} onChange={(e) => updateConfig('includeManual', e.target.checked)} className="rounded border-input" />
+        <label htmlFor="include-manual" className="text-sm">Include manual steering files (referenced via #steering-file-name)</label>
       </div>
 
       <button type="submit" disabled={!config.projectName || loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">

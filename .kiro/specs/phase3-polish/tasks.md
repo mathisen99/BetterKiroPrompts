@@ -42,7 +42,7 @@
   - Refs: AC-6
   - Outcome: axe-core audit passes
 
-- [ ] 10. Test complete keyboard navigation flow
+- [x] 10. Test complete keyboard navigation flow
   - Refs: AC-4
   - Outcome: All flows completable without mouse
 

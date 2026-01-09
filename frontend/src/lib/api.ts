@@ -46,6 +46,7 @@ export interface SteeringConfig {
   projectDescription: string
   techStack: TechStack
   includeConditional: boolean
+  includeManual: boolean
   customRules: Record<string, string[]>
 }
 
