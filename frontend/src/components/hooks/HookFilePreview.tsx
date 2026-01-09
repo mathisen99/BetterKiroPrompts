@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { OutputPanel } from '../shared/OutputPanel'
 import { downloadAsZip } from '../../lib/zip'
 import type { GeneratedFile } from '../../lib/api'
@@ -13,6 +14,11 @@ export function HookFilePreview({ files }: HookFilePreviewProps) {
   if (files.length === 0) return null
 
   const activeFile = files[activeIndex]
+
+  const handleDownloadAll = () => {
+    downloadAsZip(files, 'hooks.zip')
+    toast.success('Downloaded successfully')
+  }
 
   return (
     <div className="space-y-4">
@@ -31,7 +37,7 @@ export function HookFilePreview({ files }: HookFilePreviewProps) {
           ))}
         </div>
         <button
-          onClick={() => downloadAsZip(files, 'hooks.zip')}
+          onClick={handleDownloadAll}
           className="rounded px-3 py-1 text-sm bg-primary text-primary-foreground hover:bg-primary/80"
           aria-label="Download all files as zip"
         >

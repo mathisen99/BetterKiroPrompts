@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface OutputPanelProps {
   content: string
@@ -6,12 +6,9 @@ interface OutputPanelProps {
 }
 
 export function OutputPanel({ content, filename }: OutputPanelProps) {
-  const [copied, setCopied] = useState(false)
-
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    toast.success('Copied to clipboard')
   }
 
   const handleDownload = () => {
@@ -22,6 +19,7 @@ export function OutputPanel({ content, filename }: OutputPanelProps) {
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+    toast.success('Downloaded successfully')
   }
 
   return (
@@ -34,7 +32,7 @@ export function OutputPanel({ content, filename }: OutputPanelProps) {
             className="rounded px-3 py-1 text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80"
             aria-label="Copy to clipboard"
           >
-            {copied ? 'Copied!' : 'Copy'}
+            Copy
           </button>
           <button
             onClick={handleDownload}

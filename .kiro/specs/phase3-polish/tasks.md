@@ -16,7 +16,7 @@
   - Refs: AC-2
   - Outcome: Skeleton UI during data fetch
 
-- [ ] 4. Add loading states to all buttons during submission
+- [x] 4. Add loading states to all buttons during submission
   - Refs: AC-2
   - Outcome: Spinner and disabled state on submit
 
