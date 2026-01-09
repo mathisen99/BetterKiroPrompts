@@ -70,9 +70,9 @@ func GenerateHooks(config HooksConfig) ([]HookFile, error) {
 		return files, nil
 	}
 
-	// Default: + secret scan, prompt guardrails
-	files = append(files, makeHookPrompt("secret-scan", "Scan for secrets", "agentStop", "Check for accidentally committed secrets or API keys"))
-	files = append(files, makeHookPrompt("prompt-guard", "Prompt guardrails", "promptSubmit", "Review this prompt for unsafe operations and confirm before proceeding"))
+	// Default: + secret scan, prompt guardrails (from templates)
+	files = append(files, loadHookTemplate("hooks/secret-scan.tmpl", "secret-scan"))
+	files = append(files, loadHookTemplate("hooks/prompt-guard.tmpl", "prompt-guard"))
 
 	if config.Preset == "default" {
 		return files, nil
