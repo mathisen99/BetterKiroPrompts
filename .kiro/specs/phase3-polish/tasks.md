@@ -128,7 +128,7 @@
   - Refs: AC-14
   - Outcome: All endpoints documented with examples
 
-- [ ] 29. Create docs/user-guide.md
+- [x] 29. Create docs/user-guide.md
   - Refs: AC-15
   - Outcome: Users understand generated outputs
 

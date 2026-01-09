@@ -173,12 +173,13 @@ COMPOSE_CMD="docker compose -f $COMPOSE_FILE"
 case $ACTION in
     up)
         log_info "Starting stack..."
-        ARGS=""
-        if [ "$REBUILD" = true ]; then
-            ARGS="$ARGS --build"
-        fi
+        ARGS="--build"
         if [ "$DETACH" = true ]; then
             ARGS="$ARGS -d"
+        fi
+        if [ "$REBUILD" = true ]; then
+            log_info "Forcing fresh rebuild (removing old images)..."
+            $COMPOSE_CMD build --no-cache
         fi
         $COMPOSE_CMD up $ARGS
         ;;
