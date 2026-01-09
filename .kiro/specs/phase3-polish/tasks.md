@@ -60,7 +60,7 @@
   - Refs: AC-8
   - Outcome: Users can add `#[[file:<path>]]` references
 
-- [ ] 14. Update steering templates with file reference syntax
+- [x] 14. Update steering templates with file reference syntax
   - Refs: AC-8
   - Outcome: Generated files include references
 
