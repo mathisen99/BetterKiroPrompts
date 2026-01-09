@@ -124,7 +124,7 @@
   - Refs: AC-13
   - Outcome: New developers can start in <5 minutes
 
-- [ ] 28. Create docs/api.md with endpoint documentation
+- [x] 28. Create docs/api.md with endpoint documentation
   - Refs: AC-14
   - Outcome: All endpoints documented with examples
 
