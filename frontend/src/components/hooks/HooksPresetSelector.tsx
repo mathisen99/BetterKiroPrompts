@@ -42,18 +42,18 @@ export function HooksPresetSelector({ onGenerate, loading }: HooksPresetSelector
 
       <fieldset className="space-y-3 border-t border-border pt-4">
         <legend className="text-sm font-medium">Tech Stack</legend>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={techStack.hasGo} onChange={(e) => setTechStack((s) => ({ ...s, hasGo: e.target.checked }))} />
-          <span className="text-sm">Go</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={techStack.hasTypeScript} onChange={(e) => setTechStack((s) => ({ ...s, hasTypeScript: e.target.checked }))} />
-          <span className="text-sm">TypeScript</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={techStack.hasReact} onChange={(e) => setTechStack((s) => ({ ...s, hasReact: e.target.checked }))} />
-          <span className="text-sm">React</span>
-        </label>
+        <div className="flex items-center gap-2">
+          <input id="has-go" type="checkbox" checked={techStack.hasGo} onChange={(e) => setTechStack((s) => ({ ...s, hasGo: e.target.checked }))} />
+          <label htmlFor="has-go" className="text-sm">Go</label>
+        </div>
+        <div className="flex items-center gap-2">
+          <input id="has-typescript" type="checkbox" checked={techStack.hasTypeScript} onChange={(e) => setTechStack((s) => ({ ...s, hasTypeScript: e.target.checked }))} />
+          <label htmlFor="has-typescript" className="text-sm">TypeScript</label>
+        </div>
+        <div className="flex items-center gap-2">
+          <input id="has-react" type="checkbox" checked={techStack.hasReact} onChange={(e) => setTechStack((s) => ({ ...s, hasReact: e.target.checked }))} />
+          <label htmlFor="has-react" className="text-sm">React</label>
+        </div>
       </fieldset>
 
       <button type="submit" disabled={loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">

@@ -8,6 +8,7 @@ interface QuestionStepProps {
 
 export function QuestionStep({ question, description, value, onChange, placeholder }: QuestionStepProps) {
   const id = question.toLowerCase().replace(/\s+/g, '-')
+  const descId = `${id}-desc`
 
   return (
     <div className="space-y-3">
@@ -15,7 +16,7 @@ export function QuestionStep({ question, description, value, onChange, placehold
         {question}
       </label>
       {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p id={descId} className="text-sm text-muted-foreground">{description}</p>
       )}
       <textarea
         id={id}
@@ -24,7 +25,7 @@ export function QuestionStep({ question, description, value, onChange, placehold
         placeholder={placeholder}
         rows={4}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-describedby={description ? `${id}-desc` : undefined}
+        aria-describedby={description ? descId : undefined}
       />
     </div>
   )

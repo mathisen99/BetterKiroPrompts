@@ -20,7 +20,7 @@
   - Refs: AC-2
   - Outcome: Spinner and disabled state on submit
 
-- [ ] 5. Integrate shadcn/ui toast for success notifications
+- [x] 5. Integrate shadcn/ui toast for success notifications
   - Refs: AC-3
   - Outcome: Toast on copy/download success
 

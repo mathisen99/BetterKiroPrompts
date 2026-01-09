@@ -34,38 +34,38 @@ export function SteeringConfigurator({ onGenerate, loading }: SteeringConfigurat
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <label className="block">
-          <span className="text-sm font-medium">Project Name</span>
-          <input type="text" value={config.projectName} onChange={(e) => updateConfig('projectName', e.target.value)} required className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium">Project Description</span>
-          <textarea value={config.projectDescription} onChange={(e) => updateConfig('projectDescription', e.target.value)} rows={2} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-        </label>
+        <div>
+          <label htmlFor="project-name" className="block text-sm font-medium">Project Name</label>
+          <input id="project-name" type="text" value={config.projectName} onChange={(e) => updateConfig('projectName', e.target.value)} required className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label htmlFor="project-description" className="block text-sm font-medium">Project Description</label>
+          <textarea id="project-description" value={config.projectDescription} onChange={(e) => updateConfig('projectDescription', e.target.value)} rows={2} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+        </div>
       </div>
 
       <div className="space-y-4 border-t border-border pt-4">
         <p className="text-sm font-medium">Tech Stack</p>
         <div className="grid gap-3">
-          <label className="block">
-            <span className="text-sm text-muted-foreground">Backend</span>
-            <input type="text" value={config.techStack.backend} onChange={(e) => updateTechStack('backend', e.target.value)} placeholder="e.g., Go, Node.js" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="block">
-            <span className="text-sm text-muted-foreground">Frontend</span>
-            <input type="text" value={config.techStack.frontend} onChange={(e) => updateTechStack('frontend', e.target.value)} placeholder="e.g., React, Vue" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="block">
-            <span className="text-sm text-muted-foreground">Database</span>
-            <input type="text" value={config.techStack.database} onChange={(e) => updateTechStack('database', e.target.value)} placeholder="e.g., PostgreSQL, MongoDB" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-          </label>
+          <div>
+            <label htmlFor="tech-backend" className="block text-sm text-muted-foreground">Backend</label>
+            <input id="tech-backend" type="text" value={config.techStack.backend} onChange={(e) => updateTechStack('backend', e.target.value)} placeholder="e.g., Go, Node.js" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label htmlFor="tech-frontend" className="block text-sm text-muted-foreground">Frontend</label>
+            <input id="tech-frontend" type="text" value={config.techStack.frontend} onChange={(e) => updateTechStack('frontend', e.target.value)} placeholder="e.g., React, Vue" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label htmlFor="tech-database" className="block text-sm text-muted-foreground">Database</label>
+            <input id="tech-database" type="text" value={config.techStack.database} onChange={(e) => updateTechStack('database', e.target.value)} placeholder="e.g., PostgreSQL, MongoDB" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
         </div>
       </div>
 
-      <label className="flex items-center gap-2 border-t border-border pt-4">
-        <input type="checkbox" checked={config.includeConditional} onChange={(e) => updateConfig('includeConditional', e.target.checked)} className="rounded border-input" />
-        <span className="text-sm">Include conditional steering files (security, quality)</span>
-      </label>
+      <div className="flex items-center gap-2 border-t border-border pt-4">
+        <input id="include-conditional" type="checkbox" checked={config.includeConditional} onChange={(e) => updateConfig('includeConditional', e.target.checked)} className="rounded border-input" />
+        <label htmlFor="include-conditional" className="text-sm">Include conditional steering files (security, quality)</label>
+      </div>
 
       <button type="submit" disabled={!config.projectName || loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
         {loading && <Spinner />}
