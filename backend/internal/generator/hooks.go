@@ -2,6 +2,9 @@ package generator
 
 import (
 	"encoding/json"
+	"strings"
+
+	"better-kiro-prompts/internal/templates"
 )
 
 type HooksTechStack struct {
@@ -54,14 +57,14 @@ func GenerateHooks(config HooksConfig) ([]HookFile, error) {
 		return files, nil
 	}
 
-	// Basic: + linters, tests
+	// Basic: + linters, tests (from templates)
 	if config.TechStack.HasGo {
-		files = append(files, makeHook("lint-go", "Lint Go code", "agentStop", "runCommand", "go vet ./..."))
+		files = append(files, loadHookTemplate("hooks/lint-go.tmpl", "lint-go"))
 	}
 	if config.TechStack.HasTypeScript || config.TechStack.HasReact {
-		files = append(files, makeHook("lint-web", "Lint frontend code", "agentStop", "runCommand", "pnpm lint"))
+		files = append(files, loadHookTemplate("hooks/lint-web.tmpl", "lint-web"))
 	}
-	files = append(files, makeHookPrompt("run-tests", "Run unit tests", "userTriggered", "Run the test suite and summarize results"))
+	files = append(files, loadHookTemplate("hooks/test.tmpl", "run-tests"))
 
 	if config.Preset == "basic" {
 		return files, nil
@@ -102,4 +105,9 @@ func makeHookPrompt(name, desc, whenType, prompt string) HookFile {
 	}
 	content, _ := json.MarshalIndent(h, "", "  ")
 	return HookFile{Path: ".kiro/hooks/" + name + ".kiro.hook", Content: string(content)}
+}
+
+func loadHookTemplate(path, name string) HookFile {
+	content, _ := templates.FS.ReadFile(path)
+	return HookFile{Path: ".kiro/hooks/" + name + ".kiro.hook", Content: strings.TrimSpace(string(content))}
 }

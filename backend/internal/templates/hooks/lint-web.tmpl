@@ -1,0 +1,13 @@
+{
+  "name": "lint-web",
+  "description": "Lint frontend code",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "pnpm lint"
+  }
+}
