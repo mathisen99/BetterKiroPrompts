@@ -193,8 +193,23 @@ export function KickoffWizard() {
             </div>
           </div>
         )}
-        {step > 8 && (
-          <p className="text-muted-foreground">Step content coming soon...</p>
+        {step === 9 && (
+          <QuestionStep
+            question="Non-Goals"
+            description="What will NOT be built in this project?"
+            value={answers.nonGoals}
+            onChange={(v) => updateAnswer('nonGoals', v)}
+            placeholder="e.g., Mobile app, real-time collaboration, third-party integrations"
+          />
+        )}
+        {step === 10 && (
+          <QuestionStep
+            question="Constraints"
+            description="Time limits, simplicity requirements, tech restrictions?"
+            value={answers.constraints}
+            onChange={(v) => updateAnswer('constraints', v)}
+            placeholder="e.g., Must ship in 2 weeks, no external dependencies, PostgreSQL only"
+          />
         )}
       </div>
 

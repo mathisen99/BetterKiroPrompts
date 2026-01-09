@@ -87,7 +87,7 @@
   - Deps: 16
   - Outcome: Risks with top 3, mitigations, not handled
 
-- [ ] 18. Implement Step 8: Boundaries with concrete examples
+- [x] 18. Implement Step 8: Boundaries with concrete examples
   - Refs: AC-1
   - Deps: 17
   - Outcome: Boundaries + 2-3 examples
