@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { StepIndicator } from '../shared/StepIndicator'
 import { QuestionStep } from './QuestionStep'
 import { PromptPreview } from './PromptPreview'
+import { ErrorMessage } from '../shared/ErrorMessage'
 import { generateKickoff, type KickoffAnswers } from '../../lib/api'
 
 const STEP_LABELS = [
@@ -245,7 +246,7 @@ export function KickoffWizard() {
         )}
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <div className="mb-4"><ErrorMessage message={error} onRetry={handleGenerate} /></div>}
 
       <div className="flex justify-between">
         <button

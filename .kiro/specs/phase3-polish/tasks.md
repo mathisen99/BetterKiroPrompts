@@ -4,7 +4,7 @@
 
 ### UI/UX Polish
 
-- [ ] 1. Add ErrorBoundary component at app level
+- [x] 1. Add ErrorBoundary component at app level
   - Refs: AC-1
   - Outcome: Graceful error display with retry
 
