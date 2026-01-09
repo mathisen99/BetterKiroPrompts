@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	"better-kiro-prompts/internal/generator"
 )
 
 type DataLifecycle struct {
@@ -59,8 +61,36 @@ func HandleKickoffGenerate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Call generator.GenerateKickoff(req.Answers)
-	prompt := "Generated kickoff prompt placeholder"
+	genAnswers := generator.KickoffAnswers{
+		ProjectIdentity: req.Answers.ProjectIdentity,
+		SuccessCriteria: req.Answers.SuccessCriteria,
+		UsersAndRoles:   req.Answers.UsersAndRoles,
+		DataSensitivity: req.Answers.DataSensitivity,
+		DataLifecycle: generator.DataLifecycle{
+			Retention:    req.Answers.DataLifecycle.Retention,
+			Deletion:     req.Answers.DataLifecycle.Deletion,
+			Export:       req.Answers.DataLifecycle.Export,
+			AuditLogging: req.Answers.DataLifecycle.AuditLogging,
+			Backups:      req.Answers.DataLifecycle.Backups,
+		},
+		AuthModel:   req.Answers.AuthModel,
+		Concurrency: req.Answers.Concurrency,
+		RisksAndTradeoffs: generator.RisksAndTradeoffs{
+			TopRisks:    req.Answers.RisksAndTradeoffs.TopRisks,
+			Mitigations: req.Answers.RisksAndTradeoffs.Mitigations,
+			NotHandled:  req.Answers.RisksAndTradeoffs.NotHandled,
+		},
+		Boundaries:       req.Answers.Boundaries,
+		BoundaryExamples: req.Answers.BoundaryExamples,
+		NonGoals:         req.Answers.NonGoals,
+		Constraints:      req.Answers.Constraints,
+	}
+
+	prompt, err := generator.GenerateKickoff(genAnswers)
+	if err != nil {
+		http.Error(w, "Failed to generate prompt", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(KickoffResponse{Prompt: prompt})

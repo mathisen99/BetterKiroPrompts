@@ -36,7 +36,7 @@
   - Deps: 1
   - Outcome: Prompt generation from answers
 
-- [ ] 8. Create `backend/internal/templates/kickoff.tmpl`
+- [x] 8. Create `backend/internal/templates/kickoff.tmpl`
   - Refs: AC-3
   - Deps: 2
   - Outcome: Prompt template with all questions
