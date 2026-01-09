@@ -114,7 +114,7 @@
   - Refs: AC-12
   - Outcome: Config to download tested
 
-- [ ] 26. Create hooks generation E2E test
+- [x] 26. Create hooks generation E2E test
   - Refs: AC-12
   - Outcome: Preset selection to download tested
 
