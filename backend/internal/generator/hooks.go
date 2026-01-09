@@ -78,11 +78,11 @@ func GenerateHooks(config HooksConfig) ([]HookFile, error) {
 		return files, nil
 	}
 
-	// Strict: + static analysis, vuln scan
+	// Strict: + static analysis, vuln scan (from templates)
 	if config.TechStack.HasGo {
-		files = append(files, makeHook("static-analysis", "Static analysis", "agentStop", "runCommand", "staticcheck ./..."))
+		files = append(files, loadHookTemplate("hooks/static-analysis.tmpl", "static-analysis"))
 	}
-	files = append(files, makeHookPrompt("vuln-scan", "Vulnerability scan", "userTriggered", "Run dependency vulnerability scan and report findings"))
+	files = append(files, loadHookTemplate("hooks/vuln-scan.tmpl", "vuln-scan"))
 
 	return files, nil
 }

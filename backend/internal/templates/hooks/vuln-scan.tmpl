@@ -1,0 +1,13 @@
+{
+  "name": "vuln-scan",
+  "description": "Vulnerability scan",
+  "version": "1.0.0",
+  "enabled": true,
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run dependency vulnerability scan and report findings"
+  }
+}
