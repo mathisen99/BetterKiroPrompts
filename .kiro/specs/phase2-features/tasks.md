@@ -41,12 +41,12 @@
   - Deps: 2
   - Outcome: Prompt template with all questions
 
-- [ ] 9. Register kickoff route in router.go
+- [x] 9. Register kickoff route in router.go
   - Refs: AC-3
   - Deps: 6
   - Outcome: Route accessible at /api/kickoff/generate
 
-- [ ] 10. Test: Kickoff endpoint returns valid prompt
+- [x] 10. Test: Kickoff endpoint returns valid prompt
   - Refs: AC-3
   - Deps: 9
   - Outcome: curl test passes
