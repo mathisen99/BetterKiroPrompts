@@ -164,7 +164,7 @@
   - Refs: AC-5
   - Outcome: Checkboxes for conditional files
 
-- [ ] 33. Create `frontend/src/components/steering/FilePreview.tsx`
+- [x] 33. Create `frontend/src/components/steering/FilePreview.tsx`
   - Refs: AC-13
   - Deps: 4
   - Outcome: Multi-file preview with tabs
