@@ -52,7 +52,7 @@
   - Refs: AC-7
   - Outcome: Checkbox generates `inclusion: manual` files
 
-- [ ] 12. Update steering templates for manual inclusion
+- [x] 12. Update steering templates for manual inclusion
   - Refs: AC-7
   - Outcome: Backend generates correct frontmatter
 

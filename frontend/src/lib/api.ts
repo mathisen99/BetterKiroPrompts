@@ -47,6 +47,7 @@ export interface SteeringConfig {
   techStack: TechStack
   includeConditional: boolean
   includeManual: boolean
+  fileReferences: string[]
   customRules: Record<string, string[]>
 }
 

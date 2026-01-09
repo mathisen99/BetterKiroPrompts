@@ -8,6 +8,7 @@ const initialConfig: SteeringConfig = {
   techStack: { backend: '', frontend: '', database: '' },
   includeConditional: false,
   includeManual: false,
+  fileReferences: [],
   customRules: {},
 }
 
@@ -71,6 +72,19 @@ export function SteeringConfigurator({ onGenerate, loading }: SteeringConfigurat
       <div className="flex items-center gap-2">
         <input id="include-manual" type="checkbox" checked={config.includeManual} onChange={(e) => updateConfig('includeManual', e.target.checked)} className="rounded border-input" />
         <label htmlFor="include-manual" className="text-sm">Include manual steering files (referenced via #steering-file-name)</label>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="file-references" className="block text-sm font-medium">File References (optional)</label>
+        <p className="text-xs text-muted-foreground">Add file paths to reference in steering files (one per line)</p>
+        <textarea
+          id="file-references"
+          value={config.fileReferences.join('\n')}
+          onChange={(e) => updateConfig('fileReferences', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
+          rows={3}
+          placeholder=".env.example&#10;backend/migrations/README.md"
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
       </div>
 
       <button type="submit" disabled={!config.projectName || loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
