@@ -58,7 +58,7 @@
   - Deps: 3
   - Outcome: Page container for kickoff wizard
 
-- [ ] 12. Create `frontend/src/components/kickoff/KickoffWizard.tsx`
+- [x] 12. Create `frontend/src/components/kickoff/KickoffWizard.tsx`
   - Refs: AC-1, AC-2
   - Deps: 5
   - Outcome: Multi-step wizard with state management
