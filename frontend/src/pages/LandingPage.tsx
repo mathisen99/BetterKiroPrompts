@@ -4,8 +4,9 @@ import type { Question, GeneratedFile, Answer } from '@/lib/api'
 import { ProjectInput } from '@/components/ProjectInput'
 import { QuestionFlow } from '@/components/QuestionFlow'
 import { OutputEditor } from '@/components/OutputEditor'
-import { Spinner } from '@/components/shared/Spinner'
+import { LoadingState } from '@/components/shared/LoadingState'
 import { ErrorMessage } from '@/components/shared/ErrorMessage'
+import { RateLimitCountdown } from '@/components/shared/RateLimitCountdown'
 
 type Phase = 'input' | 'questions' | 'generating' | 'output' | 'error'
 
@@ -28,6 +29,52 @@ const EXAMPLE_IDEAS = [
   'A real-time chat application',
   'A personal finance tracker',
 ]
+
+// Helper to get user-friendly error message
+function getErrorMessage(err: unknown): { message: string; retryAfter: number | null } {
+  if (err instanceof ApiError) {
+    // Rate limit error
+    if (err.status === 429) {
+      return {
+        message: 'Too many requests. Please wait before trying again.',
+        retryAfter: err.retryAfter ?? null,
+      }
+    }
+    // Timeout error
+    if (err.status === 504 || err.message.toLowerCase().includes('timeout')) {
+      return {
+        message: 'Request timed out. Please refresh and start over.',
+        retryAfter: null,
+      }
+    }
+    // Server error
+    if (err.status >= 500) {
+      return {
+        message: 'Generation failed. Please refresh and try again.',
+        retryAfter: null,
+      }
+    }
+    // Client error (bad input, etc.)
+    return {
+      message: err.message,
+      retryAfter: err.retryAfter ?? null,
+    }
+  }
+  
+  // Network error (fetch failed)
+  if (err instanceof TypeError && err.message.includes('fetch')) {
+    return {
+      message: 'Unable to connect. Please check your connection and refresh.',
+      retryAfter: null,
+    }
+  }
+  
+  // Unknown error
+  return {
+    message: 'An unexpected error occurred. Please refresh and try again.',
+    retryAfter: null,
+  }
+}
 
 export function LandingPage() {
   const [state, setState] = useState<LandingPageState>({
@@ -55,12 +102,12 @@ export function LandingPage() {
         answers: new Map(),
       }))
     } catch (err) {
-      const error = err instanceof ApiError ? err : new Error('Unknown error')
+      const { message, retryAfter } = getErrorMessage(err)
       setState(prev => ({
         ...prev,
         phase: 'error',
-        error: error.message,
-        retryAfter: err instanceof ApiError ? err.retryAfter ?? null : null,
+        error: message,
+        retryAfter,
       }))
     }
   }, [])
@@ -107,12 +154,12 @@ export function LandingPage() {
         editedFiles: new Map(),
       }))
     } catch (err) {
-      const error = err instanceof ApiError ? err : new Error('Unknown error')
+      const { message, retryAfter } = getErrorMessage(err)
       setState(prev => ({
         ...prev,
         phase: 'error',
-        error: error.message,
-        retryAfter: err instanceof ApiError ? err.retryAfter ?? null : null,
+        error: message,
+        retryAfter,
       }))
     }
   }, [state.answers, state.projectIdea])
@@ -164,15 +211,14 @@ export function LandingPage() {
       )}
 
       {state.phase === 'generating' && (
-        <div className="flex flex-col items-center justify-center py-16 gap-4">
-          <Spinner className="h-8 w-8" />
-          <p className="text-muted-foreground">
-            {state.questions.length === 0
+        <LoadingState
+          message={
+            state.questions.length === 0
               ? 'Generating questions for your project...'
-              : 'Generating your Kiro files...'}
-          </p>
-          <p className="text-sm text-muted-foreground">This may take up to 60 seconds</p>
-        </div>
+              : 'Generating your Kiro files...'
+          }
+          estimatedTime="up to 60 seconds"
+        />
       )}
 
       {state.phase === 'output' && (
@@ -186,16 +232,15 @@ export function LandingPage() {
       )}
 
       {state.phase === 'error' && (
-        <div className="py-8">
+        <div className="py-8 space-y-4">
           <ErrorMessage message={state.error ?? 'An unexpected error occurred'} />
-          {state.retryAfter && (
-            <p className="mt-4 text-sm text-muted-foreground text-center">
-              Please try again in {Math.ceil(state.retryAfter / 60)} minutes
+          {state.retryAfter ? (
+            <RateLimitCountdown retryAfterSeconds={state.retryAfter} />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Please refresh the page to start over.
             </p>
           )}
-          <p className="mt-4 text-sm text-muted-foreground text-center">
-            Please refresh the page to start over.
-          </p>
         </div>
       )}
     </div>
