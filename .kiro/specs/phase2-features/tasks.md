@@ -156,7 +156,7 @@
   - Deps: 3
   - Outcome: Page container for steering config
 
-- [ ] 31. Create `frontend/src/components/steering/SteeringConfigurator.tsx`
+- [x] 31. Create `frontend/src/components/steering/SteeringConfigurator.tsx`
   - Refs: AC-4, AC-5
   - Outcome: Configuration form
 
