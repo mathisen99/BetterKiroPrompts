@@ -177,7 +177,23 @@ export function KickoffWizard() {
             </div>
           </div>
         )}
-        {step > 7 && (
+        {step === 8 && (
+          <div className="space-y-4">
+            <QuestionStep
+              question="Public vs Private Boundaries"
+              description="What data/actions are public vs private?"
+              value={answers.boundaries}
+              onChange={(v) => updateAnswer('boundaries', v)}
+              placeholder="e.g., Task titles are public, task details are private to team members"
+            />
+            <div className="space-y-2">
+              <label htmlFor="boundary-examples" className="block text-sm font-medium">Concrete Access Examples (2-3)</label>
+              <p className="text-sm text-muted-foreground">Who can read/write what?</p>
+              <textarea id="boundary-examples" rows={4} value={answers.boundaryExamples.join('\n')} onChange={(e) => updateAnswer('boundaryExamples', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))} placeholder="One example per line, e.g.:\nAnonymous users can view public projects\nTeam members can edit their own tasks\nAdmins can delete any task" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+          </div>
+        )}
+        {step > 8 && (
           <p className="text-muted-foreground">Step content coming soon...</p>
         )}
       </div>

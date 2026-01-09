@@ -82,7 +82,7 @@
   - Deps: 15
   - Outcome: Auth and concurrency questions
 
-- [ ] 17. Implement Step 7: Risks & Tradeoffs with sub-fields
+- [x] 17. Implement Step 7: Risks & Tradeoffs with sub-fields
   - Refs: AC-1
   - Deps: 16
   - Outcome: Risks with top 3, mitigations, not handled
