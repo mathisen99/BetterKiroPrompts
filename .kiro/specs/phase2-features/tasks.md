@@ -107,7 +107,7 @@
   - Deps: 10, 20
   - Outcome: End-to-end kickoff generation
 
-- [ ] 22. Add navigation to KickoffPage from App.tsx
+- [x] 22. Add navigation to KickoffPage from App.tsx
   - Refs: AC-1
   - Deps: 11
   - Outcome: Kickoff accessible from main app
