@@ -1,0 +1,23 @@
+---
+inclusion: always
+---
+
+# Repository Structure
+
+## Layout
+
+- `/backend` — Backend code
+- `/frontend` — Frontend code
+- `/migrations` — Database migrations
+
+## Conventions
+
+- One concern per file
+- Keep flat until nesting is necessary
+- No dumping ground folders (utils/, helpers/, misc/)
+
+## Rules
+
+- API types live with their handlers
+- DB migrations are versioned and immutable
+- Frontend components organized by feature

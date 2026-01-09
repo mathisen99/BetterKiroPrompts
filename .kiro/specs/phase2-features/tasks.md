@@ -119,7 +119,7 @@
   - Deps: 1
   - Outcome: POST /api/steering/generate endpoint
 
-- [ ] 24. Create `backend/internal/generator/steering.go` logic
+- [x] 24. Create `backend/internal/generator/steering.go` logic
   - Refs: AC-4, AC-5, AC-6, AC-7
   - Deps: 1
   - Outcome: Steering file generation
