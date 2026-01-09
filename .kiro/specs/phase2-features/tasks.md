@@ -139,12 +139,12 @@
   - Deps: 2
   - Outcome: AGENTS.md template
 
-- [ ] 28. Register steering route in router.go
+- [x] 28. Register steering route in router.go
   - Refs: AC-4
   - Deps: 23
   - Outcome: Route accessible at /api/steering/generate
 
-- [ ] 29. Test: Steering endpoint returns valid files
+- [x] 29. Test: Steering endpoint returns valid files
   - Refs: AC-4, AC-5, AC-6
   - Deps: 28
   - Outcome: curl test passes with correct frontmatter
