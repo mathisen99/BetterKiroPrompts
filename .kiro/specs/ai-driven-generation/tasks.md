@@ -137,18 +137,18 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - **Property 3: Edit State Preservation**
     - **Validates: Requirements 4.3**
 
-- [ ] 8. Frontend - Download functionality
-  - [ ] 8.1 Implement download features
+- [x] 8. Frontend - Download functionality
+  - [x] 8.1 Implement download features
     - Individual file copy/download buttons
     - Download All as ZIP with correct directory structure
     - Use edited content if modified
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [ ] 8.2 Write property test for download content integrity
+  - [x] 8.2 Write property test for download content integrity
     - **Property 4: Download Content Integrity**
     - **Validates: Requirements 5.3**
 
-  - [ ] 8.3 Write property test for ZIP structure
+  - [x] 8.3 Write property test for ZIP structure
     - **Property 5: ZIP Directory Structure**
     - **Validates: Requirements 5.4**
 

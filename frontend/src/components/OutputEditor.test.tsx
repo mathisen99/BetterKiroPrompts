@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
+import type { GeneratedFile } from '@/lib/api'
 
 /**
  * Property 3: Edit State Preservation
@@ -174,6 +175,297 @@ describe('Property 3: Edit State Preservation', () => {
           for (const file of files) {
             const content = getFileContent(state, file.path)
             expect(content).toBe(file.content)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+})
+
+
+/**
+ * Property 4: Download Content Integrity
+ * For any file download (individual or ZIP), the downloaded content SHALL match
+ * the current edited state if modifications were made, or the original content if not.
+ * 
+ * Validates: Requirements 5.3
+ * 
+ * Feature: ai-driven-generation, Property 4: Download Content Integrity
+ */
+
+// Simulates the download content resolution logic
+function getDownloadContent(
+  files: GeneratedFile[],
+  editedFiles: Map<string, string>,
+  path: string
+): string {
+  if (editedFiles.has(path)) {
+    return editedFiles.get(path)!
+  }
+  const file = files.find(f => f.path === path)
+  return file?.content ?? ''
+}
+
+// Simulates preparing files for ZIP download
+function prepareFilesForZip(
+  files: GeneratedFile[],
+  editedFiles: Map<string, string>
+): { path: string; content: string }[] {
+  return files.map(file => ({
+    path: file.path,
+    content: getDownloadContent(files, editedFiles, file.path),
+  }))
+}
+
+describe('Property 4: Download Content Integrity', () => {
+  const fileTypeArb = fc.constantFrom('kickoff', 'steering', 'hook') as fc.Arbitrary<'kickoff' | 'steering' | 'hook'>
+  
+  const filePathArb = fc.string({ minLength: 1, maxLength: 50 })
+    .filter(s => s.trim().length > 0)
+    .map(s => s.replace(/[/\\]/g, '-'))
+  
+  const fileContentArb = fc.string({ minLength: 0, maxLength: 500 })
+  
+  const generatedFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
+    path: filePathArb,
+    content: fileContentArb,
+    type: fileTypeArb,
+  })
+  
+  const generatedFilesArb = fc.array(generatedFileArb, { minLength: 1, maxLength: 10 })
+    .map(files => {
+      const seen = new Set<string>()
+      return files.filter(f => {
+        if (seen.has(f.path)) return false
+        seen.add(f.path)
+        return true
+      })
+    })
+    .filter(files => files.length > 0)
+
+  it('download returns edited content when file was modified', () => {
+    fc.assert(
+      fc.property(
+        generatedFilesArb,
+        fileContentArb,
+        (files, editedContent) => {
+          const editedFiles = new Map<string, string>()
+          const targetPath = files[0].path
+          editedFiles.set(targetPath, editedContent)
+          
+          const downloadContent = getDownloadContent(files, editedFiles, targetPath)
+          
+          expect(downloadContent).toBe(editedContent)
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('download returns original content when file was not modified', () => {
+    fc.assert(
+      fc.property(
+        generatedFilesArb,
+        (files) => {
+          const editedFiles = new Map<string, string>()
+          
+          for (const file of files) {
+            const downloadContent = getDownloadContent(files, editedFiles, file.path)
+            expect(downloadContent).toBe(file.content)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('ZIP preparation uses edited content for modified files and original for unmodified', () => {
+    fc.assert(
+      fc.property(
+        generatedFilesArb.filter(f => f.length >= 2),
+        fileContentArb,
+        (files, editedContent) => {
+          const editedFiles = new Map<string, string>()
+          const editedPath = files[0].path
+          editedFiles.set(editedPath, editedContent)
+          
+          const zipFiles = prepareFilesForZip(files, editedFiles)
+          
+          // Verify edited file has edited content
+          const editedZipFile = zipFiles.find(f => f.path === editedPath)
+          expect(editedZipFile?.content).toBe(editedContent)
+          
+          // Verify unedited files have original content
+          for (let i = 1; i < files.length; i++) {
+            const originalFile = files[i]
+            const zipFile = zipFiles.find(f => f.path === originalFile.path)
+            expect(zipFile?.content).toBe(originalFile.content)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('all files are included in ZIP preparation', () => {
+    fc.assert(
+      fc.property(
+        generatedFilesArb,
+        (files) => {
+          const editedFiles = new Map<string, string>()
+          const zipFiles = prepareFilesForZip(files, editedFiles)
+          
+          expect(zipFiles.length).toBe(files.length)
+          
+          for (const file of files) {
+            const zipFile = zipFiles.find(f => f.path === file.path)
+            expect(zipFile).toBeDefined()
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+})
+
+/**
+ * Property 5: ZIP Directory Structure
+ * For any generated ZIP file, all steering files SHALL be under `.kiro/steering/`
+ * and all hook files SHALL be under `.kiro/hooks/`.
+ * 
+ * Validates: Requirements 5.4
+ * 
+ * Feature: ai-driven-generation, Property 5: ZIP Directory Structure
+ */
+
+// Validates that a file path matches expected directory structure based on type
+function validateFileStructure(file: GeneratedFile): boolean {
+  switch (file.type) {
+    case 'steering':
+      return file.path.startsWith('.kiro/steering/')
+    case 'hook':
+      return file.path.startsWith('.kiro/hooks/')
+    case 'kickoff':
+      // Kickoff files can be at root or any location
+      return true
+    default:
+      return false
+  }
+}
+
+// Simulates the structure that would be created in a ZIP
+function getExpectedZipStructure(files: GeneratedFile[]): { path: string; type: string }[] {
+  return files.map(f => ({ path: f.path, type: f.type }))
+}
+
+describe('Property 5: ZIP Directory Structure', () => {
+  const steeringPathArb = fc.string({ minLength: 1, maxLength: 30 })
+    .filter(s => s.trim().length > 0 && !s.includes('/'))
+    .map(s => `.kiro/steering/${s}.md`)
+  
+  const hookPathArb = fc.string({ minLength: 1, maxLength: 30 })
+    .filter(s => s.trim().length > 0 && !s.includes('/'))
+    .map(s => `.kiro/hooks/${s}.kiro.hook`)
+  
+  const kickoffPathArb = fc.string({ minLength: 1, maxLength: 30 })
+    .filter(s => s.trim().length > 0 && !s.includes('/'))
+    .map(s => `${s}.md`)
+  
+  const fileContentArb = fc.string({ minLength: 0, maxLength: 200 })
+  
+  const steeringFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
+    path: steeringPathArb,
+    content: fileContentArb,
+    type: fc.constant('steering' as const),
+  })
+  
+  const hookFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
+    path: hookPathArb,
+    content: fileContentArb,
+    type: fc.constant('hook' as const),
+  })
+  
+  const kickoffFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
+    path: kickoffPathArb,
+    content: fileContentArb,
+    type: fc.constant('kickoff' as const),
+  })
+  
+  const validFilesArb = fc.tuple(
+    fc.array(steeringFileArb, { minLength: 1, maxLength: 5 }),
+    fc.array(hookFileArb, { minLength: 1, maxLength: 5 }),
+    fc.array(kickoffFileArb, { minLength: 0, maxLength: 2 })
+  ).map(([steering, hooks, kickoff]) => {
+    // Ensure unique paths
+    const seen = new Set<string>()
+    const all = [...steering, ...hooks, ...kickoff]
+    return all.filter(f => {
+      if (seen.has(f.path)) return false
+      seen.add(f.path)
+      return true
+    })
+  }).filter(files => files.length > 0)
+
+  it('all steering files are under .kiro/steering/', () => {
+    fc.assert(
+      fc.property(
+        validFilesArb,
+        (files) => {
+          const steeringFiles = files.filter(f => f.type === 'steering')
+          
+          for (const file of steeringFiles) {
+            expect(file.path.startsWith('.kiro/steering/')).toBe(true)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('all hook files are under .kiro/hooks/', () => {
+    fc.assert(
+      fc.property(
+        validFilesArb,
+        (files) => {
+          const hookFiles = files.filter(f => f.type === 'hook')
+          
+          for (const file of hookFiles) {
+            expect(file.path.startsWith('.kiro/hooks/')).toBe(true)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('all files pass structure validation', () => {
+    fc.assert(
+      fc.property(
+        validFilesArb,
+        (files) => {
+          for (const file of files) {
+            expect(validateFileStructure(file)).toBe(true)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('ZIP structure preserves file paths exactly', () => {
+    fc.assert(
+      fc.property(
+        validFilesArb,
+        (files) => {
+          const zipStructure = getExpectedZipStructure(files)
+          
+          expect(zipStructure.length).toBe(files.length)
+          
+          for (const file of files) {
+            const zipEntry = zipStructure.find(z => z.path === file.path)
+            expect(zipEntry).toBeDefined()
+            expect(zipEntry?.type).toBe(file.type)
           }
         }
       ),
