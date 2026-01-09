@@ -63,7 +63,7 @@
   - Deps: 5
   - Outcome: Multi-step wizard with state management
 
-- [ ] 13. Create `frontend/src/components/kickoff/QuestionStep.tsx`
+- [x] 13. Create `frontend/src/components/kickoff/QuestionStep.tsx`
   - Refs: AC-1
   - Outcome: Reusable question step component
 
