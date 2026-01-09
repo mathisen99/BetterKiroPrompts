@@ -160,7 +160,7 @@
   - Refs: AC-4, AC-5
   - Outcome: Configuration form
 
-- [ ] 32. Create `frontend/src/components/steering/SteeringOptions.tsx`
+- [x] 32. Create `frontend/src/components/steering/SteeringOptions.tsx`
   - Refs: AC-5
   - Outcome: Checkboxes for conditional files
 
