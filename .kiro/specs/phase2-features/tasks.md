@@ -20,7 +20,7 @@
   - Refs: AC-13, AC-14, AC-15
   - Outcome: Preview/Copy/Download component
 
-- [ ] 5. Create `frontend/src/components/shared/StepIndicator.tsx`
+- [x] 5. Create `frontend/src/components/shared/StepIndicator.tsx`
   - Refs: Design
   - Outcome: Wizard step indicator component
 
