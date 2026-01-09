@@ -50,26 +50,26 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - **Property 6: Rate Limiting Enforcement**
     - **Validates: Requirements 6.3**
 
-- [ ] 4. Backend - Generation service implementation
-  - [ ] 4.1 Create generation service
+- [x] 4. Backend - Generation service implementation
+  - [x] 4.1 Create generation service
     - Create `internal/generation/service.go`
     - Implement GenerateQuestions method
     - Implement GenerateOutputs method
     - Include AI prompts from design
     - _Requirements: 2.1, 3.1_
 
-  - [ ] 4.2 Create API handlers for new endpoints
+  - [x] 4.2 Create API handlers for new endpoints
     - Create `internal/api/generate.go`
     - Implement POST /api/generate/questions handler
     - Implement POST /api/generate/outputs handler
     - Wire up rate limiter middleware
     - _Requirements: 2.1, 3.1, 6.3_
 
-  - [ ] 4.3 Write property test for question plan structure
+  - [x] 4.3 Write property test for question plan structure
     - **Property 1: Question Plan Structure**
     - **Validates: Requirements 2.2**
 
-  - [ ] 4.4 Write property test for generation response completeness
+  - [x] 4.4 Write property test for generation response completeness
     - **Property 2: Generation Response Completeness**
     - **Validates: Requirements 3.2, 3.3, 3.4**
 
