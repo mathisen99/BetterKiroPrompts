@@ -129,7 +129,7 @@
   - Deps: 2
   - Outcome: Templates with inclusion: always
 
-- [ ] 26. Create conditional steering templates (security-go, security-web, quality-go, quality-web)
+- [x] 26. Create conditional steering templates (security-go, security-web, quality-go, quality-web)
   - Refs: AC-5
   - Deps: 2
   - Outcome: Templates with fileMatch inclusion
