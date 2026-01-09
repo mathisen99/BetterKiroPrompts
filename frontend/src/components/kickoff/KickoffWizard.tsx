@@ -96,8 +96,9 @@ export function KickoffWizard() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" aria-busy="true">
         <h2 className="text-2xl font-bold">Generating Kickoff Prompt...</h2>
+        <span className="sr-only" aria-live="assertive">Generating kickoff prompt, please wait</span>
         <div className="space-y-4">
           <Skeleton className="h-6 w-3/4" />
           <Skeleton className="h-32 w-full" />

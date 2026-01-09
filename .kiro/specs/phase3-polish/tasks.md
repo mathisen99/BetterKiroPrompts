@@ -30,7 +30,7 @@
   - Refs: AC-5
   - Outcome: Screen readers announce field names
 
-- [ ] 7. Implement focus management in wizard
+- [x] 7. Implement focus management in wizard
   - Refs: AC-4
   - Outcome: Auto-focus on step change
 
