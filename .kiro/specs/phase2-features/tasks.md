@@ -16,7 +16,7 @@
   - Refs: Design
   - Outcome: Typed API client for all endpoints
 
-- [ ] 4. Create `frontend/src/components/shared/OutputPanel.tsx`
+- [x] 4. Create `frontend/src/components/shared/OutputPanel.tsx`
   - Refs: AC-13, AC-14, AC-15
   - Outcome: Preview/Copy/Download component
 
