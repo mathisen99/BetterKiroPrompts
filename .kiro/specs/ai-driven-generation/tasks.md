@@ -173,7 +173,7 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - Remove old routes
     - _Requirements: 2.1, 3.1_
 
-- [ ] 11. Final checkpoint
+- [x] 11. Final checkpoint
   - Ensure all tests pass
   - Verify full flow works end-to-end
   - Check no old code remains
