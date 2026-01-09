@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { OutputPanel } from '../shared/OutputPanel'
+import { CommitContract } from '../shared/CommitContract'
 import { downloadAsZip } from '../../lib/zip'
 import type { GeneratedFile } from '../../lib/api'
 
@@ -45,6 +46,7 @@ export function FilePreview({ files }: FilePreviewProps) {
         </button>
       </div>
       <OutputPanel content={activeFile.content} filename={activeFile.path.split('/').pop() || activeFile.path} />
+      <CommitContract />
     </div>
   )
 }

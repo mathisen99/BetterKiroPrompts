@@ -64,7 +64,7 @@
   - Refs: AC-8
   - Outcome: Generated files include references
 
-- [ ] 15. Create CommitContract component
+- [x] 15. Create CommitContract component
   - Refs: AC-9
   - Outcome: Displays atomic/prefixed/one-sentence rules
 
