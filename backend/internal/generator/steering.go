@@ -19,6 +19,7 @@ type SteeringConfig struct {
 	TechStack          TechStack
 	IncludeConditional bool
 	IncludeManual      bool
+	FileReferences     []string
 	CustomRules        map[string][]string
 }
 

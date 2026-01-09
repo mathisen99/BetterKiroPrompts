@@ -21,3 +21,9 @@ inclusion: always
 - API types live with their handlers
 - DB migrations are versioned and immutable
 - Frontend components organized by feature
+{{if .FileReferences}}
+
+## Related Files
+{{range .FileReferences}}
+#[[file:{{.}}]]
+{{end}}{{end}}

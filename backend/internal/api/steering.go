@@ -19,6 +19,7 @@ type SteeringConfig struct {
 	TechStack          TechStack           `json:"techStack"`
 	IncludeConditional bool                `json:"includeConditional"`
 	IncludeManual      bool                `json:"includeManual"`
+	FileReferences     []string            `json:"fileReferences"`
 	CustomRules        map[string][]string `json:"customRules"`
 }
 
@@ -62,6 +63,7 @@ func HandleSteeringGenerate(w http.ResponseWriter, r *http.Request) {
 		},
 		IncludeConditional: req.Config.IncludeConditional,
 		IncludeManual:      req.Config.IncludeManual,
+		FileReferences:     req.Config.FileReferences,
 		CustomRules:        req.Config.CustomRules,
 	}
 

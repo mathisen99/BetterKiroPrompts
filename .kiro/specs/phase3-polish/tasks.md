@@ -56,7 +56,7 @@
   - Refs: AC-7
   - Outcome: Backend generates correct frontmatter
 
-- [ ] 13. Add file reference input to steering UI
+- [x] 13. Add file reference input to steering UI
   - Refs: AC-8
   - Outcome: Users can add `#[[file:<path>]]` references
 
