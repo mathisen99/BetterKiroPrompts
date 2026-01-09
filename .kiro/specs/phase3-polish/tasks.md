@@ -82,7 +82,7 @@
   - Refs: AC-10
   - Outcome: Tests for steering file generation
 
-- [ ] 19. Create `backend/internal/generator/hooks_test.go`
+- [x] 19. Create `backend/internal/generator/hooks_test.go`
   - Refs: AC-10
   - Outcome: Tests for hook generation and presets
 
