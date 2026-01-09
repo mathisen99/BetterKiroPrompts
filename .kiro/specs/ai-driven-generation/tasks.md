@@ -38,15 +38,15 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - **Property 7: Input Validation**
     - **Validates: Requirements 6.5**
 
-- [ ] 3. Backend - Rate limiter implementation
-  - [ ] 3.1 Create rate limiter package
+- [x] 3. Backend - Rate limiter implementation
+  - [x] 3.1 Create rate limiter package
     - Create `internal/ratelimit/limiter.go`
     - Implement in-memory sliding window rate limiter
     - 10 requests per IP per hour
     - Return remaining time until reset
     - _Requirements: 6.3, 6.4_
 
-  - [ ] 3.2 Write property test for rate limiting
+  - [x] 3.2 Write property test for rate limiting
     - **Property 6: Rate Limiting Enforcement**
     - **Validates: Requirements 6.3**
 
