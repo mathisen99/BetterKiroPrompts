@@ -92,7 +92,7 @@
   - Refs: AC-11
   - Outcome: Tests for /api/kickoff/generate endpoint
 
-- [ ] 21. Create `backend/internal/api/steering_test.go`
+- [x] 21. Create `backend/internal/api/steering_test.go`
   - Refs: AC-11
   - Outcome: Tests for /api/steering/generate endpoint
 
