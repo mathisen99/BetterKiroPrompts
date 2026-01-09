@@ -68,7 +68,7 @@
   - Refs: AC-9
   - Outcome: Displays atomic/prefixed/one-sentence rules
 
-- [ ] 16. Add CommitContract to all output panels
+- [x] 16. Add CommitContract to all output panels
   - Refs: AC-9
   - Outcome: Contract visible on every generation
 
