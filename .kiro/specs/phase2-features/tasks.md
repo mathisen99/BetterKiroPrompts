@@ -151,7 +151,7 @@
 
 ### Steering Document Generator — Frontend
 
-- [ ] 30. Create `frontend/src/pages/SteeringPage.tsx`
+- [x] 30. Create `frontend/src/pages/SteeringPage.tsx`
   - Refs: AC-4
   - Deps: 3
   - Outcome: Page container for steering config
