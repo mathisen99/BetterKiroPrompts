@@ -8,7 +8,7 @@
   - Refs: Design
   - Outcome: Generator package ready for implementation
 
-- [ ] 2. Create `backend/internal/templates/` with embed directive
+- [x] 2. Create `backend/internal/templates/` with embed directive
   - Refs: Design
   - Outcome: Templates embedded in binary
 
