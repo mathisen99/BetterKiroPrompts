@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { StepIndicator } from '../shared/StepIndicator'
 import { QuestionStep } from './QuestionStep'
 import { PromptPreview } from './PromptPreview'
@@ -41,6 +41,15 @@ export function KickoffWizard() {
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const stepContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = stepContainerRef.current
+    if (container) {
+      const focusable = container.querySelector<HTMLElement>('textarea, input, select, button')
+      focusable?.focus()
+    }
+  }, [step])
 
   const updateAnswer = <K extends keyof KickoffAnswers>(key: K, value: KickoffAnswers[K]) => {
     setAnswers((prev) => ({ ...prev, [key]: value }))
@@ -118,7 +127,7 @@ export function KickoffWizard() {
     <div className="space-y-6">
       <StepIndicator currentStep={step} totalSteps={STEP_LABELS.length} labels={STEP_LABELS} />
 
-      <div className="min-h-[200px] rounded-lg border border-border bg-card p-6">
+      <div ref={stepContainerRef} className="min-h-[200px] rounded-lg border border-border bg-card p-6">
         <h2 className="mb-4 text-xl font-semibold">{STEP_LABELS[step - 1]}</h2>
         {step === 1 && (
           <QuestionStep

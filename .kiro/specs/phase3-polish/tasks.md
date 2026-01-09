@@ -26,7 +26,7 @@
 
 ### Accessibility
 
-- [ ] 6. Add labels to all form inputs
+- [x] 6. Add labels to all form inputs
   - Refs: AC-5
   - Outcome: Screen readers announce field names
 
