@@ -12,7 +12,7 @@
   - Refs: Design
   - Outcome: Templates embedded in binary
 
-- [ ] 3. Create `frontend/src/lib/api.ts` with API client functions
+- [x] 3. Create `frontend/src/lib/api.ts` with API client functions
   - Refs: Design
   - Outcome: Typed API client for all endpoints
 
