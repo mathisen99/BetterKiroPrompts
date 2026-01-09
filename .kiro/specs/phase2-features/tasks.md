@@ -26,7 +26,7 @@
 
 ### Kickoff Prompt Generator — Backend
 
-- [ ] 6. Create `backend/internal/api/kickoff.go` handler
+- [x] 6. Create `backend/internal/api/kickoff.go` handler
   - Refs: AC-3
   - Deps: 1
   - Outcome: POST /api/kickoff/generate endpoint
