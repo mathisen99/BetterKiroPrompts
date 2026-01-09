@@ -102,7 +102,7 @@
 
 ### E2E Tests
 
-- [ ] 23. Set up Playwright in frontend
+- [x] 23. Set up Playwright in frontend
   - Refs: AC-12
   - Outcome: E2E test infrastructure ready
 
