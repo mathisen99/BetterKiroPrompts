@@ -72,7 +72,7 @@
   - Deps: 12, 13
   - Outcome: First three questions working
 
-- [ ] 15. Implement Step 4: Data Sensitivity with Data Lifecycle sub-fields
+- [x] 15. Implement Step 4: Data Sensitivity with Data Lifecycle sub-fields
   - Refs: AC-1
   - Deps: 14
   - Outcome: Data sensitivity + lifecycle fields

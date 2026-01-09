@@ -129,7 +129,34 @@ export function KickoffWizard() {
             </div>
           </div>
         )}
-        {step > 4 && (
+        {step === 5 && (
+          <div className="space-y-3">
+            <label htmlFor="auth-model" className="block text-lg font-medium">
+              Authentication Model
+            </label>
+            <p className="text-sm text-muted-foreground">How will users authenticate?</p>
+            <select
+              id="auth-model"
+              value={answers.authModel}
+              onChange={(e) => updateAnswer('authModel', e.target.value as 'none' | 'basic' | 'external')}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="none">None — No authentication required</option>
+              <option value="basic">Basic — Username/password or email/password</option>
+              <option value="external">External — OAuth, SSO, or third-party provider</option>
+            </select>
+          </div>
+        )}
+        {step === 6 && (
+          <QuestionStep
+            question="Concurrency Expectations"
+            description="Multi-user access? Background jobs? Shared state?"
+            value={answers.concurrency}
+            onChange={(v) => updateAnswer('concurrency', v)}
+            placeholder="e.g., Multiple users editing same document, background email jobs"
+          />
+        )}
+        {step > 6 && (
           <p className="text-muted-foreground">Step content coming soon...</p>
         )}
       </div>
