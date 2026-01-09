@@ -191,7 +191,7 @@
   - Deps: 1
   - Outcome: Hook file generation with presets
 
-- [ ] 38. Create hook templates for Light preset
+- [x] 38. Create hook templates for Light preset
   - Refs: AC-9
   - Deps: 2
   - Outcome: Formatter hooks
@@ -211,7 +211,7 @@
   - Deps: 40
   - Outcome: Static analysis + vuln scan hooks
 
-- [ ] 42. Register hooks route in router.go
+- [x] 42. Register hooks route in router.go
   - Refs: AC-8
   - Deps: 36
   - Outcome: Route accessible at /api/hooks/generate
