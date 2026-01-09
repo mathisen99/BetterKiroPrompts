@@ -124,7 +124,7 @@
   - Deps: 1
   - Outcome: Steering file generation
 
-- [ ] 25. Create foundation steering templates (product, tech, structure)
+- [x] 25. Create foundation steering templates (product, tech, structure)
   - Refs: AC-4
   - Deps: 2
   - Outcome: Templates with inclusion: always
