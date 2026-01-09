@@ -1,106 +1,86 @@
 const API_BASE = '/api'
 
-// Kickoff types
-export interface DataLifecycle {
-  retention: string
-  deletion: string
-  export: string
-  auditLogging: string
-  backups: string
-}
-
-export interface RisksAndTradeoffs {
-  topRisks: string[]
-  mitigations: string[]
-  notHandled: string[]
-}
-
-export interface KickoffAnswers {
-  projectIdentity: string
-  successCriteria: string
-  usersAndRoles: string
-  dataSensitivity: string
-  dataLifecycle: DataLifecycle
-  authModel: 'none' | 'basic' | 'external'
-  concurrency: string
-  risksAndTradeoffs: RisksAndTradeoffs
-  boundaries: string
-  boundaryExamples: string[]
-  nonGoals: string
-  constraints: string
-}
-
-export interface KickoffResponse {
-  prompt: string
-}
-
-// Steering types
-export interface TechStack {
-  backend: string
-  frontend: string
-  database: string
-}
-
-export interface SteeringConfig {
-  projectName: string
-  projectDescription: string
-  techStack: TechStack
-  includeConditional: boolean
-  includeManual: boolean
-  fileReferences: string[]
-  customRules: Record<string, string[]>
+// New AI-driven generation types
+export interface Question {
+  id: number
+  text: string
+  hint?: string
 }
 
 export interface GeneratedFile {
   path: string
   content: string
+  type: 'kickoff' | 'steering' | 'hook'
 }
 
-export interface SteeringResponse {
+export interface Answer {
+  questionId: number
+  answer: string
+}
+
+// Request/Response types
+export interface GenerateQuestionsRequest {
+  projectIdea: string
+}
+
+export interface GenerateQuestionsResponse {
+  questions: Question[]
+}
+
+export interface GenerateOutputsRequest {
+  projectIdea: string
+  answers: Answer[]
+}
+
+export interface GenerateOutputsResponse {
   files: GeneratedFile[]
 }
 
-// Hooks types
-export interface HooksConfig {
-  preset: 'light' | 'basic' | 'default' | 'strict'
-  techStack: {
-    hasGo: boolean
-    hasTypeScript: boolean
-    hasReact: boolean
-  }
-}
-
-export interface HooksResponse {
-  files: GeneratedFile[]
+export interface ErrorResponse {
+  error: string
+  retryAfter?: number
 }
 
 // API functions
-export async function generateKickoff(answers: KickoffAnswers): Promise<KickoffResponse> {
-  const res = await fetch(`${API_BASE}/kickoff/generate`, {
+export async function generateQuestions(projectIdea: string): Promise<GenerateQuestionsResponse> {
+  const res = await fetch(`${API_BASE}/generate/questions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({ projectIdea }),
   })
-  if (!res.ok) throw new Error('Failed to generate kickoff prompt')
+  
+  if (!res.ok) {
+    const error: ErrorResponse = await res.json().catch(() => ({ error: 'Failed to generate questions' }))
+    throw new ApiError(error.error, res.status, error.retryAfter)
+  }
+  
   return res.json()
 }
 
-export async function generateSteering(config: SteeringConfig): Promise<SteeringResponse> {
-  const res = await fetch(`${API_BASE}/steering/generate`, {
+export async function generateOutputs(projectIdea: string, answers: Answer[]): Promise<GenerateOutputsResponse> {
+  const res = await fetch(`${API_BASE}/generate/outputs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ config }),
+    body: JSON.stringify({ projectIdea, answers }),
   })
-  if (!res.ok) throw new Error('Failed to generate steering files')
+  
+  if (!res.ok) {
+    const error: ErrorResponse = await res.json().catch(() => ({ error: 'Failed to generate outputs' }))
+    throw new ApiError(error.error, res.status, error.retryAfter)
+  }
+  
   return res.json()
 }
 
-export async function generateHooks(config: HooksConfig): Promise<HooksResponse> {
-  const res = await fetch(`${API_BASE}/hooks/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config),
-  })
-  if (!res.ok) throw new Error('Failed to generate hooks')
-  return res.json()
+// Custom error class for API errors
+export class ApiError extends Error {
+  status: number
+  retryAfter?: number
+
+  constructor(message: string, status: number, retryAfter?: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.retryAfter = retryAfter
+  }
 }

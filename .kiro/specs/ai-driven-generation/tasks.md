@@ -78,46 +78,46 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
   - Verify endpoints work with curl/httpie
   - Ask the user if questions arise
 
-- [ ] 6. Frontend cleanup - Remove old pages and components
-  - [ ] 6.1 Remove old page components
+- [x] 6. Frontend cleanup - Remove old pages and components
+  - [x] 6.1 Remove old page components
     - Delete `src/pages/KickoffPage.tsx`
     - Delete `src/pages/SteeringPage.tsx`
     - Delete `src/pages/HooksPage.tsx`
     - _Requirements: 7.1_
 
-  - [ ] 6.2 Remove old feature components
+  - [x] 6.2 Remove old feature components
     - Delete `src/components/kickoff/` directory
     - Delete `src/components/steering/` directory
     - Delete `src/components/hooks/` directory
     - _Requirements: 7.2, 7.3, 7.4_
 
-  - [ ] 6.3 Remove navigation component
+  - [x] 6.3 Remove navigation component
     - Delete `src/components/shared/Navigation.tsx`
     - Delete `src/components/shared/StepIndicator.tsx`
     - _Requirements: 7.5, 1.4_
 
-  - [ ] 6.4 Update API client
+  - [x] 6.4 Update API client
     - Remove old types (KickoffAnswers, SteeringConfig, HooksConfig)
     - Remove old functions (generateKickoff, generateSteering, generateHooks)
     - Add new types (Question, GeneratedFile, etc.)
     - Add new functions (generateQuestions, generateOutputs)
     - _Requirements: 7.9_
 
-- [ ] 7. Frontend - Landing page implementation
-  - [ ] 7.1 Create LandingPage component with state machine
+- [x] 7. Frontend - Landing page implementation
+  - [x] 7.1 Create LandingPage component with state machine
     - Create `src/pages/LandingPage.tsx`
     - Implement phase state: input → questions → generating → output → error
     - Manage all state (projectIdea, questions, answers, files, editedFiles)
     - _Requirements: 1.1, 1.3_
 
-  - [ ] 7.2 Create ProjectInput component
+  - [x] 7.2 Create ProjectInput component
     - Create `src/components/ProjectInput.tsx`
     - Input field with placeholder "What project do you want to make?"
     - Display 3-5 example project ideas as clickable chips
     - Submit button with loading state
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 7.3 Create QuestionFlow component
+  - [x] 7.3 Create QuestionFlow component
     - Create `src/components/QuestionFlow.tsx`
     - Display current question with input
     - Show previous Q&A above current question
@@ -125,7 +125,7 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - Next/Back navigation
     - _Requirements: 2.6, 2.7_
 
-  - [ ] 7.4 Create OutputEditor component
+  - [x] 7.4 Create OutputEditor component
     - Create `src/components/OutputEditor.tsx`
     - Tabbed interface for file types (kickoff, steering, hooks)
     - Syntax highlighting for markdown/JSON
@@ -133,7 +133,7 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - Reset to original button per file
     - _Requirements: 4.1, 4.2, 4.4_
 
-  - [ ] 7.5 Write property test for edit state preservation
+  - [x] 7.5 Write property test for edit state preservation
     - **Property 3: Edit State Preservation**
     - **Validates: Requirements 4.3**
 
