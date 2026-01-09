@@ -78,7 +78,7 @@
   - Refs: AC-10
   - Outcome: Tests for prompt generation logic
 
-- [ ] 18. Create `backend/internal/generator/steering_test.go`
+- [x] 18. Create `backend/internal/generator/steering_test.go`
   - Refs: AC-10
   - Outcome: Tests for steering file generation
 
