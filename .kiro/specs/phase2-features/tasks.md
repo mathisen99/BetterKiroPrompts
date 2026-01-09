@@ -92,7 +92,7 @@
   - Deps: 17
   - Outcome: Boundaries + 2-3 examples
 
-- [ ] 19. Implement Step 9-10: Non-Goals, Constraints
+- [x] 19. Implement Step 9-10: Non-Goals, Constraints
   - Refs: AC-1
   - Deps: 18
   - Outcome: Final questions complete
