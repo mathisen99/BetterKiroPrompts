@@ -88,7 +88,7 @@
 
 ### Integration Tests
 
-- [ ] 20. Create `backend/internal/api/kickoff_test.go`
+- [x] 20. Create `backend/internal/api/kickoff_test.go`
   - Refs: AC-11
   - Outcome: Tests for /api/kickoff/generate endpoint
 
