@@ -8,7 +8,7 @@
   - Refs: AC-1
   - Outcome: Graceful error display with retry
 
-- [ ] 2. Add error handling to all API calls with user-friendly messages
+- [x] 2. Add error handling to all API calls with user-friendly messages
   - Refs: AC-1
   - Outcome: Errors show toast with retry option
 

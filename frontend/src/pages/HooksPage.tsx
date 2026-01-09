@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HooksPresetSelector } from '../components/hooks/HooksPresetSelector'
 import { HookFilePreview } from '../components/hooks/HookFilePreview'
 import { ErrorMessage } from '../components/shared/ErrorMessage'
+import { Skeleton } from '@/components/ui/skeleton'
 import { generateHooks, type HooksConfig, type GeneratedFile } from '../lib/api'
 
 export function HooksPage() {
@@ -26,6 +27,20 @@ export function HooksPage() {
 
   const handleRetry = () => {
     if (lastConfig) handleGenerate(lastConfig)
+  }
+
+  if (loading) {
+    return (
+      <main className="container mx-auto max-w-3xl px-4 py-8">
+        <h1 className="mb-8 text-3xl font-bold">Generating Hooks...</h1>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      </main>
+    )
   }
 
   return (

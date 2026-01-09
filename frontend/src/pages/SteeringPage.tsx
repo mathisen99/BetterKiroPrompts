@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SteeringConfigurator } from '../components/steering/SteeringConfigurator'
 import { FilePreview } from '../components/steering/FilePreview'
 import { ErrorMessage } from '../components/shared/ErrorMessage'
+import { Skeleton } from '@/components/ui/skeleton'
 import { generateSteering, type SteeringConfig, type GeneratedFile } from '../lib/api'
 
 export function SteeringPage() {
@@ -26,6 +27,20 @@ export function SteeringPage() {
 
   const handleRetry = () => {
     if (lastConfig) handleGenerate(lastConfig)
+  }
+
+  if (loading) {
+    return (
+      <main className="container mx-auto max-w-3xl px-4 py-8">
+        <h1 className="mb-8 text-3xl font-bold">Generating Steering Files...</h1>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </main>
+    )
   }
 
   return (

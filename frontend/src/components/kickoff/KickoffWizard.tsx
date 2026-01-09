@@ -3,6 +3,7 @@ import { StepIndicator } from '../shared/StepIndicator'
 import { QuestionStep } from './QuestionStep'
 import { PromptPreview } from './PromptPreview'
 import { ErrorMessage } from '../shared/ErrorMessage'
+import { Skeleton } from '@/components/ui/skeleton'
 import { generateKickoff, type KickoffAnswers } from '../../lib/api'
 
 const STEP_LABELS = [
@@ -81,6 +82,20 @@ export function KickoffWizard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Generating Kickoff Prompt...</h2>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+    )
   }
 
   if (generatedPrompt) {
