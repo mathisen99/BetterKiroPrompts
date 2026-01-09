@@ -67,7 +67,7 @@
   - Refs: AC-1
   - Outcome: Reusable question step component
 
-- [ ] 14. Implement Step 1-3: Project Identity, Success Criteria, Users & Roles
+- [x] 14. Implement Step 1-3: Project Identity, Success Criteria, Users & Roles
   - Refs: AC-1
   - Deps: 12, 13
   - Outcome: First three questions working

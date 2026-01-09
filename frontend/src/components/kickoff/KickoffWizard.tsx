@@ -39,6 +39,10 @@ export function KickoffWizard() {
     setAnswers((prev) => ({ ...prev, [key]: value }))
   }
 
+  const updateLifecycle = (field: keyof typeof answers.dataLifecycle, value: string) => {
+    setAnswers((prev) => ({ ...prev, dataLifecycle: { ...prev.dataLifecycle, [field]: value } }))
+  }
+
   const canProceed = (): boolean => {
     // Validation will be implemented per-step in tasks 14-19
     return true
@@ -89,7 +93,43 @@ export function KickoffWizard() {
             placeholder="e.g., Anonymous visitors, registered users, team admins"
           />
         )}
-        {step > 3 && (
+        {step === 4 && (
+          <div className="space-y-6">
+            <QuestionStep
+              question="What data is stored?"
+              description="Label sensitive data explicitly (PII, credentials, financial, etc.)"
+              value={answers.dataSensitivity}
+              onChange={(v) => updateAnswer('dataSensitivity', v)}
+              placeholder="e.g., User emails (PII), hashed passwords, task content"
+            />
+            <div className="space-y-4 border-t border-border pt-4">
+              <p className="text-sm font-medium">Data Lifecycle</p>
+              <div className="grid gap-3">
+                <label className="block">
+                  <span className="text-sm text-muted-foreground">Retention policy</span>
+                  <input type="text" value={answers.dataLifecycle.retention} onChange={(e) => updateLifecycle('retention', e.target.value)} placeholder="e.g., 2 years after account deletion" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                </label>
+                <label className="block">
+                  <span className="text-sm text-muted-foreground">Deletion process</span>
+                  <input type="text" value={answers.dataLifecycle.deletion} onChange={(e) => updateLifecycle('deletion', e.target.value)} placeholder="e.g., Soft delete, hard delete after 30 days" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                </label>
+                <label className="block">
+                  <span className="text-sm text-muted-foreground">Export capability</span>
+                  <input type="text" value={answers.dataLifecycle.export} onChange={(e) => updateLifecycle('export', e.target.value)} placeholder="e.g., JSON export of user data on request" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                </label>
+                <label className="block">
+                  <span className="text-sm text-muted-foreground">Audit logging</span>
+                  <input type="text" value={answers.dataLifecycle.auditLogging} onChange={(e) => updateLifecycle('auditLogging', e.target.value)} placeholder="e.g., Log all data access and modifications" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                </label>
+                <label className="block">
+                  <span className="text-sm text-muted-foreground">Backup strategy</span>
+                  <input type="text" value={answers.dataLifecycle.backups} onChange={(e) => updateLifecycle('backups', e.target.value)} placeholder="e.g., Daily backups, 7-day retention" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+        {step > 4 && (
           <p className="text-muted-foreground">Step content coming soon...</p>
         )}
       </div>
