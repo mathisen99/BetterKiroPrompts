@@ -102,7 +102,7 @@
   - Deps: 4, 19
   - Outcome: Preview generated prompt
 
-- [ ] 21. Integrate kickoff wizard with API
+- [x] 21. Integrate kickoff wizard with API
   - Refs: AC-3
   - Deps: 10, 20
   - Outcome: End-to-end kickoff generation
