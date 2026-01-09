@@ -174,7 +174,7 @@
   - Deps: 29, 33
   - Outcome: End-to-end steering generation
 
-- [ ] 35. Add navigation to SteeringPage from App.tsx
+- [x] 35. Add navigation to SteeringPage from App.tsx
   - Refs: AC-4
   - Deps: 30
   - Outcome: Steering accessible from main app
