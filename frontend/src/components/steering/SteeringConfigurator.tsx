@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SteeringConfig } from '../../lib/api'
+import { Spinner } from '../shared/Spinner'
 
 const initialConfig: SteeringConfig = {
   projectName: '',
@@ -66,7 +67,8 @@ export function SteeringConfigurator({ onGenerate, loading }: SteeringConfigurat
         <span className="text-sm">Include conditional steering files (security, quality)</span>
       </label>
 
-      <button type="submit" disabled={!config.projectName || loading} className="w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
+      <button type="submit" disabled={!config.projectName || loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
+        {loading && <Spinner />}
         {loading ? 'Generating...' : 'Generate Steering Files'}
       </button>
     </form>

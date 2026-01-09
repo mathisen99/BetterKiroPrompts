@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { HooksConfig } from '../../lib/api'
 import { PresetCard } from './PresetCard'
+import { Spinner } from '../shared/Spinner'
 
 const presets = [
   { value: 'light', label: 'Light', desc: 'Formatters only' },
@@ -55,7 +56,8 @@ export function HooksPresetSelector({ onGenerate, loading }: HooksPresetSelector
         </label>
       </fieldset>
 
-      <button type="submit" disabled={loading} className="w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
+      <button type="submit" disabled={loading} className="inline-flex items-center justify-center gap-2 w-full rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50">
+        {loading && <Spinner />}
         {loading ? 'Generating...' : 'Generate Hooks'}
       </button>
     </form>

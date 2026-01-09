@@ -3,6 +3,7 @@ import { StepIndicator } from '../shared/StepIndicator'
 import { QuestionStep } from './QuestionStep'
 import { PromptPreview } from './PromptPreview'
 import { ErrorMessage } from '../shared/ErrorMessage'
+import { Spinner } from '../shared/Spinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { generateKickoff, type KickoffAnswers } from '../../lib/api'
 
@@ -284,9 +285,10 @@ export function KickoffWizard() {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/80 disabled:opacity-50"
             aria-label="Generate prompt"
           >
+            {loading && <Spinner />}
             {loading ? 'Generating...' : 'Generate Prompt'}
           </button>
         )}

@@ -12,7 +12,7 @@
   - Refs: AC-1
   - Outcome: Errors show toast with retry option
 
-- [ ] 3. Add loading skeletons to wizard steps
+- [x] 3. Add loading skeletons to wizard steps
   - Refs: AC-2
   - Outcome: Skeleton UI during data fetch
 
