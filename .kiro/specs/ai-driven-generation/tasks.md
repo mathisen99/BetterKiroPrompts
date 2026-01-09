@@ -160,14 +160,14 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - Rate limit display with countdown
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 10. Integration - Wire everything together
-  - [ ] 10.1 Update App.tsx
+- [x] 10. Integration - Wire everything together
+  - [x] 10.1 Update App.tsx
     - Remove Navigation import
     - Remove page state management
     - Render only LandingPage
     - _Requirements: 1.4_
 
-  - [ ] 10.2 Update router.go with new routes
+  - [x] 10.2 Update router.go with new routes
     - Add /api/generate/questions route
     - Add /api/generate/outputs route
     - Remove old routes
