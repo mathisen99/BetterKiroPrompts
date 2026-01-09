@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { HooksConfig } from '../../lib/api'
+import { PresetCard } from './PresetCard'
 
 const presets = [
   { value: 'light', label: 'Light', desc: 'Formatters only' },
@@ -27,20 +28,14 @@ export function HooksPresetSelector({ onGenerate, loading }: HooksPresetSelector
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">Select Preset</legend>
         {presets.map((p) => (
-          <label key={p.value} className="flex items-start gap-3 rounded border border-input p-3 cursor-pointer hover:bg-muted/50">
-            <input
-              type="radio"
-              name="preset"
-              value={p.value}
-              checked={preset === p.value}
-              onChange={() => setPreset(p.value)}
-              className="mt-1"
-            />
-            <div>
-              <span className="font-medium">{p.label}</span>
-              <p className="text-sm text-muted-foreground">{p.desc}</p>
-            </div>
-          </label>
+          <PresetCard
+            key={p.value}
+            value={p.value}
+            label={p.label}
+            description={p.desc}
+            selected={preset === p.value}
+            onSelect={() => setPreset(p.value)}
+          />
         ))}
       </fieldset>
 
