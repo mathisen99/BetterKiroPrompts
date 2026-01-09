@@ -96,7 +96,7 @@
   - Refs: AC-11
   - Outcome: Tests for /api/steering/generate endpoint
 
-- [ ] 22. Create `backend/internal/api/hooks_test.go`
+- [x] 22. Create `backend/internal/api/hooks_test.go`
   - Refs: AC-11
   - Outcome: Tests for /api/hooks/generate endpoint
 
