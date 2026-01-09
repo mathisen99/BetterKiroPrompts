@@ -73,7 +73,7 @@ This plan transforms BetterKiroPrompts from a multi-page template-based app to a
     - **Property 2: Generation Response Completeness**
     - **Validates: Requirements 3.2, 3.3, 3.4**
 
-- [ ] 5. Checkpoint - Backend complete
+- [x] 5. Checkpoint - Backend complete
   - Ensure all backend tests pass
   - Verify endpoints work with curl/httpie
   - Ask the user if questions arise
