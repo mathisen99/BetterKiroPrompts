@@ -110,7 +110,7 @@
   - Refs: AC-12
   - Outcome: Full wizard flow tested
 
-- [ ] 25. Create steering generation E2E test
+- [x] 25. Create steering generation E2E test
   - Refs: AC-12
   - Outcome: Config to download tested
 
