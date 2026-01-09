@@ -186,7 +186,7 @@
   - Deps: 1
   - Outcome: POST /api/hooks/generate endpoint
 
-- [ ] 37. Create `backend/internal/generator/hooks.go` logic
+- [x] 37. Create `backend/internal/generator/hooks.go` logic
   - Refs: AC-8, AC-9, AC-10, AC-11, AC-12
   - Deps: 1
   - Outcome: Hook file generation with presets
