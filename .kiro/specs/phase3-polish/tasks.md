@@ -106,7 +106,7 @@
   - Refs: AC-12
   - Outcome: E2E test infrastructure ready
 
-- [ ] 24. Create kickoff wizard E2E test
+- [x] 24. Create kickoff wizard E2E test
   - Refs: AC-12
   - Outcome: Full wizard flow tested
 
