@@ -31,7 +31,7 @@
   - Deps: 1
   - Outcome: POST /api/kickoff/generate endpoint
 
-- [ ] 7. Create `backend/internal/generator/kickoff.go` logic
+- [x] 7. Create `backend/internal/generator/kickoff.go` logic
   - Refs: AC-3
   - Deps: 1
   - Outcome: Prompt generation from answers
