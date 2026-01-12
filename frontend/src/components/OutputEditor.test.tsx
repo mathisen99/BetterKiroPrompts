@@ -219,7 +219,7 @@ function prepareFilesForZip(
 }
 
 describe('Property 4: Download Content Integrity', () => {
-  const fileTypeArb = fc.constantFrom('kickoff', 'steering', 'hook') as fc.Arbitrary<'kickoff' | 'steering' | 'hook'>
+  const fileTypeArb = fc.constantFrom('kickoff', 'steering', 'hook', 'agents') as fc.Arbitrary<'kickoff' | 'steering' | 'hook' | 'agents'>
   
   const filePathArb = fc.string({ minLength: 1, maxLength: 50 })
     .filter(s => s.trim().length > 0)
@@ -349,6 +349,9 @@ function validateFileStructure(file: GeneratedFile): boolean {
     case 'kickoff':
       // Kickoff files can be at root or any location
       return true
+    case 'agents':
+      // AGENTS.md should be at root
+      return file.path === 'AGENTS.md' || !file.path.includes('/')
     default:
       return false
   }
@@ -372,6 +375,8 @@ describe('Property 5: ZIP Directory Structure', () => {
     .filter(s => s.trim().length > 0 && !s.includes('/'))
     .map(s => `${s}.md`)
   
+  const agentsPathArb = fc.constant('AGENTS.md')
+  
   const fileContentArb = fc.string({ minLength: 0, maxLength: 200 })
   
   const steeringFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
@@ -392,14 +397,21 @@ describe('Property 5: ZIP Directory Structure', () => {
     type: fc.constant('kickoff' as const),
   })
   
+  const agentsFileArb: fc.Arbitrary<GeneratedFile> = fc.record({
+    path: agentsPathArb,
+    content: fileContentArb,
+    type: fc.constant('agents' as const),
+  })
+  
   const validFilesArb = fc.tuple(
     fc.array(steeringFileArb, { minLength: 1, maxLength: 5 }),
     fc.array(hookFileArb, { minLength: 1, maxLength: 5 }),
-    fc.array(kickoffFileArb, { minLength: 0, maxLength: 2 })
-  ).map(([steering, hooks, kickoff]) => {
+    fc.array(kickoffFileArb, { minLength: 0, maxLength: 2 }),
+    fc.array(agentsFileArb, { minLength: 0, maxLength: 1 })
+  ).map(([steering, hooks, kickoff, agents]) => {
     // Ensure unique paths
     const seen = new Set<string>()
-    const all = [...steering, ...hooks, ...kickoff]
+    const all = [...steering, ...hooks, ...kickoff, ...agents]
     return all.filter(f => {
       if (seen.has(f.path)) return false
       seen.add(f.path)
@@ -432,6 +444,23 @@ describe('Property 5: ZIP Directory Structure', () => {
           
           for (const file of hookFiles) {
             expect(file.path.startsWith('.kiro/hooks/')).toBe(true)
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+
+  it('agents files are at repository root', () => {
+    fc.assert(
+      fc.property(
+        validFilesArb,
+        (files) => {
+          const agentsFiles = files.filter(f => f.type === 'agents')
+          
+          for (const file of agentsFiles) {
+            // AGENTS.md should be at root (no directory separators or just the filename)
+            expect(file.path === 'AGENTS.md' || !file.path.includes('/')).toBe(true)
           }
         }
       ),

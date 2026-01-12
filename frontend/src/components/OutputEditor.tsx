@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import type { GeneratedFile } from '@/lib/api'
 import { downloadAllAsZip } from '@/lib/zip'
-import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package } from 'lucide-react'
+import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot } from 'lucide-react'
 
 interface OutputEditorProps {
   files: GeneratedFile[]
@@ -28,6 +28,7 @@ export function OutputEditor({
       kickoff: [],
       steering: [],
       hook: [],
+      agents: [],
     }
     files.forEach((file) => {
       if (groups[file.type]) {
@@ -131,15 +132,17 @@ export function OutputEditor({
     kickoff: groupedFiles.kickoff.length,
     steering: groupedFiles.steering.length,
     hook: groupedFiles.hook.length,
+    agents: groupedFiles.agents.length,
   }
 
   // Find first non-empty tab
-  const defaultTab = tabCounts.kickoff > 0 ? 'kickoff' : tabCounts.steering > 0 ? 'steering' : 'hook'
+  const defaultTab = tabCounts.kickoff > 0 ? 'kickoff' : tabCounts.steering > 0 ? 'steering' : tabCounts.hook > 0 ? 'hook' : 'agents'
 
   const tabIcons = {
     kickoff: <FileText className="h-4 w-4" />,
     steering: <FolderCog className="h-4 w-4" />,
     hook: <Webhook className="h-4 w-4" />,
+    agents: <Bot className="h-4 w-4" />,
   }
 
   return (
@@ -162,7 +165,7 @@ export function OutputEditor({
       </Card>
 
       <Tabs defaultValue={defaultTab}>
-        <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex mb-4">
+        <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex mb-4">
           {tabCounts.kickoff > 0 && (
             <TabsTrigger value="kickoff" className="gap-2">
               {tabIcons.kickoff}
@@ -184,6 +187,13 @@ export function OutputEditor({
               <span className="text-xs text-muted-foreground">({tabCounts.hook})</span>
             </TabsTrigger>
           )}
+          {tabCounts.agents > 0 && (
+            <TabsTrigger value="agents" className="gap-2">
+              {tabIcons.agents}
+              <span className="hidden sm:inline">Agents</span>
+              <span className="text-xs text-muted-foreground">({tabCounts.agents})</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {tabCounts.kickoff > 0 && (
@@ -201,6 +211,12 @@ export function OutputEditor({
         {tabCounts.hook > 0 && (
           <TabsContent value="hook">
             {groupedFiles.hook.map(renderFileEditor)}
+          </TabsContent>
+        )}
+
+        {tabCounts.agents > 0 && (
+          <TabsContent value="agents">
+            {groupedFiles.agents.map(renderFileEditor)}
           </TabsContent>
         )}
       </Tabs>

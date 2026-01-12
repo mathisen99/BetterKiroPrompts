@@ -112,18 +112,18 @@ This phase delivers professional UI design, smarter AI generation with experienc
   - [x] 9.2 Add better error messages for validation failures
     - _Requirements: 9.2_
 
-- [ ] 10. Update Frontend API Client
-  - [ ] 10.1 Update generateQuestions to send experienceLevel
+- [x] 10. Update Frontend API Client
+  - [x] 10.1 Update generateQuestions to send experienceLevel
     - _Requirements: 1.2, 1.3, 1.4_
-  - [ ] 10.2 Update generateOutputs to send experienceLevel and hookPreset
+  - [x] 10.2 Update generateOutputs to send experienceLevel and hookPreset
     - _Requirements: 5.7, 6.6_
-  - [ ] 10.3 Add 'agents' file type to GeneratedFile type
+  - [x] 10.3 Add 'agents' file type to GeneratedFile type
     - _Requirements: 10.5_
 
-- [ ] 11. Update OutputEditor for New File Types
-  - [ ] 11.1 Add 'Agents' tab for AGENTS.md file
+- [x] 11. Update OutputEditor for New File Types
+  - [x] 11.1 Add 'Agents' tab for AGENTS.md file
     - _Requirements: 10.5_
-  - [ ] 11.2 Ensure ZIP download preserves correct directory structure
+  - [x] 11.2 Ensure ZIP download preserves correct directory structure
     - _Requirements: 7.7_
 
 - [ ] 12. Checkpoint - Full Integration Complete
