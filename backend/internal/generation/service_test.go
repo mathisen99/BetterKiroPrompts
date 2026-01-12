@@ -174,6 +174,12 @@ func generateValidOutputsResponse(r *rand.Rand) OutputsResponse {
 			Content: generateNonEmptyString(r),
 			Type:    "hook",
 		},
+		// Always include AGENTS.md
+		{
+			Path:    "AGENTS.md",
+			Content: generateNonEmptyString(r),
+			Type:    "agents",
+		},
 	}
 
 	// Optionally add more steering files
@@ -202,7 +208,7 @@ func generateValidOutputsResponse(r *rand.Rand) OutputsResponse {
 // Feature: ai-driven-generation, Property 2: Generation Response Completeness
 // **Validates: Requirements 3.2, 3.3, 3.4**
 func TestProperty2_GenerationResponseCompleteness(t *testing.T) {
-	// Property: For any valid JSON response with kickoff, steering, and hook files,
+	// Property: For any valid JSON response with kickoff, steering, hook, and agents files,
 	// parseOutputsResponse should return files with the same structure.
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
@@ -225,6 +231,7 @@ func TestProperty2_GenerationResponseCompleteness(t *testing.T) {
 		hasKickoff := false
 		hasSteering := false
 		hasHook := false
+		hasAgents := false
 
 		for _, f := range files {
 			// Verify non-empty content
@@ -244,6 +251,8 @@ func TestProperty2_GenerationResponseCompleteness(t *testing.T) {
 				hasSteering = true
 			case "hook":
 				hasHook = true
+			case "agents":
+				hasAgents = true
 			}
 		}
 
@@ -257,6 +266,10 @@ func TestProperty2_GenerationResponseCompleteness(t *testing.T) {
 		}
 		if !hasHook {
 			t.Logf("Missing hook file")
+			return false
+		}
+		if !hasAgents {
+			t.Logf("Missing agents file")
 			return false
 		}
 
@@ -287,32 +300,37 @@ func TestProperty2_GenerationResponseCompleteness_RejectsInvalid(t *testing.T) {
 		},
 		{
 			name:     "missing kickoff",
-			response: `{"files": [{"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}]}`,
+			response: `{"files": [{"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}, {"path": "AGENTS.md", "content": "test", "type": "agents"}]}`,
 			wantErr:  true,
 		},
 		{
 			name:     "missing steering",
-			response: `{"files": [{"path": "kickoff-prompt.md", "content": "test", "type": "kickoff"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}]}`,
+			response: `{"files": [{"path": "kickoff-prompt.md", "content": "test", "type": "kickoff"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}, {"path": "AGENTS.md", "content": "test", "type": "agents"}]}`,
 			wantErr:  true,
 		},
 		{
 			name:     "missing hook",
-			response: `{"files": [{"path": "kickoff-prompt.md", "content": "test", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}]}`,
+			response: `{"files": [{"path": "kickoff-prompt.md", "content": "test", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": "AGENTS.md", "content": "test", "type": "agents"}]}`,
+			wantErr:  true,
+		},
+		{
+			name:     "missing agents",
+			response: `{"files": [{"path": "kickoff-prompt.md", "content": "test", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}]}`,
 			wantErr:  true,
 		},
 		{
 			name:     "file with empty content",
-			response: `{"files": [{"path": "kickoff-prompt.md", "content": "", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}]}`,
+			response: `{"files": [{"path": "kickoff-prompt.md", "content": "", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}, {"path": "AGENTS.md", "content": "test", "type": "agents"}]}`,
 			wantErr:  true,
 		},
 		{
 			name:     "file with empty path",
-			response: `{"files": [{"path": "", "content": "test", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}]}`,
+			response: `{"files": [{"path": "", "content": "test", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "test", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "test", "type": "hook"}, {"path": "AGENTS.md", "content": "test", "type": "agents"}]}`,
 			wantErr:  true,
 		},
 		{
 			name:     "valid complete response",
-			response: `{"files": [{"path": "kickoff-prompt.md", "content": "# Kickoff", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "# Product", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "{}", "type": "hook"}]}`,
+			response: `{"files": [{"path": "kickoff-prompt.md", "content": "# Kickoff", "type": "kickoff"}, {"path": ".kiro/steering/product.md", "content": "# Product", "type": "steering"}, {"path": ".kiro/hooks/format.kiro.hook", "content": "{}", "type": "hook"}, {"path": "AGENTS.md", "content": "# Agents", "type": "agents"}]}`,
 			wantErr:  false,
 		},
 		{

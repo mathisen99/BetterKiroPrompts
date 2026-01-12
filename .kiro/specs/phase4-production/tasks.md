@@ -82,20 +82,20 @@ This phase delivers professional UI design, smarter AI generation with experienc
   - [x] 6.5 Create prompts/agents.go with AGENTS.md template
     - _Requirements: 10.5_
 
-- [ ] 7. Update Generation Service with New Prompts
-  - [ ] 7.1 Refactor GenerateQuestions to use experience-level-aware prompts
+- [x] 7. Update Generation Service with New Prompts
+  - [x] 7.1 Refactor GenerateQuestions to use experience-level-aware prompts
     - Select prompt variant based on level
     - _Requirements: 1.2, 1.3, 1.4, 3.1_
-  - [ ] 7.2 Refactor GenerateOutputs to use comprehensive file format prompts
+  - [x] 7.2 Refactor GenerateOutputs to use comprehensive file format prompts
     - Include all steering files
     - Include hooks based on preset
     - Include AGENTS.md
     - _Requirements: 4.1-4.8, 5.1-5.7, 10.1-10.5_
-  - [ ] 7.3 Add output validation for steering file frontmatter
+  - [x] 7.3 Add output validation for steering file frontmatter
     - Validate inclusion mode
     - Validate fileMatchPattern for fileMatch mode
     - _Requirements: 8.8_
-  - [ ] 7.4 Add output validation for hook file schema
+  - [x] 7.4 Add output validation for hook file schema
     - Validate required fields
     - Validate when.type and then.type values
     - Validate runCommand restrictions

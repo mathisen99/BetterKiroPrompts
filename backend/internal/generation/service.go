@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"better-kiro-prompts/internal/openai"
+	"better-kiro-prompts/internal/prompts"
 )
 
 const (
@@ -96,11 +97,18 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 		return nil, err
 	}
 
-	prompt := buildQuestionsPrompt(strings.TrimSpace(projectIdea), experienceLevel)
+	// Validate experience level
+	if !prompts.IsValidExperienceLevel(experienceLevel) {
+		experienceLevel = prompts.ExperienceNovice // Default to novice
+	}
+
+	// Use experience-level-aware system prompt
+	systemPrompt := prompts.GetQuestionsSystemPrompt(experienceLevel)
+	userPrompt := prompts.GetQuestionsUserPrompt(strings.TrimSpace(projectIdea), experienceLevel)
 
 	messages := []openai.Message{
-		{Role: "system", Content: questionsSystemPrompt},
-		{Role: "user", Content: prompt},
+		{Role: "system", Content: systemPrompt},
+		{Role: "user", Content: userPrompt},
 	}
 
 	response, err := s.openaiClient.ChatCompletion(ctx, messages)
@@ -116,7 +124,7 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 	return questions, nil
 }
 
-// GenerateOutputs generates kickoff prompt, steering files, and hooks.
+// GenerateOutputs generates kickoff prompt, steering files, hooks, and AGENTS.md.
 func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) ([]GeneratedFile, error) {
 	if err := ValidateProjectIdea(projectIdea); err != nil {
 		return nil, err
@@ -125,11 +133,30 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		return nil, err
 	}
 
-	prompt := buildOutputsPrompt(strings.TrimSpace(projectIdea), answers, experienceLevel, hookPreset)
+	// Validate experience level and hook preset
+	if !prompts.IsValidExperienceLevel(experienceLevel) {
+		experienceLevel = prompts.ExperienceNovice
+	}
+	if !prompts.IsValidHookPreset(hookPreset) {
+		hookPreset = prompts.HookPresetDefault
+	}
+
+	// Convert answers to prompts.Answer type
+	promptAnswers := make([]prompts.Answer, len(answers))
+	for i, a := range answers {
+		promptAnswers[i] = prompts.Answer{
+			QuestionID: a.QuestionID,
+			Answer:     a.Answer,
+		}
+	}
+
+	// Use comprehensive system and user prompts
+	systemPrompt := prompts.GetOutputsSystemPrompt(experienceLevel, hookPreset)
+	userPrompt := prompts.GetOutputsUserPrompt(strings.TrimSpace(projectIdea), promptAnswers, experienceLevel, hookPreset)
 
 	messages := []openai.Message{
-		{Role: "system", Content: outputsSystemPrompt},
-		{Role: "user", Content: prompt},
+		{Role: "system", Content: systemPrompt},
+		{Role: "user", Content: userPrompt},
 	}
 
 	response, err := s.openaiClient.ChatCompletion(ctx, messages)
@@ -142,52 +169,12 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		return nil, err
 	}
 
+	// Validate generated files
+	if err := ValidateGeneratedFiles(files); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+	}
+
 	return files, nil
-}
-
-const questionsSystemPrompt = `You are helping a developer plan their project. Based on their project idea, generate 5-10 follow-up questions to understand their requirements better.
-
-Rules:
-- Adapt question complexity to the project sophistication
-- For simple projects (games, basic apps): focus on scope, platform, basic features
-- For complex projects (distributed systems, APIs): include architecture, scalability, data consistency
-- Questions should help clarify: users, data, auth, tech stack, constraints
-- Return ONLY valid JSON, no markdown code blocks
-
-Response format:
-{"questions": [{"id": 1, "text": "...", "hint": "..."}]}`
-
-const outputsSystemPrompt = `You are generating Kiro project files for a developer. Based on their project idea and answers, generate:
-
-1. A kickoff prompt (markdown) that summarizes the project requirements
-2. Steering files for .kiro/steering/ with appropriate frontmatter
-3. Hook files for .kiro/hooks/ in valid Kiro hook JSON format
-
-Rules:
-- Kickoff prompt should enforce "answer questions before coding" principle
-- Steering files should be concise and actionable
-- Include product.md, tech.md, structure.md at minimum
-- Add security/quality steering if project warrants it
-- Hooks should match project tech stack (Go, TypeScript, React, etc.)
-- Use valid Kiro hook schema with name, description, version, enabled, when, then
-- Return ONLY valid JSON, no markdown code blocks
-
-Response format:
-{
-  "files": [
-    {"path": "kickoff-prompt.md", "content": "...", "type": "kickoff"},
-    {"path": ".kiro/steering/product.md", "content": "...", "type": "steering"},
-    {"path": ".kiro/hooks/format.kiro.hook", "content": "...", "type": "hook"}
-  ]
-}`
-
-func buildQuestionsPrompt(projectIdea string, experienceLevel string) string {
-	return fmt.Sprintf("Project idea: %s\nExperience level: %s", projectIdea, experienceLevel)
-}
-
-func buildOutputsPrompt(projectIdea string, answers []Answer, experienceLevel string, hookPreset string) string {
-	answersJSON, _ := json.Marshal(answers)
-	return fmt.Sprintf("Project idea: %s\nAnswers: %s\nExperience level: %s\nHook preset: %s", projectIdea, string(answersJSON), experienceLevel, hookPreset)
 }
 
 func parseQuestionsResponse(response string) ([]Question, error) {
@@ -242,6 +229,7 @@ func parseOutputsResponse(response string) ([]GeneratedFile, error) {
 	hasKickoff := false
 	hasSteering := false
 	hasHook := false
+	hasAgents := false
 
 	for _, f := range or.Files {
 		if f.Path == "" || f.Content == "" {
@@ -254,6 +242,8 @@ func parseOutputsResponse(response string) ([]GeneratedFile, error) {
 			hasSteering = true
 		case "hook":
 			hasHook = true
+		case "agents":
+			hasAgents = true
 		}
 	}
 
@@ -265,6 +255,9 @@ func parseOutputsResponse(response string) ([]GeneratedFile, error) {
 	}
 	if !hasHook {
 		return nil, fmt.Errorf("%w: missing hook file", ErrInvalidResponse)
+	}
+	if !hasAgents {
+		return nil, fmt.Errorf("%w: missing AGENTS.md file", ErrInvalidResponse)
 	}
 
 	return or.Files, nil
