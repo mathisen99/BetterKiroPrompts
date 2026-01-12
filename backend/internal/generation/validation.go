@@ -200,3 +200,125 @@ func ValidateGeneratedFiles(files []GeneratedFile) error {
 	}
 	return nil
 }
+
+// ValidationErrorDetails provides structured information about validation failures
+type ValidationErrorDetails struct {
+	FileType    string `json:"fileType,omitempty"`
+	FilePath    string `json:"filePath,omitempty"`
+	Field       string `json:"field,omitempty"`
+	Expected    string `json:"expected,omitempty"`
+	Got         string `json:"got,omitempty"`
+	Suggestion  string `json:"suggestion,omitempty"`
+	RawError    string `json:"rawError"`
+	UserMessage string `json:"userMessage"`
+}
+
+// FormatValidationError converts a validation error into a user-friendly error with details
+func FormatValidationError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	details := ValidationErrorDetails{
+		RawError: err.Error(),
+	}
+
+	// Parse the error to provide better context
+	errStr := err.Error()
+
+	switch {
+	case errors.Is(err, ErrInvalidFrontmatter) || strings.Contains(errStr, "frontmatter"):
+		details.FileType = "steering"
+		details.Field = "frontmatter"
+		details.Expected = "Valid YAML frontmatter with 'inclusion' field"
+		details.Suggestion = "Ensure the steering file starts with ---\\ninclusion: always\\n--- (or fileMatch/manual)"
+		details.UserMessage = "The AI generated a steering file with invalid frontmatter. This has been retried but the issue persists."
+
+	case errors.Is(err, ErrMissingInclusion):
+		details.FileType = "steering"
+		details.Field = "inclusion"
+		details.Expected = "inclusion: always | fileMatch | manual"
+		details.Suggestion = "Add 'inclusion: always' (or fileMatch/manual) to the frontmatter"
+		details.UserMessage = "A steering file is missing the required 'inclusion' field in its frontmatter."
+
+	case errors.Is(err, ErrInvalidInclusionMode):
+		details.FileType = "steering"
+		details.Field = "inclusion"
+		details.Expected = "always, fileMatch, or manual"
+		details.Suggestion = "Change the inclusion value to one of: always, fileMatch, manual"
+		details.UserMessage = "A steering file has an invalid inclusion mode. Valid values are: always, fileMatch, manual."
+
+	case errors.Is(err, ErrMissingFileMatchPattern):
+		details.FileType = "steering"
+		details.Field = "fileMatchPattern"
+		details.Expected = "A glob pattern like **/*.go or **/*.{ts,tsx}"
+		details.Suggestion = "Add 'fileMatchPattern: \"**/*.ext\"' when using fileMatch mode"
+		details.UserMessage = "A steering file uses 'fileMatch' mode but is missing the required 'fileMatchPattern' field."
+
+	case errors.Is(err, ErrInvalidHookSchema):
+		details.FileType = "hook"
+		details.Expected = "Valid JSON matching Kiro hook schema"
+		details.Suggestion = "Ensure the hook file is valid JSON with all required fields"
+		details.UserMessage = "The AI generated a hook file with invalid JSON structure."
+
+	case errors.Is(err, ErrMissingHookField):
+		details.FileType = "hook"
+		details.Expected = "Required fields: name, description, version, enabled, when, then"
+		details.Suggestion = "Add the missing required field to the hook file"
+		details.UserMessage = "A hook file is missing a required field."
+
+	case errors.Is(err, ErrInvalidWhenType):
+		details.FileType = "hook"
+		details.Field = "when.type"
+		details.Expected = "fileEdited, fileCreated, fileDeleted, promptSubmit, agentStop, or userTriggered"
+		details.Suggestion = "Use one of the valid trigger types"
+		details.UserMessage = "A hook file has an invalid trigger type (when.type)."
+
+	case errors.Is(err, ErrInvalidThenType):
+		details.FileType = "hook"
+		details.Field = "then.type"
+		details.Expected = "askAgent or runCommand"
+		details.Suggestion = "Use either 'askAgent' or 'runCommand' as the action type"
+		details.UserMessage = "A hook file has an invalid action type (then.type)."
+
+	case errors.Is(err, ErrRunCommandRestriction):
+		details.FileType = "hook"
+		details.Field = "then.type + when.type"
+		details.Expected = "runCommand only with promptSubmit or agentStop triggers"
+		details.Suggestion = "Change then.type to 'askAgent' or change when.type to 'promptSubmit' or 'agentStop'"
+		details.UserMessage = "A hook file uses 'runCommand' with an incompatible trigger. runCommand can only be used with promptSubmit or agentStop triggers."
+
+	case errors.Is(err, ErrNoFiles):
+		details.UserMessage = "The AI did not generate any files. Please try again."
+
+	case strings.Contains(errStr, "missing kickoff"):
+		details.FileType = "kickoff"
+		details.UserMessage = "The AI response is missing the required kickoff prompt file."
+
+	case strings.Contains(errStr, "missing steering"):
+		details.FileType = "steering"
+		details.UserMessage = "The AI response is missing required steering files."
+
+	case strings.Contains(errStr, "missing hook"):
+		details.FileType = "hook"
+		details.UserMessage = "The AI response is missing required hook files."
+
+	case strings.Contains(errStr, "missing AGENTS"):
+		details.FileType = "agents"
+		details.UserMessage = "The AI response is missing the required AGENTS.md file."
+
+	default:
+		details.UserMessage = "The AI generated an invalid response. Please try again."
+	}
+
+	// Build the final error message
+	msg := details.UserMessage
+	if details.Field != "" {
+		msg = fmt.Sprintf("%s (field: %s)", msg, details.Field)
+	}
+	if details.Suggestion != "" {
+		msg = fmt.Sprintf("%s Suggestion: %s", msg, details.Suggestion)
+	}
+
+	return fmt.Errorf("%s [raw: %s]", msg, details.RawError)
+}

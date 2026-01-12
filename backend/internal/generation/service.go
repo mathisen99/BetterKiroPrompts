@@ -124,6 +124,9 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 	return questions, nil
 }
 
+// maxRetries is the number of retry attempts for validation failures
+const maxRetries = 1
+
 // GenerateOutputs generates kickoff prompt, steering files, hooks, and AGENTS.md.
 func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) ([]GeneratedFile, error) {
 	if err := ValidateProjectIdea(projectIdea); err != nil {
@@ -159,22 +162,64 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		{Role: "user", Content: userPrompt},
 	}
 
-	response, err := s.openaiClient.ChatCompletion(ctx, messages)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate outputs: %w", err)
+	var lastErr error
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		response, err := s.openaiClient.ChatCompletion(ctx, messages)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate outputs: %w", err)
+		}
+
+		files, err := parseOutputsResponse(response)
+		if err != nil {
+			lastErr = err
+			if attempt < maxRetries {
+				// Add retry context to messages for the next attempt
+				messages = append(messages,
+					openai.Message{Role: "assistant", Content: response},
+					openai.Message{Role: "user", Content: buildRetryPrompt(err)},
+				)
+				continue
+			}
+			return nil, FormatValidationError(err)
+		}
+
+		// Validate generated files
+		if err := ValidateGeneratedFiles(files); err != nil {
+			lastErr = fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+			if attempt < maxRetries {
+				// Add retry context to messages for the next attempt
+				messages = append(messages,
+					openai.Message{Role: "assistant", Content: response},
+					openai.Message{Role: "user", Content: buildRetryPrompt(err)},
+				)
+				continue
+			}
+			return nil, FormatValidationError(lastErr)
+		}
+
+		return files, nil
 	}
 
-	files, err := parseOutputsResponse(response)
-	if err != nil {
-		return nil, err
-	}
+	// Should not reach here, but return last error if we do
+	return nil, FormatValidationError(lastErr)
+}
 
-	// Validate generated files
-	if err := ValidateGeneratedFiles(files); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidResponse, err)
-	}
+// buildRetryPrompt creates a prompt explaining the validation error for retry
+func buildRetryPrompt(err error) string {
+	return fmt.Sprintf(`The previous response had validation errors. Please fix the following issues and regenerate the complete JSON response:
 
-	return files, nil
+Error: %v
+
+Remember:
+- All steering files must have valid YAML frontmatter with 'inclusion' field
+- fileMatch mode requires 'fileMatchPattern' field
+- All hook files must have valid JSON with required fields: name, description, version, enabled, when, then
+- when.type must be one of: fileEdited, fileCreated, fileDeleted, promptSubmit, agentStop, userTriggered
+- then.type must be 'askAgent' or 'runCommand'
+- runCommand can only be used with promptSubmit or agentStop triggers
+- File-based triggers (fileEdited, fileCreated, fileDeleted) require patterns array
+
+Please provide the corrected JSON response.`, err)
 }
 
 func parseQuestionsResponse(response string) ([]Question, error) {
