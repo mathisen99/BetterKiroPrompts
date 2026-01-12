@@ -16,7 +16,7 @@ export interface Question {
 export interface GeneratedFile {
   path: string
   content: string
-  type: 'kickoff' | 'steering' | 'hook'
+  type: 'kickoff' | 'steering' | 'hook' | 'agents'
 }
 
 export interface Answer {
