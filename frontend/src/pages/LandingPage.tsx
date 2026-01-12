@@ -1,17 +1,19 @@
 import { useState, useCallback } from 'react'
 import { generateQuestions, generateOutputs, ApiError } from '@/lib/api'
-import type { Question, GeneratedFile, Answer } from '@/lib/api'
+import type { Question, GeneratedFile, Answer, ExperienceLevel } from '@/lib/api'
 import { ProjectInput } from '@/components/ProjectInput'
 import { QuestionFlow } from '@/components/QuestionFlow'
 import { OutputEditor } from '@/components/OutputEditor'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { ErrorMessage } from '@/components/shared/ErrorMessage'
 import { RateLimitCountdown } from '@/components/shared/RateLimitCountdown'
+import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector'
 
-type Phase = 'input' | 'questions' | 'generating' | 'output' | 'error'
+type Phase = 'level-select' | 'input' | 'questions' | 'generating' | 'output' | 'error'
 
 interface LandingPageState {
   phase: Phase
+  experienceLevel: ExperienceLevel | null
   projectIdea: string
   questions: Question[]
   answers: Map<number, string>
@@ -78,7 +80,8 @@ function getErrorMessage(err: unknown): { message: string; retryAfter: number | 
 
 export function LandingPage() {
   const [state, setState] = useState<LandingPageState>({
-    phase: 'input',
+    phase: 'level-select',
+    experienceLevel: null,
     projectIdea: '',
     questions: [],
     answers: new Map(),
@@ -89,11 +92,15 @@ export function LandingPage() {
     retryAfter: null,
   })
 
+  const handleExperienceLevelSelect = useCallback((level: ExperienceLevel) => {
+    setState(prev => ({ ...prev, experienceLevel: level, phase: 'input' }))
+  }, [])
+
   const handleProjectSubmit = useCallback(async (idea: string) => {
     setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null }))
     
     try {
-      const response = await generateQuestions(idea)
+      const response = await generateQuestions(idea, state.experienceLevel!)
       setState(prev => ({
         ...prev,
         phase: 'questions',
@@ -110,7 +117,7 @@ export function LandingPage() {
         retryAfter,
       }))
     }
-  }, [])
+  }, [state.experienceLevel])
 
   const handleAnswer = useCallback((questionId: number, answer: string) => {
     setState(prev => {
@@ -146,7 +153,7 @@ export function LandingPage() {
         answer,
       }))
       
-      const response = await generateOutputs(state.projectIdea, answers)
+      const response = await generateOutputs(state.projectIdea, answers, state.experienceLevel!)
       setState(prev => ({
         ...prev,
         phase: 'output',
@@ -162,7 +169,7 @@ export function LandingPage() {
         retryAfter,
       }))
     }
-  }, [state.answers, state.projectIdea])
+  }, [state.answers, state.projectIdea, state.experienceLevel])
 
   const handleEdit = useCallback((path: string, content: string) => {
     setState(prev => {
@@ -190,6 +197,13 @@ export function LandingPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {state.phase === 'level-select' && (
+        <ExperienceLevelSelector
+          onSelect={handleExperienceLevelSelect}
+          selected={state.experienceLevel ?? undefined}
+        />
+      )}
+
       {state.phase === 'input' && (
         <ProjectInput
           onSubmit={handleProjectSubmit}

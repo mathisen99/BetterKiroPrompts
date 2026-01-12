@@ -1,5 +1,8 @@
 const API_BASE = '/api'
 
+// Experience level type
+export type ExperienceLevel = 'beginner' | 'novice' | 'expert'
+
 // New AI-driven generation types
 export interface Question {
   id: number
@@ -21,6 +24,7 @@ export interface Answer {
 // Request/Response types
 export interface GenerateQuestionsRequest {
   projectIdea: string
+  experienceLevel: ExperienceLevel
 }
 
 export interface GenerateQuestionsResponse {
@@ -30,6 +34,7 @@ export interface GenerateQuestionsResponse {
 export interface GenerateOutputsRequest {
   projectIdea: string
   answers: Answer[]
+  experienceLevel: ExperienceLevel
 }
 
 export interface GenerateOutputsResponse {
@@ -42,11 +47,11 @@ export interface ErrorResponse {
 }
 
 // API functions
-export async function generateQuestions(projectIdea: string): Promise<GenerateQuestionsResponse> {
+export async function generateQuestions(projectIdea: string, experienceLevel: ExperienceLevel): Promise<GenerateQuestionsResponse> {
   const res = await fetch(`${API_BASE}/generate/questions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectIdea }),
+    body: JSON.stringify({ projectIdea, experienceLevel }),
   })
   
   if (!res.ok) {
@@ -57,11 +62,11 @@ export async function generateQuestions(projectIdea: string): Promise<GenerateQu
   return res.json()
 }
 
-export async function generateOutputs(projectIdea: string, answers: Answer[]): Promise<GenerateOutputsResponse> {
+export async function generateOutputs(projectIdea: string, answers: Answer[], experienceLevel: ExperienceLevel): Promise<GenerateOutputsResponse> {
   const res = await fetch(`${API_BASE}/generate/outputs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectIdea, answers }),
+    body: JSON.stringify({ projectIdea, answers, experienceLevel }),
   })
   
   if (!res.ok) {

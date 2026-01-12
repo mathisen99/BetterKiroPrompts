@@ -30,6 +30,11 @@ inclusion: always
 - Standard library preferred over dependencies
 - Package manager: pnpm for frontend
 
+## Code quality
+
+- Frontend always run pnpm typecheck && pnpm lint after each major task.
+- Backend always run golangci-lint && go fmt && go vet after each major task
+
 ## Build & Run
 
 Use `./build.sh` for all stack operations:

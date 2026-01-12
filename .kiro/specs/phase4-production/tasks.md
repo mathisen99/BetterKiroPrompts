@@ -6,16 +6,16 @@ This phase delivers professional UI design, smarter AI generation with experienc
 
 ## Tasks
 
-- [ ] 1. Add Experience Level Selection to Frontend
-  - [ ] 1.1 Create ExperienceLevelSelector component with Beginner/Novice/Expert cards
+- [x] 1. Add Experience Level Selection to Frontend
+  - [x] 1.1 Create ExperienceLevelSelector component with Beginner/Novice/Expert cards
     - Use shadcn Card components with icons
     - Dark theme with blue accents
     - _Requirements: 1.1, 2.1, 2.2, 2.3_
-  - [ ] 1.2 Update LandingPage state to include experienceLevel and new phase 'level-select'
+  - [x] 1.2 Update LandingPage state to include experienceLevel and new phase 'level-select'
     - Add experienceLevel to state interface
     - Start flow at level-select phase
     - _Requirements: 1.5_
-  - [ ] 1.3 Update API types to include experienceLevel in requests
+  - [x] 1.3 Update API types to include experienceLevel in requests
     - Add to GenerateQuestionsRequest
     - Add to GenerateOutputsRequest
     - _Requirements: 1.2, 1.3, 1.4_
