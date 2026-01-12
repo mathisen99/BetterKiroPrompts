@@ -32,8 +32,8 @@ inclusion: always
 
 ## Code quality
 
-- Frontend always run pnpm typecheck && pnpm lint after each major task.
-- Backend always run golangci-lint && go fmt && go vet after each major task
+- Frontend always run pnpm typecheck && pnpm lint and build the project after each major task.
+- Backend always run golangci-lint && go fmt && go vet and build the project after each major task
 
 ## Build & Run
 
