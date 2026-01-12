@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { generateQuestions, generateOutputs, ApiError } from '@/lib/api'
-import type { Question, GeneratedFile, Answer, ExperienceLevel } from '@/lib/api'
+import type { Question, GeneratedFile, Answer, ExperienceLevel, HookPreset } from '@/lib/api'
 import { ProjectInput } from '@/components/ProjectInput'
 import { QuestionFlow } from '@/components/QuestionFlow'
 import { OutputEditor } from '@/components/OutputEditor'
@@ -8,6 +8,7 @@ import { LoadingState } from '@/components/shared/LoadingState'
 import { ErrorMessage } from '@/components/shared/ErrorMessage'
 import { RateLimitCountdown } from '@/components/shared/RateLimitCountdown'
 import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector'
+import { HookPresetSelector } from '@/components/HookPresetSelector'
 
 type Phase = 'level-select' | 'input' | 'questions' | 'generating' | 'output' | 'error'
 
@@ -15,6 +16,7 @@ interface LandingPageState {
   phase: Phase
   experienceLevel: ExperienceLevel | null
   projectIdea: string
+  hookPreset: HookPreset
   questions: Question[]
   answers: Map<number, string>
   currentQuestionIndex: number
@@ -83,6 +85,7 @@ export function LandingPage() {
     phase: 'level-select',
     experienceLevel: null,
     projectIdea: '',
+    hookPreset: 'default',
     questions: [],
     answers: new Map(),
     currentQuestionIndex: 0,
@@ -94,6 +97,10 @@ export function LandingPage() {
 
   const handleExperienceLevelSelect = useCallback((level: ExperienceLevel) => {
     setState(prev => ({ ...prev, experienceLevel: level, phase: 'input' }))
+  }, [])
+
+  const handleHookPresetSelect = useCallback((preset: HookPreset) => {
+    setState(prev => ({ ...prev, hookPreset: preset }))
   }, [])
 
   const handleProjectSubmit = useCallback(async (idea: string) => {
@@ -153,7 +160,7 @@ export function LandingPage() {
         answer,
       }))
       
-      const response = await generateOutputs(state.projectIdea, answers, state.experienceLevel!)
+      const response = await generateOutputs(state.projectIdea, answers, state.experienceLevel!, state.hookPreset)
       setState(prev => ({
         ...prev,
         phase: 'output',
@@ -169,7 +176,7 @@ export function LandingPage() {
         retryAfter,
       }))
     }
-  }, [state.answers, state.projectIdea, state.experienceLevel])
+  }, [state.answers, state.projectIdea, state.experienceLevel, state.hookPreset])
 
   const handleEdit = useCallback((path: string, content: string) => {
     setState(prev => {
@@ -205,11 +212,17 @@ export function LandingPage() {
       )}
 
       {state.phase === 'input' && (
-        <ProjectInput
-          onSubmit={handleProjectSubmit}
-          loading={false}
-          examples={EXAMPLE_IDEAS}
-        />
+        <div className="space-y-8">
+          <ProjectInput
+            onSubmit={handleProjectSubmit}
+            loading={false}
+            examples={EXAMPLE_IDEAS}
+          />
+          <HookPresetSelector
+            onSelect={handleHookPresetSelect}
+            selected={state.hookPreset}
+          />
+        </div>
       )}
 
       {state.phase === 'questions' && (

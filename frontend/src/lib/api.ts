@@ -3,6 +3,9 @@ const API_BASE = '/api'
 // Experience level type
 export type ExperienceLevel = 'beginner' | 'novice' | 'expert'
 
+// Hook preset type
+export type HookPreset = 'light' | 'basic' | 'default' | 'strict'
+
 // New AI-driven generation types
 export interface Question {
   id: number
@@ -35,6 +38,7 @@ export interface GenerateOutputsRequest {
   projectIdea: string
   answers: Answer[]
   experienceLevel: ExperienceLevel
+  hookPreset: HookPreset
 }
 
 export interface GenerateOutputsResponse {
@@ -62,11 +66,11 @@ export async function generateQuestions(projectIdea: string, experienceLevel: Ex
   return res.json()
 }
 
-export async function generateOutputs(projectIdea: string, answers: Answer[], experienceLevel: ExperienceLevel): Promise<GenerateOutputsResponse> {
+export async function generateOutputs(projectIdea: string, answers: Answer[], experienceLevel: ExperienceLevel, hookPreset: HookPreset): Promise<GenerateOutputsResponse> {
   const res = await fetch(`${API_BASE}/generate/outputs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectIdea, answers, experienceLevel }),
+    body: JSON.stringify({ projectIdea, answers, experienceLevel, hookPreset }),
   })
   
   if (!res.ok) {

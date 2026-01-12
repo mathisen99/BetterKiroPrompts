@@ -20,12 +20,12 @@ This phase delivers professional UI design, smarter AI generation with experienc
     - Add to GenerateOutputsRequest
     - _Requirements: 1.2, 1.3, 1.4_
 
-- [ ] 2. Add Hook Preset Selection to Frontend
-  - [ ] 2.1 Create HookPresetSelector component with Light/Basic/Default/Strict options
+- [x] 2. Add Hook Preset Selection to Frontend
+  - [x] 2.1 Create HookPresetSelector component with Light/Basic/Default/Strict options
     - Radio group with descriptions
     - Default to 'default' preset
     - _Requirements: 5.7, 10.6_
-  - [ ] 2.2 Add hookPreset to LandingPage state and wire to output generation
+  - [x] 2.2 Add hookPreset to LandingPage state and wire to output generation
     - _Requirements: 5.7_
 
 - [ ] 3. Professional UI Redesign
