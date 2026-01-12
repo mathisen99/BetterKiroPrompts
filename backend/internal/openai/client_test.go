@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 	"testing/quick"
-	"unicode"
 )
 
 // Property 7: Input Validation
@@ -22,16 +21,6 @@ func generateWhitespaceString(length int) string {
 		result[i] = whitespaceChars[i%len(whitespaceChars)]
 	}
 	return string(result)
-}
-
-// isWhitespaceOnly checks if a string contains only whitespace characters.
-func isWhitespaceOnly(s string) bool {
-	for _, r := range s {
-		if !unicode.IsSpace(r) {
-			return false
-		}
-	}
-	return true
 }
 
 // TestValidateInput_Property_EmptyStringRejected tests that empty strings are always rejected.

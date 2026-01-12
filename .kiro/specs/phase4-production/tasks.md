@@ -59,27 +59,27 @@ This phase delivers professional UI design, smarter AI generation with experienc
   - [x] 5.3 Update API handlers to pass new fields to generation service
     - _Requirements: 3.1_
 
-- [ ] 6. Create Comprehensive AI System Prompts
-  - [ ] 6.1 Create prompts/questions.go with experience-level-aware question generation prompt
+- [x] 6. Create Comprehensive AI System Prompts
+  - [x] 6.1 Create prompts/questions.go with experience-level-aware question generation prompt
     - Include jargon avoidance for beginners
     - Include architecture questions for experts
     - Include question ordering rules
     - _Requirements: 1.2, 1.3, 1.4, 3.1, 3.2, 3.3, 3.6_
-  - [ ] 6.2 Create prompts/steering.go with complete steering file format specification
+  - [x] 6.2 Create prompts/steering.go with complete steering file format specification
     - Include frontmatter rules
     - Include all file type templates (product, tech, structure, security, quality)
     - Include best practices
     - _Requirements: 4.1-4.8, 8.1-8.6_
-  - [ ] 6.3 Create prompts/hooks.go with complete hook schema and preset definitions
+  - [x] 6.3 Create prompts/hooks.go with complete hook schema and preset definitions
     - Include all valid when.type and then.type values
     - Include hook examples for each preset
     - Include runCommand restrictions
     - _Requirements: 5.1-5.6, 8.2, 8.5_
-  - [ ] 6.4 Create prompts/kickoff.go with kickoff prompt template
+  - [x] 6.4 Create prompts/kickoff.go with kickoff prompt template
     - Include all required sections
     - Include experience-level language adaptation
     - _Requirements: 6.1-6.6, 8.7_
-  - [ ] 6.5 Create prompts/agents.go with AGENTS.md template
+  - [x] 6.5 Create prompts/agents.go with AGENTS.md template
     - _Requirements: 10.5_
 
 - [ ] 7. Update Generation Service with New Prompts
