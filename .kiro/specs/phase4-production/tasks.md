@@ -131,28 +131,28 @@ This phase delivers professional UI design, smarter AI generation with experienc
   - Verify all file types appear in correct tabs
   - Test ZIP download structure
 
-- [ ]* 13. Property Tests for Experience Level Adaptation
+- [x] 13. Property Tests for Experience Level Adaptation
   - **Property 1: Experience Level Adaptation**
   - Verify beginner questions avoid jargon terms
   - **Validates: Requirements 1.2, 1.3, 1.4, 3.1, 6.6**
 
-- [ ]* 14. Property Tests for Steering File Validity
+- [x] 14. Property Tests for Steering File Validity
   - **Property 2: Core Steering Files Validity**
   - **Property 3: Conditional Steering Files Pattern**
   - Verify all steering files have valid frontmatter
   - **Validates: Requirements 4.1-4.8, 10.1-10.3**
 
-- [ ]* 15. Property Tests for Hook Schema
+- [x] 15. Property Tests for Hook Schema
   - **Property 4: Hook File Schema Validity**
   - Verify all hooks have required fields and valid values
   - **Validates: Requirements 5.1-5.5, 10.4**
 
-- [ ]* 16. Property Tests for Kickoff Prompt
+- [x] 16. Property Tests for Kickoff Prompt
   - **Property 5: Kickoff Prompt Completeness**
   - Verify all required sections present
   - **Validates: Requirements 6.1, 6.2, 6.4, 6.5**
 
-- [ ]* 17. Property Tests for Question Generation
+- [x] 17. Property Tests for Question Generation
   - **Property 6: Question Generation Constraints**
   - Verify count 5-10 and logical ordering
   - **Validates: Requirements 3.4, 3.6**

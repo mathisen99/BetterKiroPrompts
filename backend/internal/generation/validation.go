@@ -10,15 +10,17 @@ import (
 
 // Validation errors
 var (
-	ErrInvalidFrontmatter      = errors.New("invalid frontmatter")
-	ErrMissingInclusion        = errors.New("missing inclusion field in frontmatter")
-	ErrInvalidInclusionMode    = errors.New("invalid inclusion mode")
-	ErrMissingFileMatchPattern = errors.New("fileMatch mode requires fileMatchPattern")
-	ErrInvalidHookSchema       = errors.New("invalid hook schema")
-	ErrMissingHookField        = errors.New("missing required hook field")
-	ErrInvalidWhenType         = errors.New("invalid when.type value")
-	ErrInvalidThenType         = errors.New("invalid then.type value")
-	ErrRunCommandRestriction   = errors.New("runCommand can only be used with promptSubmit or agentStop triggers")
+	ErrInvalidFrontmatter         = errors.New("invalid frontmatter")
+	ErrMissingInclusion           = errors.New("missing inclusion field in frontmatter")
+	ErrInvalidInclusionMode       = errors.New("invalid inclusion mode")
+	ErrMissingFileMatchPattern    = errors.New("fileMatch mode requires fileMatchPattern")
+	ErrInvalidHookSchema          = errors.New("invalid hook schema")
+	ErrMissingHookField           = errors.New("missing required hook field")
+	ErrInvalidWhenType            = errors.New("invalid when.type value")
+	ErrInvalidThenType            = errors.New("invalid then.type value")
+	ErrRunCommandRestriction      = errors.New("runCommand can only be used with promptSubmit or agentStop triggers")
+	ErrMissingNoCodingEnforcement = errors.New("kickoff prompt must contain 'no coding' enforcement phrase")
+	ErrMissingKickoffSection      = errors.New("kickoff prompt missing required section")
 )
 
 // Valid inclusion modes for steering files
@@ -184,8 +186,71 @@ func isFileBasedTrigger(triggerType string) bool {
 	return triggerType == "fileEdited" || triggerType == "fileCreated" || triggerType == "fileDeleted"
 }
 
+// noCodingPhrases defines phrases that enforce "no coding until questions answered"
+var noCodingPhrases = []string{
+	"no coding",
+	"do not write any code",
+	"don't write any code",
+	"no code until",
+	"do not code until",
+	"don't code until",
+	"before writing any code",
+	"before coding",
+}
+
+// requiredKickoffSections defines the sections that must be present in a kickoff prompt
+var requiredKickoffSections = []string{
+	"project identity",
+	"success criteria",
+	"users & roles",
+	"data sensitivity",
+	"auth model",
+	"concurrency",
+	"boundaries",
+	"non-goals",
+	"constraints",
+	"risks",
+	"tradeoffs",
+	"boundary examples",
+}
+
+// ValidateKickoffPrompt validates a kickoff prompt for completeness
+func ValidateKickoffPrompt(content string) error {
+	contentLower := strings.ToLower(content)
+
+	// Check for "no coding" enforcement phrase
+	hasNoCodingEnforcement := false
+	for _, phrase := range noCodingPhrases {
+		if strings.Contains(contentLower, phrase) {
+			hasNoCodingEnforcement = true
+			break
+		}
+	}
+	if !hasNoCodingEnforcement {
+		return ErrMissingNoCodingEnforcement
+	}
+
+	// Check for all required sections
+	missingSections := []string{}
+	for _, section := range requiredKickoffSections {
+		if !strings.Contains(contentLower, section) {
+			missingSections = append(missingSections, section)
+		}
+	}
+
+	if len(missingSections) > 0 {
+		return fmt.Errorf("%w: %v", ErrMissingKickoffSection, missingSections)
+	}
+
+	return nil
+}
+
 // ValidateGeneratedFiles validates all generated files
 func ValidateGeneratedFiles(files []GeneratedFile) error {
+	if len(files) == 0 {
+		return ErrNoFiles
+	}
+
 	for _, f := range files {
 		switch f.Type {
 		case "steering":
@@ -195,6 +260,10 @@ func ValidateGeneratedFiles(files []GeneratedFile) error {
 		case "hook":
 			if err := ValidateHookFile(f.Content); err != nil {
 				return fmt.Errorf("invalid hook file %s: %w", f.Path, err)
+			}
+		case "kickoff":
+			if err := ValidateKickoffPrompt(f.Content); err != nil {
+				return fmt.Errorf("invalid kickoff file %s: %w", f.Path, err)
 			}
 		}
 	}
