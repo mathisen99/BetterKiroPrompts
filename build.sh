@@ -21,6 +21,7 @@ REBUILD=false
 DETACH=false
 PROD=false
 DEV=true
+NO_ARGS=true
 
 usage() {
     echo "Usage: $0 [OPTIONS] [ACTION]"
@@ -104,6 +105,7 @@ build_backend() {
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
+    NO_ARGS=false
     case $1 in
         --build-frontend)
             BUILD_FRONTEND=true
@@ -151,6 +153,15 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# If no arguments provided, build everything and start production
+if [ "$NO_ARGS" = true ]; then
+    log_info "No arguments provided - building and starting production stack..."
+    BUILD_FRONTEND=true
+    BUILD_BACKEND=true
+    PROD=true
+    DEV=false
+fi
 
 # Execute builds if requested
 if [ "$BUILD_FRONTEND" = true ]; then

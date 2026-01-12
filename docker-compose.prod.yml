@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile.prod
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
       - PORT=8080
