@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { toast } from 'sonner'
 import type { GeneratedFile } from '@/lib/api'
 import { downloadAllAsZip } from '@/lib/zip'
+import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package } from 'lucide-react'
 
 interface OutputEditorProps {
   files: GeneratedFile[]
@@ -69,51 +71,59 @@ export function OutputEditor({
     const filename = file.path.split('/').pop() ?? file.path
 
     return (
-      <div key={file.path} className="rounded-lg border border-border bg-card mb-4">
-        <div className="flex items-center justify-between border-b border-border px-4 py-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-muted-foreground">{file.path}</span>
-            {isEdited && (
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
-                Modified
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {isEdited && (
+      <Card key={file.path} className="border-border/50 bg-card/50 backdrop-blur mb-4">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <code className="text-sm font-mono text-muted-foreground truncate">{file.path}</code>
+              {isEdited && (
+                <span className="shrink-0 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
+                  Modified
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 shrink-0">
+              {isEdited && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onReset(file.path)}
+                  className="gap-1.5"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Reset</span>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onReset(file.path)}
+                onClick={() => handleCopy(file.path)}
+                className="gap-1.5"
               >
-                Reset
+                <Copy className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Copy</span>
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCopy(file.path)}
-            >
-              Copy
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleDownload(file.path)}
-            >
-              Download
-            </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => handleDownload(file.path)}
+                className="gap-1.5"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Download</span>
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="p-4">
+        </CardHeader>
+        <CardContent className="pt-0">
           <Textarea
             value={content}
             onChange={(e) => onEdit(file.path, e.target.value)}
-            className="font-mono text-sm min-h-[300px] resize-y"
+            className="font-mono text-sm min-h-[300px] resize-y bg-background/50 border-border/50"
             aria-label={`Edit ${filename}`}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -126,35 +136,52 @@ export function OutputEditor({
   // Find first non-empty tab
   const defaultTab = tabCounts.kickoff > 0 ? 'kickoff' : tabCounts.steering > 0 ? 'steering' : 'hook'
 
+  const tabIcons = {
+    kickoff: <FileText className="h-4 w-4" />,
+    steering: <FolderCog className="h-4 w-4" />,
+    hook: <Webhook className="h-4 w-4" />,
+  }
+
   return (
-    <div className="py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold">Generated Files</h2>
-          <p className="text-sm text-muted-foreground">
-            Edit files below, then download individually or as a ZIP
-          </p>
-        </div>
-        <Button onClick={handleDownloadAll}>
-          Download All (ZIP)
-        </Button>
-      </div>
+    <div className="py-8 space-y-6">
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl">Generated Files</CardTitle>
+              <CardDescription className="mt-1">
+                Edit files below, then download individually or as a ZIP
+              </CardDescription>
+            </div>
+            <Button onClick={handleDownloadAll} className="gap-2 w-full sm:w-auto">
+              <Package className="h-4 w-4" />
+              Download All (ZIP)
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <Tabs defaultValue={defaultTab}>
-        <TabsList className="mb-4">
+        <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex mb-4">
           {tabCounts.kickoff > 0 && (
-            <TabsTrigger value="kickoff">
-              Kickoff ({tabCounts.kickoff})
+            <TabsTrigger value="kickoff" className="gap-2">
+              {tabIcons.kickoff}
+              <span className="hidden sm:inline">Kickoff</span>
+              <span className="text-xs text-muted-foreground">({tabCounts.kickoff})</span>
             </TabsTrigger>
           )}
           {tabCounts.steering > 0 && (
-            <TabsTrigger value="steering">
-              Steering ({tabCounts.steering})
+            <TabsTrigger value="steering" className="gap-2">
+              {tabIcons.steering}
+              <span className="hidden sm:inline">Steering</span>
+              <span className="text-xs text-muted-foreground">({tabCounts.steering})</span>
             </TabsTrigger>
           )}
           {tabCounts.hook > 0 && (
-            <TabsTrigger value="hook">
-              Hooks ({tabCounts.hook})
+            <TabsTrigger value="hook" className="gap-2">
+              {tabIcons.hook}
+              <span className="hidden sm:inline">Hooks</span>
+              <span className="text-xs text-muted-foreground">({tabCounts.hook})</span>
             </TabsTrigger>
           )}
         </TabsList>

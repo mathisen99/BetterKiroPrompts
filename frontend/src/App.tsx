@@ -1,4 +1,5 @@
 import { LandingPage } from '@/pages/LandingPage'
+import { Header } from '@/components/shared/Header'
 
 function App() {
   return (
@@ -9,8 +10,8 @@ function App() {
       >
         Skip to main content
       </a>
+      <Header />
       <main id="main-content" className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">BetterKiroPrompts</h1>
         <LandingPage />
       </main>
     </div>

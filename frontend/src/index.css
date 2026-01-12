@@ -1,29 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  --background: 222.2 84% 4.9%;
+  /* Deep blue-black background for dark theme */
+  --background: 222 47% 6%;
   --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
+  
+  /* Card with subtle elevation */
+  --card: 222 47% 8%;
   --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
+  
+  /* Popover matches card */
+  --popover: 222 47% 8%;
   --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
+  
+  /* Primary blue (#3B82F6) */
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 11%;
+  
+  /* Secondary - muted blue-gray */
+  --secondary: 217 33% 14%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
+  
+  /* Muted elements */
+  --muted: 217 33% 14%;
+  --muted-foreground: 215 20% 65%;
+  
+  /* Accent - subtle blue highlight */
+  --accent: 217 33% 17%;
   --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
+  
+  /* Destructive - red for errors */
+  --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
-  --radius: 0.5rem;
+  
+  /* Borders - subtle blue-gray */
+  --border: 217 33% 17%;
+  --input: 217 33% 14%;
+  --ring: 217 91% 60%;
+  
+  /* Radius */
+  --radius: 0.625rem;
+  
+  /* Chart colors */
+  --chart-1: 217 91% 60%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
 }
 
 body {
   background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background-color: hsl(var(--primary) / 0.3);
   color: hsl(var(--foreground));
 }

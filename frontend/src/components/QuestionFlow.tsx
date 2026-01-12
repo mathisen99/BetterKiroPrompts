@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Question } from '@/lib/api'
+import { ArrowLeft, ArrowRight, CheckCircle2, MessageSquare, Send } from 'lucide-react'
 
 interface QuestionFlowProps {
   questions: Question[]
@@ -71,78 +73,142 @@ export function QuestionFlow({
     return null
   }
 
+  const progress = ((currentIndex + 1) / questions.length) * 100
+
   return (
-    <div className="py-8">
+    <div className="py-8 space-y-6">
       {/* Progress indicator */}
-      <div className="mb-6">
-        <div className="flex justify-between text-sm text-muted-foreground mb-2">
-          <span>Question {currentIndex + 1} of {questions.length}</span>
-          <span>{Math.round(((currentIndex + 1) / questions.length) * 100)}%</span>
-        </div>
-        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
-          />
-        </div>
-      </div>
+      <Card className="border-border/30 bg-card/30">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">
+                Question {currentIndex + 1} of {questions.length}
+              </span>
+            </div>
+            <span className="text-sm text-muted-foreground font-medium">
+              {Math.round(progress)}% complete
+            </span>
+          </div>
+          <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-linear-to-r from-primary to-primary/80 transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {/* Step indicators */}
+          <div className="flex justify-between mt-3">
+            {questions.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                  idx <= currentIndex ? 'bg-primary' : 'bg-secondary'
+                }`}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Previous Q&A */}
       {previousQuestions.length > 0 && (
-        <div className="mb-8 space-y-3">
-          <p className="text-sm text-muted-foreground">Previous answers (click to edit):</p>
-          {previousQuestions.map((q) => (
-            <button
-              key={q.id}
-              onClick={() => handlePreviousClick(q.id)}
-              className="w-full text-left p-3 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors"
-            >
-              <p className="text-sm text-muted-foreground mb-1">{q.text}</p>
-              <p className="text-sm">{answers.get(q.id) || '(no answer)'}</p>
-            </button>
-          ))}
-        </div>
+        <Card className="border-border/30 bg-card/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <CheckCircle2 className="h-4 w-4 text-primary/70" />
+              Previous Answers
+            </CardTitle>
+            <CardDescription>Click to edit any previous answer</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {previousQuestions.map((q, idx) => (
+              <button
+                key={q.id}
+                onClick={() => handlePreviousClick(q.id)}
+                className="w-full text-left p-4 rounded-lg border border-border/30 bg-background/30 hover:bg-background/50 hover:border-primary/30 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center">
+                    {idx + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-muted-foreground mb-1 line-clamp-1">{q.text}</p>
+                    <p className="text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                      {answers.get(q.id) || '(no answer)'}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </CardContent>
+        </Card>
       )}
 
       {/* Current question */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="answer" className="block text-lg font-medium mb-2">
-            {currentQuestion.text}
-          </label>
-          {currentQuestion.hint && (
-            <p className="text-sm text-muted-foreground mb-3">{currentQuestion.hint}</p>
-          )}
-          <Textarea
-            id="answer"
-            value={currentAnswer}
-            onChange={(e) => setCurrentAnswer(e.target.value)}
-            placeholder="Type your answer..."
-            rows={4}
-            className="resize-none"
-            aria-describedby={currentQuestion.hint ? 'hint' : undefined}
-          />
-        </div>
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">
+              {currentIndex + 1}
+            </span>
+            <div className="flex-1">
+              <CardTitle className="text-xl leading-relaxed">
+                {currentQuestion.text}
+              </CardTitle>
+              {currentQuestion.hint && (
+                <CardDescription className="mt-2 text-base">
+                  {currentQuestion.hint}
+                </CardDescription>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Textarea
+              id="answer"
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Type your answer..."
+              rows={5}
+              className="resize-none text-base bg-background/50 border-border/50 focus:border-primary/50"
+              aria-describedby={currentQuestion.hint ? 'hint' : undefined}
+            />
 
-        <div className="flex gap-3">
-          {canGoBack && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBack}
-            >
-              Back
-            </Button>
-          )}
-          <Button
-            type="submit"
-            disabled={!currentAnswer.trim()}
-            className="flex-1"
-          >
-            {isLastQuestion ? 'Generate Files' : 'Next'}
-          </Button>
-        </div>
-      </form>
+            <div className="flex gap-3">
+              {canGoBack && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={!currentAnswer.trim()}
+                className="flex-1 h-11 gap-2"
+              >
+                {isLastQuestion ? (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Generate Files
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
