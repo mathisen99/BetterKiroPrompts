@@ -9,9 +9,44 @@ import (
 	"strings"
 )
 
+// ExperienceLevel represents the user's programming experience level.
+type ExperienceLevel string
+
+const (
+	ExperienceLevelBeginner ExperienceLevel = "beginner"
+	ExperienceLevelNovice   ExperienceLevel = "novice"
+	ExperienceLevelExpert   ExperienceLevel = "expert"
+)
+
+// ValidExperienceLevels contains all valid experience level values.
+var ValidExperienceLevels = map[ExperienceLevel]bool{
+	ExperienceLevelBeginner: true,
+	ExperienceLevelNovice:   true,
+	ExperienceLevelExpert:   true,
+}
+
+// HookPreset represents the hook configuration preset.
+type HookPreset string
+
+const (
+	HookPresetLight   HookPreset = "light"
+	HookPresetBasic   HookPreset = "basic"
+	HookPresetDefault HookPreset = "default"
+	HookPresetStrict  HookPreset = "strict"
+)
+
+// ValidHookPresets contains all valid hook preset values.
+var ValidHookPresets = map[HookPreset]bool{
+	HookPresetLight:   true,
+	HookPresetBasic:   true,
+	HookPresetDefault: true,
+	HookPresetStrict:  true,
+}
+
 // GenerateQuestionsRequest is the request body for generating questions.
 type GenerateQuestionsRequest struct {
-	ProjectIdea string `json:"projectIdea"`
+	ProjectIdea     string          `json:"projectIdea"`
+	ExperienceLevel ExperienceLevel `json:"experienceLevel"`
 }
 
 // GenerateQuestionsResponse is the response body for generated questions.
@@ -21,8 +56,10 @@ type GenerateQuestionsResponse struct {
 
 // GenerateOutputsRequest is the request body for generating outputs.
 type GenerateOutputsRequest struct {
-	ProjectIdea string              `json:"projectIdea"`
-	Answers     []generation.Answer `json:"answers"`
+	ProjectIdea     string              `json:"projectIdea"`
+	Answers         []generation.Answer `json:"answers"`
+	ExperienceLevel ExperienceLevel     `json:"experienceLevel"`
+	HookPreset      HookPreset          `json:"hookPreset"`
 }
 
 // GenerateOutputsResponse is the response body for generated outputs.
@@ -73,8 +110,14 @@ func (h *GenerateHandler) HandleGenerateQuestions(w http.ResponseWriter, r *http
 		return
 	}
 
+	// Validate experience level
+	if err := validateExperienceLevel(req.ExperienceLevel); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		return
+	}
+
 	// Generate questions
-	questions, err := h.service.GenerateQuestions(r.Context(), req.ProjectIdea)
+	questions, err := h.service.GenerateQuestions(r.Context(), req.ProjectIdea, string(req.ExperienceLevel))
 	if err != nil {
 		handleGenerationError(w, err)
 		return
@@ -111,8 +154,20 @@ func (h *GenerateHandler) HandleGenerateOutputs(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	// Validate experience level
+	if err := validateExperienceLevel(req.ExperienceLevel); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		return
+	}
+
+	// Validate hook preset
+	if err := validateHookPreset(req.HookPreset); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		return
+	}
+
 	// Generate outputs
-	files, err := h.service.GenerateOutputs(r.Context(), req.ProjectIdea, req.Answers)
+	files, err := h.service.GenerateOutputs(r.Context(), req.ProjectIdea, req.Answers, string(req.ExperienceLevel), string(req.HookPreset))
 	if err != nil {
 		handleGenerationError(w, err)
 		return
@@ -185,4 +240,26 @@ func writeError(w http.ResponseWriter, status int, message string, retryAfter in
 		w.Header().Set("Retry-After", string(rune(retryAfter)))
 	}
 	writeJSON(w, status, resp)
+}
+
+// validateExperienceLevel validates the experience level value.
+func validateExperienceLevel(level ExperienceLevel) error {
+	if level == "" {
+		return errors.New("experience level is required")
+	}
+	if !ValidExperienceLevels[level] {
+		return errors.New("invalid experience level: must be 'beginner', 'novice', or 'expert'")
+	}
+	return nil
+}
+
+// validateHookPreset validates the hook preset value.
+func validateHookPreset(preset HookPreset) error {
+	if preset == "" {
+		return errors.New("hook preset is required")
+	}
+	if !ValidHookPresets[preset] {
+		return errors.New("invalid hook preset: must be 'light', 'basic', 'default', or 'strict'")
+	}
+	return nil
 }

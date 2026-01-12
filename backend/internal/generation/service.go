@@ -91,12 +91,12 @@ func ValidateAnswers(answers []Answer) error {
 }
 
 // GenerateQuestions generates follow-up questions based on the project idea.
-func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string) ([]Question, error) {
+func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, experienceLevel string) ([]Question, error) {
 	if err := ValidateProjectIdea(projectIdea); err != nil {
 		return nil, err
 	}
 
-	prompt := buildQuestionsPrompt(strings.TrimSpace(projectIdea))
+	prompt := buildQuestionsPrompt(strings.TrimSpace(projectIdea), experienceLevel)
 
 	messages := []openai.Message{
 		{Role: "system", Content: questionsSystemPrompt},
@@ -117,7 +117,7 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string) ([]
 }
 
 // GenerateOutputs generates kickoff prompt, steering files, and hooks.
-func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer) ([]GeneratedFile, error) {
+func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) ([]GeneratedFile, error) {
 	if err := ValidateProjectIdea(projectIdea); err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		return nil, err
 	}
 
-	prompt := buildOutputsPrompt(strings.TrimSpace(projectIdea), answers)
+	prompt := buildOutputsPrompt(strings.TrimSpace(projectIdea), answers, experienceLevel, hookPreset)
 
 	messages := []openai.Message{
 		{Role: "system", Content: outputsSystemPrompt},
@@ -181,13 +181,13 @@ Response format:
   ]
 }`
 
-func buildQuestionsPrompt(projectIdea string) string {
-	return fmt.Sprintf("Project idea: %s", projectIdea)
+func buildQuestionsPrompt(projectIdea string, experienceLevel string) string {
+	return fmt.Sprintf("Project idea: %s\nExperience level: %s", projectIdea, experienceLevel)
 }
 
-func buildOutputsPrompt(projectIdea string, answers []Answer) string {
+func buildOutputsPrompt(projectIdea string, answers []Answer, experienceLevel string, hookPreset string) string {
 	answersJSON, _ := json.Marshal(answers)
-	return fmt.Sprintf("Project idea: %s\nAnswers: %s", projectIdea, string(answersJSON))
+	return fmt.Sprintf("Project idea: %s\nAnswers: %s\nExperience level: %s\nHook preset: %s", projectIdea, string(answersJSON), experienceLevel, hookPreset)
 }
 
 func parseQuestionsResponse(response string) ([]Question, error) {

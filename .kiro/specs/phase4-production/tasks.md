@@ -49,14 +49,14 @@ This phase delivers professional UI design, smarter AI generation with experienc
   - Test responsive behavior
   - Ensure dark theme with blue accents is consistent
 
-- [ ] 5. Update Backend API to Accept Experience Level and Hook Preset
-  - [ ] 5.1 Update GenerateQuestionsRequest struct to include ExperienceLevel
+- [x] 5. Update Backend API to Accept Experience Level and Hook Preset
+  - [x] 5.1 Update GenerateQuestionsRequest struct to include ExperienceLevel
     - Add validation for valid values
     - _Requirements: 1.2, 1.3, 1.4_
-  - [ ] 5.2 Update GenerateOutputsRequest struct to include ExperienceLevel and HookPreset
+  - [x] 5.2 Update GenerateOutputsRequest struct to include ExperienceLevel and HookPreset
     - Add validation for valid values
     - _Requirements: 5.7, 6.6_
-  - [ ] 5.3 Update API handlers to pass new fields to generation service
+  - [x] 5.3 Update API handlers to pass new fields to generation service
     - _Requirements: 3.1_
 
 - [ ] 6. Create Comprehensive AI System Prompts
