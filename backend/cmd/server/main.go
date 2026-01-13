@@ -5,6 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"better-kiro-prompts/internal/api"
 	"better-kiro-prompts/internal/db"
@@ -45,8 +48,44 @@ func main() {
 
 	router := api.NewRouter(routerCfg)
 
-	log.Printf("Server starting on port %s", port)
-	if err := http.ListenAndServe(":"+port, router); err != nil {
-		log.Fatal(err)
+	// Create HTTP server with explicit configuration
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: router,
+	}
+
+	// Channel to listen for shutdown signals
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start server in a goroutine
+	go func() {
+		log.Printf("Server starting on port %s", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for shutdown signal
+	sig := <-shutdown
+	log.Printf("Received signal %v, initiating graceful shutdown...", sig)
+
+	// Create context with timeout for graceful shutdown
+	// Allow up to 30 seconds for in-flight requests to complete
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Attempt graceful shutdown
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Graceful shutdown error: %v", err)
+	} else {
+		log.Printf("Server gracefully stopped")
+	}
+
+	// Close database connection
+	if err := db.Close(); err != nil {
+		log.Printf("Error closing database connection: %v", err)
+	} else {
+		log.Printf("Database connection closed")
 	}
 }

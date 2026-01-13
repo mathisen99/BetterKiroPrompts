@@ -264,8 +264,8 @@ This implementation plan covers the final polish phase, organized into logical g
     - Show "View in Gallery" link after successful generation
     - _Requirements: 6.4_
 
-- [ ] 20. Graceful Shutdown
-  - [ ] 20.1 Implement graceful shutdown in main.go
+- [x] 20. Graceful Shutdown
+  - [x] 20.1 Implement graceful shutdown in main.go
     - Handle SIGTERM/SIGINT signals
     - Wait for in-flight requests to complete
     - _Requirements: 8.6_
