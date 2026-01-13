@@ -270,7 +270,7 @@ This implementation plan covers the final polish phase, organized into logical g
     - Wait for in-flight requests to complete
     - _Requirements: 8.6_
 
-- [ ] 21. Final Checkpoint
+- [x] 21. Final Checkpoint
   - Run full test suite
   - Run `pnpm typecheck && pnpm lint` in frontend
   - Run `golangci-lint run && go vet` in backend
