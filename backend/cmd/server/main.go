@@ -69,6 +69,13 @@ func main() {
 	// Initialize scanner service (requires DB, OpenAI client is optional for AI review)
 	if db.DB != nil {
 		githubToken := os.Getenv("GITHUB_TOKEN")
+
+		// Set scanner container name from environment
+		scannerContainer := os.Getenv("SCANNER_CONTAINER")
+		if scannerContainer != "" {
+			scanner.SetScannerContainer(scannerContainer)
+		}
+
 		scannerService := scanner.NewService(db.DB, openaiClient, githubToken)
 		// Scanner rate limiter: 10 scans per hour per IP (scans are resource-intensive)
 		scanRateLimiter := ratelimit.NewLimiterWithConfig(10, time.Hour)

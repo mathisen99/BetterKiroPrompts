@@ -58,13 +58,32 @@ type RawFinding struct {
 	RuleID      string `json:"rule_id,omitempty"`
 }
 
-// runTool executes a command with timeout and returns the output.
+// scannerContainer is the name of the scanner container for docker exec.
+// This can be overridden via environment variable SCANNER_CONTAINER.
+var scannerContainer = "better-kiro-prompts-scanner-1"
+
+// SetScannerContainer sets the scanner container name.
+func SetScannerContainer(name string) {
+	if name != "" {
+		scannerContainer = name
+	}
+}
+
+// runTool executes a command inside the scanner container with timeout.
 func (r *ToolRunner) runTool(ctx context.Context, name string, args []string, workDir string) ([]byte, bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Dir = workDir
+	// Build docker exec command to run tool in scanner container
+	dockerArgs := []string{
+		"exec",
+		"-w", workDir,
+		scannerContainer,
+		name,
+	}
+	dockerArgs = append(dockerArgs, args...)
+
+	cmd := exec.CommandContext(ctx, "docker", dockerArgs...)
 
 	output, err := cmd.CombinedOutput()
 

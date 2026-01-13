@@ -11,8 +11,13 @@ services:
       - DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
       - PORT=8080
       - ENV=production
+      - SCANNER_CONTAINER=better-kiro-prompts-scanner-1
+    volumes:
+      - scan-repos:/scan/repos
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - postgres
+      - scanner
     networks:
       - app-network
     restart: unless-stopped
@@ -31,7 +36,7 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Security scanner container - only starts with --profile scan
+  # Security scanner container - runs as a service for docker exec
   scanner:
     build:
       context: ./backend
@@ -49,6 +54,10 @@ services:
           memory: 2G
     networks:
       - app-network
+    # Keep container running for docker exec - override entrypoint
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["tail -f /dev/null"]
+    restart: unless-stopped
 
 volumes:
   postgres_data:

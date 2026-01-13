@@ -28,7 +28,7 @@ build_all() {
     
     log "Building Docker images..."
     cd "$ROOT_DIR"
-    docker compose -f docker-compose.prod.yml build --no-cache
+    docker compose -f docker-compose.prod.yml --profile scan build --no-cache
     
     log "Build complete!"
 }
@@ -38,22 +38,22 @@ case "${1:-}" in
         # ./build.sh - build everything and start
         build_all
         log "Starting containers..."
-        docker compose -f docker-compose.prod.yml up -d
+        docker compose -f docker-compose.prod.yml --profile scan up -d
         log "Stack running at http://localhost:8080"
         ;;
     --restart)
         # ./build.sh --restart - stop, rebuild, start
         log "Stopping containers..."
-        docker compose -f docker-compose.prod.yml down
+        docker compose -f docker-compose.prod.yml --profile scan down
         build_all
         log "Starting containers..."
-        docker compose -f docker-compose.prod.yml up -d
-        log "Stack running!"
+        docker compose -f docker-compose.prod.yml --profile scan up -d
+        log "Stack running at http://localhost:8080"
         ;;
     --stop)
         # ./build.sh --stop - stop everything
         log "Stopping containers..."
-        docker compose -f docker-compose.prod.yml down
+        docker compose -f docker-compose.prod.yml --profile scan down
         log "Stopped!"
         ;;
     *)

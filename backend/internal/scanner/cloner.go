@@ -29,6 +29,8 @@ const (
 	DefaultMaxRepoSizeMB = 500             // 500 MB default max repo size
 	DefaultCloneTimeout  = 5 * time.Minute // 5 minute default clone timeout
 	DefaultTempDirPrefix = "scan-repo-"
+	// ScanReposDir is the shared volume path for scanner container access
+	ScanReposDir = "/scan/repos"
 )
 
 // Cloner handles repository cloning operations.
@@ -83,7 +85,7 @@ func NewCloner(opts ...ClonerOption) *Cloner {
 	c := &Cloner{
 		maxSizeMB:    DefaultMaxRepoSizeMB,
 		cloneTimeout: DefaultCloneTimeout,
-		tempDir:      os.TempDir(),
+		tempDir:      ScanReposDir, // Use shared volume for scanner container access
 	}
 
 	for _, opt := range opts {
