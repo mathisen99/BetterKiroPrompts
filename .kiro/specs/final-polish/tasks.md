@@ -220,7 +220,7 @@ This implementation plan covers the final polish phase, organized into logical g
     - Show "taking longer than usual" after 90 seconds
     - _Requirements: 3.2, 3.3_
 
-- [ ] 16. Checkpoint - Frontend Core Complete
+- [x] 16. Checkpoint - Frontend Core Complete
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 17. Frontend Gallery
