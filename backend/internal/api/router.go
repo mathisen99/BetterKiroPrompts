@@ -57,6 +57,10 @@ func NewRouter(cfg *RouterConfig) http.Handler {
 	// Client logging endpoint (no rate limiting - logs are important)
 	if cfg != nil && cfg.Logger != nil {
 		mux.HandleFunc("POST /api/logs/client", HandleClientLogs(cfg.Logger))
+
+		// Admin endpoints for log level management
+		mux.HandleFunc("GET /api/admin/log-level", HandleGetLogLevel(cfg.Logger))
+		mux.HandleFunc("POST /api/admin/log-level", HandleSetLogLevel(cfg.Logger))
 	}
 
 	// Serve static files from ./static directory (SPA with fallback to index.html)
