@@ -49,6 +49,9 @@ type Repository interface {
 	ListGenerations(ctx context.Context, filter ListFilter) ([]Generation, int, error)
 	IncrementViewCount(ctx context.Context, id string) error
 
+	// Views (IP-deduplicated)
+	RecordView(ctx context.Context, generationID string, ipHash string) (isNew bool, err error)
+
 	// Ratings
 	CreateOrUpdateRating(ctx context.Context, genID string, score int, voterHash string) error
 	GetUserRating(ctx context.Context, genID string, voterHash string) (int, error)
@@ -238,6 +241,66 @@ func (r *PostgresRepository) IncrementViewCount(ctx context.Context, id string) 
 	}
 
 	return nil
+}
+
+// RecordView records a view for a generation, deduplicated by IP hash.
+// Returns true if this is a new view (first time this IP viewed this generation),
+// false if this IP has already viewed this generation.
+// Only increments view_count for new views.
+func (r *PostgresRepository) RecordView(ctx context.Context, generationID string, ipHash string) (bool, error) {
+	if generationID == "" || ipHash == "" {
+		return false, ErrInvalidInput
+	}
+
+	// Use a transaction to ensure atomicity
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Try to insert the view record
+	// ON CONFLICT DO NOTHING means if the (generation_id, ip_hash) already exists, nothing happens
+	insertQuery := `
+		INSERT INTO views (generation_id, ip_hash)
+		VALUES ($1, $2)
+		ON CONFLICT (generation_id, ip_hash) DO NOTHING
+		RETURNING id`
+
+	var viewID string
+	err = tx.QueryRowContext(ctx, insertQuery, generationID, ipHash).Scan(&viewID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Conflict occurred - this IP has already viewed this generation
+			if err := tx.Commit(); err != nil {
+				return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+			}
+			return false, nil
+		}
+		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+	}
+
+	// New view - increment the view count
+	updateQuery := `UPDATE generations SET view_count = view_count + 1 WHERE id = $1`
+	result, err := tx.ExecContext(ctx, updateQuery, generationID)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+	}
+	if rowsAffected == 0 {
+		return false, ErrNotFound
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
+	}
+
+	return true, nil
 }
 
 // CreateOrUpdateRating creates or updates a rating for a generation.

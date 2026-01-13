@@ -115,6 +115,7 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 }
 
 // GetGeneration retrieves a single generation by ID and increments view count.
+// Deprecated: Use GetGenerationWithView for IP-deduplicated view tracking.
 func (s *Service) GetGeneration(ctx context.Context, id string) (*storage.Generation, error) {
 	if id == "" {
 		return nil, ErrInvalidInput
@@ -131,6 +132,30 @@ func (s *Service) GetGeneration(ctx context.Context, id string) (*storage.Genera
 
 	// Increment view count (fire and forget - don't fail if this fails)
 	_ = s.repo.IncrementViewCount(ctx, id)
+
+	return gen, nil
+}
+
+// GetGenerationWithView retrieves a single generation by ID and records a view
+// deduplicated by IP hash. Only increments view count for new unique views.
+func (s *Service) GetGenerationWithView(ctx context.Context, id string, ipHash string) (*storage.Generation, error) {
+	if id == "" {
+		return nil, ErrInvalidInput
+	}
+
+	// Get the generation
+	gen, err := s.repo.GetGeneration(ctx, id)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	// Record view with IP deduplication (fire and forget - don't fail if this fails)
+	if ipHash != "" {
+		_, _ = s.repo.RecordView(ctx, id, ipHash)
+	}
 
 	return gen, nil
 }

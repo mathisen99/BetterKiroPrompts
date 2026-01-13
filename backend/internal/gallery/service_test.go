@@ -110,6 +110,39 @@ func (m *mockRepository) IncrementViewCount(_ context.Context, id string) error 
 	return storage.ErrNotFound
 }
 
+func (m *mockRepository) RecordView(_ context.Context, generationID string, ipHash string) (bool, error) {
+	if generationID == "" || ipHash == "" {
+		return false, storage.ErrInvalidInput
+	}
+
+	// Check generation exists
+	found := false
+	genIndex := -1
+	for i := range m.generations {
+		if m.generations[i].ID == generationID {
+			found = true
+			genIndex = i
+			break
+		}
+	}
+	if !found {
+		return false, storage.ErrNotFound
+	}
+
+	// Check if this IP has already viewed this generation
+	// Use a simple map stored in ratings for simplicity (reusing the structure)
+	viewKey := "view:" + generationID + ":" + ipHash
+	if m.ratings[viewKey] != nil {
+		return false, nil // Already viewed
+	}
+
+	// Record the view
+	m.ratings[viewKey] = make(map[string]int)
+	m.ratings[viewKey]["viewed"] = 1
+	m.generations[genIndex].ViewCount++
+	return true, nil
+}
+
 func (m *mockRepository) CreateOrUpdateRating(_ context.Context, genID string, score int, voterHash string) error {
 	if score < 1 || score > 5 {
 		return storage.ErrInvalidInput

@@ -2,6 +2,8 @@
 package api
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -172,8 +174,12 @@ func (h *GalleryHandler) HandleGetGalleryItem(w http.ResponseWriter, r *http.Req
 	// Get voter hash from query for user rating
 	voterHash := r.URL.Query().Get("voterHash")
 
-	// Get generation
-	gen, err := h.service.GetGeneration(r.Context(), id)
+	// Hash the client IP for view tracking
+	clientIP := getClientIP(r)
+	ipHash := hashIP(clientIP)
+
+	// Get generation with IP-deduplicated view tracking
+	gen, err := h.service.GetGenerationWithView(r.Context(), id, ipHash)
 	if err != nil {
 		if errors.Is(err, gallery.ErrNotFound) {
 			WriteNotFound(w, r, "Generation not found")
@@ -283,4 +289,11 @@ func truncateString(s string, maxLen int) string {
 		return s[:maxLen]
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// hashIP creates a SHA-256 hash of an IP address for privacy-preserving storage.
+// The hash is returned as a lowercase hex string.
+func hashIP(ip string) string {
+	hash := sha256.Sum256([]byte(ip))
+	return hex.EncodeToString(hash[:])
 }

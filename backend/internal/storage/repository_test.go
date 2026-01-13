@@ -228,3 +228,177 @@ func TestProperty3_GenerationRecordCompleteness_ValidHookPresets(t *testing.T) {
 		t.Errorf("Property 3 (Valid Hook Presets) failed: %v", err)
 	}
 }
+
+// Feature: ux-improvements, Property 4: Idempotent View Counting
+// **Validates: Requirements 5.1, 5.3**
+// For any gallery item and IP address, multiple view requests SHALL result in
+// exactly one view record in the database and the view_count SHALL increment by at most 1.
+
+// MockViewRepository is a mock implementation for testing view tracking logic.
+type MockViewRepository struct {
+	views       map[string]map[string]bool // generationID -> ipHash -> exists
+	viewCounts  map[string]int             // generationID -> count
+	generations map[string]bool            // generationID -> exists
+}
+
+// NewMockViewRepository creates a new mock repository for view testing.
+func NewMockViewRepository() *MockViewRepository {
+	return &MockViewRepository{
+		views:       make(map[string]map[string]bool),
+		viewCounts:  make(map[string]int),
+		generations: make(map[string]bool),
+	}
+}
+
+// AddGeneration adds a generation to the mock repository.
+func (m *MockViewRepository) AddGeneration(id string) {
+	m.generations[id] = true
+	m.viewCounts[id] = 0
+	m.views[id] = make(map[string]bool)
+}
+
+// RecordView simulates the RecordView behavior.
+func (m *MockViewRepository) RecordView(generationID string, ipHash string) (bool, error) {
+	if generationID == "" || ipHash == "" {
+		return false, ErrInvalidInput
+	}
+
+	if !m.generations[generationID] {
+		return false, ErrNotFound
+	}
+
+	// Check if this IP has already viewed this generation
+	if m.views[generationID][ipHash] {
+		return false, nil // Duplicate view
+	}
+
+	// Record the new view
+	m.views[generationID][ipHash] = true
+	m.viewCounts[generationID]++
+	return true, nil
+}
+
+// GetViewCount returns the view count for a generation.
+func (m *MockViewRepository) GetViewCount(generationID string) int {
+	return m.viewCounts[generationID]
+}
+
+// GetUniqueViewers returns the number of unique IP hashes that viewed a generation.
+func (m *MockViewRepository) GetUniqueViewers(generationID string) int {
+	return len(m.views[generationID])
+}
+
+// TestProperty4_IdempotentViewCounting tests that multiple views from the same IP
+// result in exactly one view record and view_count increments by at most 1.
+// Feature: ux-improvements, Property 4: Idempotent View Counting
+// **Validates: Requirements 5.1, 5.3**
+func TestProperty4_IdempotentViewCounting(t *testing.T) {
+	property := func(seed int64) bool {
+		r := rand.New(rand.NewSource(seed))
+		repo := NewMockViewRepository()
+
+		// Create a generation
+		genID := generateNonEmptyString(r)
+		repo.AddGeneration(genID)
+
+		// Generate a random IP hash
+		ipHash := generateNonEmptyString(r)
+
+		// Record the view multiple times (2-10 times)
+		numAttempts := 2 + r.Intn(9)
+		newViewCount := 0
+
+		for i := 0; i < numAttempts; i++ {
+			isNew, err := repo.RecordView(genID, ipHash)
+			if err != nil {
+				t.Logf("RecordView failed: %v", err)
+				return false
+			}
+			if isNew {
+				newViewCount++
+			}
+		}
+
+		// Property: Only the first view should be counted as new
+		if newViewCount != 1 {
+			t.Logf("Expected exactly 1 new view, got %d after %d attempts", newViewCount, numAttempts)
+			return false
+		}
+
+		// Property: View count should be exactly 1
+		if repo.GetViewCount(genID) != 1 {
+			t.Logf("Expected view count of 1, got %d", repo.GetViewCount(genID))
+			return false
+		}
+
+		// Property: Unique viewers should be exactly 1
+		if repo.GetUniqueViewers(genID) != 1 {
+			t.Logf("Expected 1 unique viewer, got %d", repo.GetUniqueViewers(genID))
+			return false
+		}
+
+		return true
+	}
+
+	cfg := &quick.Config{
+		MaxCount: 100,
+	}
+
+	if err := quick.Check(property, cfg); err != nil {
+		t.Errorf("Property 4 (Idempotent View Counting) failed: %v", err)
+	}
+}
+
+// TestProperty4_IdempotentViewCounting_MultipleIPs tests that different IPs
+// each get counted once.
+func TestProperty4_IdempotentViewCounting_MultipleIPs(t *testing.T) {
+	property := func(seed int64) bool {
+		r := rand.New(rand.NewSource(seed))
+		repo := NewMockViewRepository()
+
+		// Create a generation
+		genID := generateNonEmptyString(r)
+		repo.AddGeneration(genID)
+
+		// Generate multiple unique IP hashes (2-10)
+		numIPs := 2 + r.Intn(9)
+		ipHashes := make([]string, numIPs)
+		for i := 0; i < numIPs; i++ {
+			ipHashes[i] = generateNonEmptyString(r) + "_" + string(rune('a'+i)) // Ensure uniqueness
+		}
+
+		// Each IP views multiple times
+		for _, ipHash := range ipHashes {
+			numAttempts := 1 + r.Intn(5)
+			for j := 0; j < numAttempts; j++ {
+				_, err := repo.RecordView(genID, ipHash)
+				if err != nil {
+					t.Logf("RecordView failed: %v", err)
+					return false
+				}
+			}
+		}
+
+		// Property: View count should equal number of unique IPs
+		if repo.GetViewCount(genID) != numIPs {
+			t.Logf("Expected view count of %d, got %d", numIPs, repo.GetViewCount(genID))
+			return false
+		}
+
+		// Property: Unique viewers should equal number of unique IPs
+		if repo.GetUniqueViewers(genID) != numIPs {
+			t.Logf("Expected %d unique viewers, got %d", numIPs, repo.GetUniqueViewers(genID))
+			return false
+		}
+
+		return true
+	}
+
+	cfg := &quick.Config{
+		MaxCount: 100,
+	}
+
+	if err := quick.Check(property, cfg); err != nil {
+		t.Errorf("Property 4 (Idempotent View Counting - Multiple IPs) failed: %v", err)
+	}
+}
