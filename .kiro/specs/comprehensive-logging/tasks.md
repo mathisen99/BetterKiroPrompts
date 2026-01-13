@@ -255,14 +255,14 @@ This plan implements comprehensive file-based logging across the entire applicat
     - ScanProgress: log scan status changes
     - _Requirements: 7.1_
 
-- [ ] 12. Add Log Level Admin Endpoint
-  - [ ] 12.1 Create `/api/admin/log-level` endpoint
+- [x] 12. Add Log Level Admin Endpoint
+  - [x] 12.1 Create `/api/admin/log-level` endpoint
     - GET to retrieve current level
     - POST to change level at runtime
     - _Requirements: 9.3_
 
-- [ ] 13. Update Environment Configuration
-  - [ ] 13.1 Update `.env.example` with logging variables
+- [x] 13. Update Environment Configuration
+  - [x] 13.1 Update `.env.example` with logging variables
     - LOG_LEVEL (DEBUG, INFO, WARN, ERROR)
     - NO_COLOR (optional)
     - _Requirements: 9.1, 10.8_
