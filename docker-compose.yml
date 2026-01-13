@@ -42,8 +42,28 @@ services:
     networks:
       - app-network
 
+  # Security scanner container - only starts with --profile scan
+  scanner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.scanner
+    profiles:
+      - scan
+    volumes:
+      - scan-repos:/scan/repos
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    networks:
+      - app-network
+    # No outbound network access during scans except for vuln DB updates
+    # Network isolation handled at runtime by the scanner service
+
 volumes:
   postgres_data:
+  scan-repos:
 
 networks:
   app-network:

@@ -1,0 +1,118 @@
+# Multi-stage build for security scanner container
+# Includes universal tools + language-specific security scanners
+
+# =============================================================================
+# Stage 1: Go tools builder
+# =============================================================================
+FROM golang:1.25-alpine AS go-builder
+
+RUN apk add --no-cache git
+
+# Install govulncheck (official Go vulnerability checker)
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+
+# =============================================================================
+# Stage 2: Rust tools builder
+# =============================================================================
+FROM rust:1.85-alpine AS rust-builder
+
+RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconfig
+
+# Install cargo-audit for Rust dependency vulnerability scanning
+RUN cargo install cargo-audit --locked
+
+# =============================================================================
+# Stage 3: Final scanner image
+# =============================================================================
+FROM alpine:3.19
+
+# Install base dependencies
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    curl \
+    wget \
+    bash \
+    jq \
+    # Node.js for npm audit
+    nodejs \
+    npm \
+    # Ruby for bundler-audit and brakeman
+    ruby \
+    ruby-dev \
+    ruby-bundler \
+    # Python for bandit, pip-audit, safety, semgrep
+    python3 \
+    py3-pip \
+    # Build dependencies for some tools
+    build-base \
+    libffi-dev \
+    openssl-dev
+
+# Create virtual environment for Python tools to avoid externally-managed-environment error
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+
+# =============================================================================
+# Install Universal Tools (always run on all repos)
+# =============================================================================
+
+# Install Trivy - comprehensive vulnerability scanner
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# Install Semgrep - SAST with security rulesets
+RUN pip install --no-cache-dir semgrep
+
+# Install TruffleHog - secret detection in git history
+RUN curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+
+# Install Gitleaks - additional secret detection
+ARG GITLEAKS_VERSION=8.30.0
+RUN wget -q https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz \
+    && tar xzf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz -C /usr/local/bin gitleaks \
+    && rm gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz \
+    && chmod +x /usr/local/bin/gitleaks
+
+# =============================================================================
+# Install Language-Specific Tools
+# =============================================================================
+
+# Go tools - copy from builder
+COPY --from=go-builder /go/bin/govulncheck /usr/local/bin/
+
+# Python tools - bandit, pip-audit, safety
+RUN pip install --no-cache-dir bandit pip-audit safety
+
+# Rust tools - copy from builder
+COPY --from=rust-builder /usr/local/cargo/bin/cargo-audit /usr/local/bin/
+
+# Ruby tools - bundler-audit and brakeman
+RUN gem install bundler-audit brakeman --no-document
+
+# =============================================================================
+# Configure non-root user for security
+# =============================================================================
+RUN adduser -D -u 1000 scanner \
+    && mkdir -p /scan/repos \
+    && chown -R scanner:scanner /scan
+
+USER scanner
+WORKDIR /scan
+
+# Verify all tools are installed
+RUN echo "Verifying tool installations..." \
+    && trivy --version \
+    && semgrep --version \
+    && trufflehog --version \
+    && gitleaks version \
+    && govulncheck -version || true \
+    && bandit --version \
+    && pip-audit --version \
+    && safety --version \
+    && cargo-audit --version \
+    && bundle-audit version \
+    && brakeman --version
+
+ENTRYPOINT ["/bin/sh"]

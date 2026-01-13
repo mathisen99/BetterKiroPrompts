@@ -28,8 +28,8 @@ This implementation plan covers the Info Page and Security Scanning features for
   - Verify navigation works between all pages
   - Run `pnpm typecheck && pnpm lint` in frontend
 
-- [ ] 3. Create Security Container
-  - [ ] 3.1 Create Dockerfile.scanner
+- [x] 3. Create Security Container
+  - [x] 3.1 Create Dockerfile.scanner
     - Create `backend/Dockerfile.scanner`
     - Multi-stage build with Go, Python, Rust builders
     - Install universal tools: Trivy, Semgrep, TruffleHog, Gitleaks
@@ -41,22 +41,22 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Configure non-root user
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7_
 
-  - [ ] 3.2 Update docker-compose.yml
+  - [x] 3.2 Update docker-compose.yml
     - Add scanner service with profile "scan"
     - Configure shared volume for repos
     - Set resource limits (CPU, memory)
     - Configure network access
     - _Requirements: 12.8, 12.9, 12.10_
 
-  - [ ] 3.3 Update .env.example
+  - [x] 3.3 Update .env.example
     - Add GITHUB_TOKEN documentation
     - Add scanner-related configuration variables
     - _Requirements: 13.4_
 
-- [ ] 4. Checkpoint - Security Container Ready
-  - Build scanner container: `docker compose --profile scan build scanner`
-  - Verify all tools are installed in container
-  - Test container starts correctly
+- [x] 4. Checkpoint - Security Container Ready
+  - [x] Build scanner container: `docker compose --profile scan build scanner`
+  - [x] Verify all tools are installed in container
+  - [x] Test container starts correctly
 
 - [ ] 5. Create Database Schema for Scans
   - [ ] 5.1 Create migration for scan tables
