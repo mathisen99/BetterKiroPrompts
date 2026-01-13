@@ -128,7 +128,7 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - Add Escape key handler if missing
     - _Requirements: 6.5, 6.6_
 
-- [ ] 11. Final checkpoint
+- [x] 11. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.
   - Run frontend type check and lint
   - Run backend lint and vet

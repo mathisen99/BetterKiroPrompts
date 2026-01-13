@@ -168,11 +168,11 @@ export function GalleryDetail({
       aria-labelledby="gallery-detail-title"
     >
       <div ref={modalContentRef} className="relative w-full max-w-4xl my-8">
-        {/* Close button - prominent with high contrast */}
+        {/* Close button - positioned at top right of modal, outside card */}
         <Button
           variant="default"
           size="icon"
-          className="absolute top-4 right-4 z-10 h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+          className="absolute -top-2 -right-2 z-10 h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
           onClick={onClose}
           aria-label="Close modal"
         >
@@ -181,10 +181,10 @@ export function GalleryDetail({
 
         {/* Header card */}
         <Card className="mb-6">
-          <CardHeader>
+          <CardHeader className="pr-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 flex-1 min-w-0">
                   <CardTitle id="gallery-detail-title" className="text-xl">{generation.projectIdea}</CardTitle>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{generation.category}</Badge>
@@ -192,11 +192,13 @@ export function GalleryDetail({
                     <Badge variant="outline">{generation.hookPreset} hooks</Badge>
                   </div>
                 </div>
-                <Button onClick={handleDownloadAll} className="gap-2 shrink-0">
-                  <Package className="h-4 w-4" />
-                  <span className="hidden sm:inline">Download All</span>
-                </Button>
               </div>
+              
+              {/* Download button on its own row */}
+              <Button onClick={handleDownloadAll} className="gap-2 w-fit">
+                <Package className="h-4 w-4" />
+                Download All
+              </Button>
 
               <CardDescription className="flex flex-wrap items-center gap-4">
                 <span className="flex items-center gap-1">
