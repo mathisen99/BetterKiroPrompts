@@ -184,21 +184,21 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Log errors with details
     - _Requirements: 5.1, 5.2, 5.4, 5.5_
 
-- [ ] 8. Add Logging to Database Operations
-  - [ ] 8.1 Create `backend/internal/db/logging.go` with LoggingDB wrapper
+- [x] 8. Add Logging to Database Operations
+  - [x] 8.1 Create `backend/internal/db/logging.go` with LoggingDB wrapper
     - Wrap sql.DB with logging
     - QueryContext logging with type, duration, success
     - ExecContext logging with type, duration, rows_affected
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 8.2 Update `backend/internal/db/db.go` with connection logging
+  - [x] 8.2 Update `backend/internal/db/db.go` with connection logging
     - Log connection attempts and retries
     - Log successful connection with pool config
     - Log migration execution
     - Log connection close
     - _Requirements: 3.3, 3.4_
 
-  - [ ] 8.3 Update repository to use LoggingDB
+  - [x] 8.3 Update repository to use LoggingDB
     - Update storage.NewPostgresRepository to accept LoggingDB
     - Ensure all queries go through logging wrapper
     - _Requirements: 3.1, 3.2_

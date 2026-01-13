@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"better-kiro-prompts/internal/db"
 )
 
 // Common errors
@@ -68,14 +70,72 @@ type Category struct {
 	Keywords []string `json:"keywords"`
 }
 
+// SQLDB defines the interface for database operations that both sql.DB and LoggingDB satisfy
+type SQLDB interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+}
+
+// SQLTx defines the interface for transaction operations
+type SQLTx interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	Commit() error
+	Rollback() error
+}
+
 // PostgresRepository implements Repository using PostgreSQL.
 type PostgresRepository struct {
-	db *sql.DB
+	db        *sql.DB
+	loggingDB *db.LoggingDB
 }
 
 // NewPostgresRepository creates a new PostgreSQL repository.
-func NewPostgresRepository(db *sql.DB) *PostgresRepository {
-	return &PostgresRepository{db: db}
+func NewPostgresRepository(sqlDB *sql.DB) *PostgresRepository {
+	return &PostgresRepository{db: sqlDB}
+}
+
+// NewPostgresRepositoryWithLogging creates a new PostgreSQL repository with logging.
+func NewPostgresRepositoryWithLogging(loggingDB *db.LoggingDB) *PostgresRepository {
+	return &PostgresRepository{
+		db:        loggingDB.DB(),
+		loggingDB: loggingDB,
+	}
+}
+
+// queryContext executes a query using the logging wrapper if available
+func (r *PostgresRepository) queryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	if r.loggingDB != nil {
+		return r.loggingDB.QueryContext(ctx, query, args...)
+	}
+	return r.db.QueryContext(ctx, query, args...)
+}
+
+// queryRowContext executes a query that returns a single row using the logging wrapper if available
+func (r *PostgresRepository) queryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	if r.loggingDB != nil {
+		return r.loggingDB.QueryRowContext(ctx, query, args...)
+	}
+	return r.db.QueryRowContext(ctx, query, args...)
+}
+
+// execContext executes a query that doesn't return rows using the logging wrapper if available
+func (r *PostgresRepository) execContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	if r.loggingDB != nil {
+		return r.loggingDB.ExecContext(ctx, query, args...)
+	}
+	return r.db.ExecContext(ctx, query, args...)
+}
+
+// beginTx starts a transaction using the logging wrapper if available
+func (r *PostgresRepository) beginTx(ctx context.Context, opts *sql.TxOptions) (SQLTx, error) {
+	if r.loggingDB != nil {
+		return r.loggingDB.BeginTx(ctx, opts)
+	}
+	return r.db.BeginTx(ctx, opts)
 }
 
 // CreateGeneration stores a new generation in the database.
@@ -89,7 +149,7 @@ func (r *PostgresRepository) CreateGeneration(ctx context.Context, gen *Generati
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at`
 
-	err := r.db.QueryRowContext(ctx, query,
+	err := r.queryRowContext(ctx, query,
 		gen.ProjectIdea,
 		gen.ExperienceLevel,
 		gen.HookPreset,
@@ -114,7 +174,7 @@ func (r *PostgresRepository) GetGeneration(ctx context.Context, id string) (*Gen
 		WHERE g.id = $1`
 
 	gen := &Generation{}
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	err := r.queryRowContext(ctx, query, id).Scan(
 		&gen.ID,
 		&gen.ProjectIdea,
 		&gen.ExperienceLevel,
@@ -166,7 +226,7 @@ func (r *PostgresRepository) ListGenerations(ctx context.Context, filter ListFil
 	// Count total
 	countQuery := "SELECT COUNT(*)" + baseQuery + whereClause
 	var total int
-	if err := r.db.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
+	if err := r.queryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}
 
@@ -190,7 +250,7 @@ func (r *PostgresRepository) ListGenerations(ctx context.Context, filter ListFil
 
 	args = append(args, filter.PageSize, offset)
 
-	rows, err := r.db.QueryContext(ctx, selectQuery, args...)
+	rows, err := r.queryContext(ctx, selectQuery, args...)
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}
@@ -227,7 +287,7 @@ func (r *PostgresRepository) ListGenerations(ctx context.Context, filter ListFil
 // IncrementViewCount increments the view count for a generation.
 func (r *PostgresRepository) IncrementViewCount(ctx context.Context, id string) error {
 	query := `UPDATE generations SET view_count = view_count + 1 WHERE id = $1`
-	result, err := r.db.ExecContext(ctx, query, id)
+	result, err := r.execContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}
@@ -253,7 +313,7 @@ func (r *PostgresRepository) RecordView(ctx context.Context, generationID string
 	}
 
 	// Use a transaction to ensure atomicity
-	tx, err := r.db.BeginTx(ctx, nil)
+	tx, err := r.beginTx(ctx, nil)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}
@@ -310,7 +370,7 @@ func (r *PostgresRepository) CreateOrUpdateRating(ctx context.Context, genID str
 	}
 
 	// Use upsert to handle both create and update
-	tx, err := r.db.BeginTx(ctx, nil)
+	tx, err := r.beginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}
@@ -352,7 +412,7 @@ func (r *PostgresRepository) GetUserRating(ctx context.Context, genID string, vo
 	query := `SELECT score FROM ratings WHERE generation_id = $1 AND voter_hash = $2`
 
 	var score int
-	err := r.db.QueryRowContext(ctx, query, genID, voterHash).Scan(&score)
+	err := r.queryRowContext(ctx, query, genID, voterHash).Scan(&score)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, nil // No rating yet
 	}
@@ -369,7 +429,7 @@ func (r *PostgresRepository) GetUserRating(ctx context.Context, genID string, vo
 func (r *PostgresRepository) GetCategories(ctx context.Context) ([]Category, error) {
 	query := `SELECT id, name, keywords FROM categories ORDER BY id`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.queryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrDatabaseError, err)
 	}

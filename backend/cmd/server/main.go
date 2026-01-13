@@ -55,6 +55,7 @@ func main() {
 
 	// Database connection
 	appLog.App().Info("database_connecting")
+	db.SetLogger(appLog.DB()) // Set logger for database operations
 	if err := db.Connect(ctx); err != nil {
 		appLog.App().Error("database_connection_failed", slog.String("error", err.Error()))
 		os.Exit(1)
@@ -72,8 +73,10 @@ func main() {
 	}
 
 	// Initialize storage repository for gallery (only if DB is connected)
+	var loggingDB *db.LoggingDB
 	if db.DB != nil {
-		repo := storage.NewPostgresRepository(db.DB)
+		loggingDB = db.NewLoggingDB(db.DB, appLog.DB())
+		repo := storage.NewPostgresRepositoryWithLogging(loggingDB)
 
 		// Initialize gallery service with rating limiter (20 ratings/hour per IP)
 		ratingLimiter := ratelimit.NewLimiterWithConfig(20, time.Hour)
@@ -95,8 +98,8 @@ func main() {
 	} else {
 		// Create generation service with repository for gallery storage
 		var repo storage.Repository
-		if db.DB != nil {
-			repo = storage.NewPostgresRepository(db.DB)
+		if loggingDB != nil {
+			repo = storage.NewPostgresRepositoryWithLogging(loggingDB)
 		}
 		genService := generation.NewServiceWithDeps(openaiClient, nil, repo)
 		rateLimiter := ratelimit.NewLimiter()
