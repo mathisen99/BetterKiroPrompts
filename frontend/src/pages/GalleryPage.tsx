@@ -13,19 +13,8 @@ import {
   type GalleryFilters,
   ApiError,
 } from '@/lib/api'
+import { getVoterHashSync } from '@/lib/voter'
 import { toast } from 'sonner'
-
-// Simple voter hash generation using localStorage
-function getVoterHash(): string {
-  const VOTER_HASH_KEY = 'bkp_voter_hash'
-  let hash = localStorage.getItem(VOTER_HASH_KEY)
-  if (!hash) {
-    // Generate a random hash
-    hash = crypto.randomUUID()
-    localStorage.setItem(VOTER_HASH_KEY, hash)
-  }
-  return hash
-}
 
 interface GalleryPageProps {
   onBack: () => void
@@ -48,7 +37,7 @@ export function GalleryPage({ onBack }: GalleryPageProps) {
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [isRating, setIsRating] = useState(false)
 
-  const voterHash = getVoterHash()
+  const voterHash = getVoterHashSync()
 
   // Fetch gallery list
   const fetchGallery = useCallback(async () => {

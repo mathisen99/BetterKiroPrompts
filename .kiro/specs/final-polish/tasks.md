@@ -249,8 +249,8 @@ This implementation plan covers the final polish phase, organized into logical g
     - Update App.tsx with routing if needed
     - _Requirements: 6.1_
 
-- [ ] 18. Frontend Voter Hash
-  - [ ] 18.1 Implement voter hash generation
+- [x] 18. Frontend Voter Hash
+  - [x] 18.1 Implement voter hash generation
     - Create `frontend/src/lib/voter.ts`
     - Generate consistent hash from localStorage + fingerprint
     - _Requirements: 7.4_
