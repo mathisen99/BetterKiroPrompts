@@ -453,12 +453,7 @@ export function LandingPage({ onPhaseChange, onViewInGallery }: LandingPageProps
       {state.phase === 'generating' && (
         <div className="animate-phase-enter">
           <LoadingState
-            message={
-              state.questions.length === 0
-                ? 'Generating questions for your project...'
-                : 'Generating your Kiro files...'
-            }
-            estimatedTime="up to 2 minutes"
+            type={state.questions.length === 0 ? 'questions' : 'outputs'}
             startTime={state.loadingStartTime ?? undefined}
           />
         </div>

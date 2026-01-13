@@ -84,19 +84,19 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - **Property 3: Questions Include Exactly Three Examples**
     - **Validates: Requirements 2.1**
 
-- [ ] 7. Checkpoint - Backend prompt changes complete
+- [x] 7. Checkpoint - Backend prompt changes complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement frontend loading feedback
-  - [ ] 8.1 Add loading messages to QuestionFlow component
+- [x] 8. Implement frontend loading feedback
+  - [x] 8.1 Add loading messages to QuestionFlow component
     - Show "Generating questions... This may take up to 2 minutes"
     - Show "Still working..." after 30 seconds
     - _Requirements: 3.1, 3.4_
-  - [ ] 8.2 Add loading messages to output generation
+  - [x] 8.2 Add loading messages to output generation
     - Show "Generating your files... This may take up to 3 minutes"
     - Show encouraging message after 30 seconds
     - _Requirements: 3.2, 3.4_
-  - [ ] 8.3 Add animated spinner during generation
+  - [x] 8.3 Add animated spinner during generation
     - Use existing UI spinner component or add one
     - _Requirements: 3.3_
 

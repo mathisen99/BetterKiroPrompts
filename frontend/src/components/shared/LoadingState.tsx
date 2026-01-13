@@ -2,18 +2,31 @@ import { useState, useEffect } from 'react'
 import { Spinner } from './Spinner'
 import { Card, CardContent } from '@/components/ui/card'
 
+export type LoadingType = 'questions' | 'outputs'
+
 interface LoadingStateProps {
-  message: string
-  estimatedTime?: string
+  type: LoadingType
   startTime?: number // Unix timestamp when loading started
 }
 
-// Threshold after which we show "taking longer than usual" message (90 seconds)
-const LONG_WAIT_THRESHOLD_MS = 90 * 1000
+// Threshold after which we show "still working" message (30 seconds)
+const STILL_WORKING_THRESHOLD_MS = 30 * 1000
 
-export function LoadingState({ message, estimatedTime = 'up to 60 seconds', startTime }: LoadingStateProps) {
+// Loading messages per type
+const LOADING_MESSAGES: Record<LoadingType, { initial: string; stillWorking: string }> = {
+  questions: {
+    initial: 'Generating questions... This may take up to 2 minutes',
+    stillWorking: 'Still working on your questions...',
+  },
+  outputs: {
+    initial: 'Generating your files... This may take up to 3 minutes',
+    stillWorking: 'Still creating your files... Almost there!',
+  },
+}
+
+export function LoadingState({ type, startTime }: LoadingStateProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const [isTakingLong, setIsTakingLong] = useState(false)
+  const [showStillWorking, setShowStillWorking] = useState(false)
 
   useEffect(() => {
     if (!startTime) return
@@ -21,7 +34,7 @@ export function LoadingState({ message, estimatedTime = 'up to 60 seconds', star
     const updateElapsed = () => {
       const elapsed = Date.now() - startTime
       setElapsedSeconds(Math.floor(elapsed / 1000))
-      setIsTakingLong(elapsed >= LONG_WAIT_THRESHOLD_MS)
+      setShowStillWorking(elapsed >= STILL_WORKING_THRESHOLD_MS)
     }
 
     // Initial update
@@ -42,6 +55,9 @@ export function LoadingState({ message, estimatedTime = 'up to 60 seconds', star
     return `${mins}m ${secs}s`
   }
 
+  const messages = LOADING_MESSAGES[type]
+  const displayMessage = showStillWorking ? messages.stillWorking : messages.initial
+
   return (
     <div className="py-12">
       <Card className="border-border/50 bg-card/50 backdrop-blur max-w-md mx-auto">
@@ -54,18 +70,10 @@ export function LoadingState({ message, estimatedTime = 'up to 60 seconds', star
               </div>
             </div>
             <div className="text-center space-y-1">
-              <p className="text-lg font-medium">{message}</p>
-              {isTakingLong ? (
-                <p className="text-sm text-amber-400">
-                  Taking longer than usual ({formatElapsed(elapsedSeconds)})...
-                </p>
-              ) : startTime ? (
+              <p className="text-lg font-medium">{displayMessage}</p>
+              {startTime && (
                 <p className="text-sm text-muted-foreground">
                   Elapsed: {formatElapsed(elapsedSeconds)}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  This may take {estimatedTime}
                 </p>
               )}
             </div>
