@@ -152,20 +152,20 @@ This implementation plan covers the Info Page and Security Scanning features for
     - **Property 2: Job Creation Round-Trip**
     - **Validates: Requirements 4.5, 11.1, 11.2**
 
-- [ ] 7. Checkpoint - Scanner Service Complete
+- [x] 7. Checkpoint - Scanner Service Complete
   - Run `golangci-lint run && go fmt ./... && go vet ./...` in backend
   - Run all property tests
   - Ensure all tests pass
 
-- [ ] 8. Create Scanner API Endpoints
-  - [ ] 8.1 Create scan handler
+- [x] 8. Create Scanner API Endpoints
+  - [x] 8.1 Create scan handler
     - Create `backend/internal/api/scan.go`
     - POST /api/scan - Start scan job
     - GET /api/scan/{id} - Get scan status/results
     - GET /api/scan/config - Get configuration (private repo enabled)
     - _Requirements: 4.1, 4.2, 4.3, 4.5, 11.2, 13.1, 13.2, 13.3_
 
-  - [ ] 8.2 Register scan routes
+  - [x] 8.2 Register scan routes
     - Update `backend/internal/api/router.go`
     - Add scan endpoints with rate limiting
     - _Requirements: 4.1_

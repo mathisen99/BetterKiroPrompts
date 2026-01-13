@@ -9,6 +9,7 @@ import (
 	"better-kiro-prompts/internal/gallery"
 	"better-kiro-prompts/internal/generation"
 	"better-kiro-prompts/internal/ratelimit"
+	"better-kiro-prompts/internal/scanner"
 )
 
 // RouterConfig holds dependencies for the router.
@@ -17,6 +18,8 @@ type RouterConfig struct {
 	RateLimiter       *ratelimit.Limiter
 	GalleryService    *gallery.Service
 	RatingLimiter     *ratelimit.Limiter
+	ScannerService    *scanner.Service
+	ScanRateLimiter   *ratelimit.Limiter
 }
 
 // NewRouter creates a new HTTP router with all API routes.
@@ -39,6 +42,14 @@ func NewRouter(cfg *RouterConfig) http.Handler {
 		mux.HandleFunc("GET /api/gallery", galleryHandler.HandleListGallery)
 		mux.HandleFunc("GET /api/gallery/{id}", galleryHandler.HandleGetGalleryItem)
 		mux.HandleFunc("POST /api/gallery/{id}/rate", galleryHandler.HandleRateGalleryItem)
+	}
+
+	// Scanner endpoints (if service is configured)
+	if cfg != nil && cfg.ScannerService != nil && cfg.ScanRateLimiter != nil {
+		scanHandler := NewScanHandler(cfg.ScannerService, cfg.ScanRateLimiter)
+		mux.HandleFunc("POST /api/scan", scanHandler.HandleStartScan)
+		mux.HandleFunc("GET /api/scan/config", scanHandler.HandleGetScanConfig)
+		mux.HandleFunc("GET /api/scan/{id}", scanHandler.HandleGetScan)
 	}
 
 	// Serve static files from ./static directory (SPA with fallback to index.html)
