@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import type { GeneratedFile } from '@/lib/api'
 import { downloadAllAsZip } from '@/lib/zip'
-import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot } from 'lucide-react'
+import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot, Eye, Pencil } from 'lucide-react'
+import { SyntaxHighlighter } from './SyntaxHighlighter'
+import { detectLanguage } from '@/lib/syntax'
 
 interface OutputEditorProps {
   files: GeneratedFile[]
@@ -23,6 +25,21 @@ export function OutputEditor({
   onReset,
   getFileContent,
 }: OutputEditorProps) {
+  // Track which files are in edit mode (default: highlighted view)
+  const [editModeFiles, setEditModeFiles] = useState<Set<string>>(new Set())
+
+  const toggleEditMode = (path: string) => {
+    setEditModeFiles((prev) => {
+      const next = new Set(prev)
+      if (next.has(path)) {
+        next.delete(path)
+      } else {
+        next.add(path)
+      }
+      return next
+    })
+  }
+
   const groupedFiles = useMemo(() => {
     const groups: Record<string, GeneratedFile[]> = {
       kickoff: [],
@@ -69,7 +86,9 @@ export function OutputEditor({
   const renderFileEditor = (file: GeneratedFile) => {
     const content = getFileContent(file.path)
     const isEdited = editedFiles.has(file.path)
+    const isEditMode = editModeFiles.has(file.path)
     const filename = file.path.split('/').pop() ?? file.path
+    const language = detectLanguage(file.path)
 
     return (
       <Card key={file.path} className="border-border/50 bg-card/50 backdrop-blur mb-4">
@@ -84,6 +103,25 @@ export function OutputEditor({
               )}
             </div>
             <div className="flex gap-2 shrink-0">
+              <Button
+                variant={isEditMode ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => toggleEditMode(file.path)}
+                className="gap-1.5"
+                aria-label={isEditMode ? 'Switch to view mode' : 'Switch to edit mode'}
+              >
+                {isEditMode ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">View</span>
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </>
+                )}
+              </Button>
               {isEdited && (
                 <Button
                   variant="ghost"
@@ -117,12 +155,18 @@ export function OutputEditor({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <Textarea
-            value={content}
-            onChange={(e) => onEdit(file.path, e.target.value)}
-            className="font-mono text-sm min-h-[300px] resize-y bg-background/50 border-border/50"
-            aria-label={`Edit ${filename}`}
-          />
+          {isEditMode ? (
+            <Textarea
+              value={content}
+              onChange={(e) => onEdit(file.path, e.target.value)}
+              className="font-mono text-sm min-h-[300px] resize-y bg-background/50 border-border/50"
+              aria-label={`Edit ${filename}`}
+            />
+          ) : (
+            <div className="min-h-[300px] max-h-[600px] overflow-auto rounded-lg border border-border/50">
+              <SyntaxHighlighter code={content} language={language} />
+            </div>
+          )}
         </CardContent>
       </Card>
     )
