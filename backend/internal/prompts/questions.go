@@ -52,14 +52,22 @@ Questions MUST follow this logical order:
 5. **Architecture** - How is it structured? What components?
 6. **Constraints** - Time limits? Tech requirements? Budget?
 
+## Example Answers (CRITICAL)
+Each question MUST include exactly 3 clickable example answers in the "examples" array.
+- Examples should be realistic, helpful answers the user might give
+- Examples should match the user's experience level
+- Examples should cover different common scenarios
+- Examples should be concise but complete enough to be useful
+
 ## Response Format
 Return ONLY valid JSON, no markdown code blocks:
-{"questions": [{"id": 1, "text": "...", "hint": "..."}]}
+{"questions": [{"id": 1, "text": "...", "hint": "...", "examples": ["Example 1", "Example 2", "Example 3"]}]}
 
 Each question must have:
 - id: Sequential number starting from 1
 - text: The question itself
 - hint: A helpful hint or example answer (optional but recommended)
+- examples: EXACTLY 3 clickable example answers (REQUIRED)
 `
 
 	levelGuidance := getLevelGuidance(experienceLevel)
@@ -91,6 +99,12 @@ API, REST, GraphQL, microservices, monolith, backend, frontend, database schema,
 - Use real-world analogies to explain concepts
 - Provide detailed hints with concrete examples
 
+### Example Answer Guidelines (CRITICAL)
+- Examples MUST use simple, everyday language
+- Examples should describe features like a non-programmer would
+- Use real-world analogies (like a notebook, membership card, etc.)
+- NO technical terms in examples
+
 ### Real-World Analogies to Use:
 - Saving data = "like writing in a notebook that remembers everything"
 - User accounts = "like having a membership card at a store"
@@ -99,10 +113,11 @@ API, REST, GraphQL, microservices, monolith, backend, frontend, database schema,
 
 ### Example Questions for Beginners:
 - "What will people be able to do with your app? (For example: share photos like Instagram, chat with friends like WhatsApp, or make lists like a to-do app)"
+  Examples: ["Share photos and comment on friends' pictures", "Send messages and chat in groups", "Create and check off to-do lists"]
 - "Will people need to sign up with an email and password, or can anyone use it right away without an account?"
+  Examples: ["Yes, users need to create an account with email", "No account needed, anyone can use it", "Optional - works without account but more features with one"]
 - "What information does your app need to remember? (For example: people's names, their posts, their favorite items)"
-- "Who will use your app? Just you, your friends, or anyone on the internet?"
-- "If your app has different types of users (like teachers and students), what can each type do?"`
+  Examples: ["User profiles and their posts", "Shopping lists and favorite items", "Messages between users"]`
 
 	case ExperienceNovice:
 		return `## Experience Level: Novice
@@ -129,6 +144,12 @@ The user has some programming experience but is not an expert. Use moderate tech
 - Include questions about data structure and storage
 - Consider security basics
 
+### Example Answer Guidelines (CRITICAL)
+- Examples can use basic technical terms (database, API, authentication)
+- Include brief explanations where helpful
+- Show common technology choices as options
+- Balance technical accuracy with accessibility
+
 ### Hint Style
 - Provide hints that suggest common approaches
 - Include brief explanations of trade-offs
@@ -137,10 +158,11 @@ The user has some programming experience but is not an expert. Use moderate tech
 
 ### Example Questions for Novice:
 - "What type of database would work best for your data? (For example: PostgreSQL if your data has clear relationships like users-have-posts, or MongoDB if your data structure might change often)"
+  Examples: ["PostgreSQL - my data has clear relationships", "MongoDB - flexible structure that may change", "SQLite - simple local storage is enough"]
 - "How should users log in? (Options: email/password you manage, or let them use their Google/GitHub account which is easier to set up)"
+  Examples: ["Email and password that I manage", "Social login with Google/GitHub", "Both options for flexibility"]
 - "Where do you want to host your app? (Options: a cloud service like Heroku for simplicity, or AWS/GCP for more control)"
-- "Will your app need to work offline, or is it okay if users need internet access?"
-- "How important is it that your app can handle many users at once? (Just you and friends, or potentially thousands of people)"`
+  Examples: ["Heroku or similar for simplicity", "AWS/GCP for more control", "Self-hosted on my own server"]`
 
 	case ExperienceExpert:
 		return `## Experience Level: Expert
@@ -163,6 +185,12 @@ The user is an experienced developer. Use full technical terminology without exp
 - CI/CD and deployment strategy (blue-green, canary, feature flags)
 - Infrastructure choices (containerization, orchestration, serverless)
 
+### Example Answer Guidelines (CRITICAL)
+- Examples should use precise technical terminology
+- Reference specific technologies, patterns, and standards
+- Show sophisticated architectural choices
+- Include trade-off considerations in examples
+
 ### Hint Style
 - Reference specific patterns and their trade-offs concisely
 - Mention relevant technologies and alternatives
@@ -171,12 +199,11 @@ The user is an experienced developer. Use full technical terminology without exp
 
 ### Example Questions for Expert:
 - "What consistency model fits your use case? (Strong consistency with performance trade-offs, or eventual consistency for better availability)"
+  Examples: ["Strong consistency - ACID transactions required", "Eventual consistency - availability over consistency", "Mixed - strong for critical paths, eventual elsewhere"]
 - "How will services communicate? (Sync REST/gRPC for simplicity, async messaging via Kafka/RabbitMQ for decoupling, or event sourcing for audit trails)"
+  Examples: ["REST/gRPC for synchronous communication", "Kafka/RabbitMQ for async event-driven", "Event sourcing with CQRS pattern"]
 - "What's your observability strategy? (OpenTelemetry for tracing, Prometheus/Grafana for metrics, ELK/Loki for logs)"
-- "How will you handle database migrations in production? (Blue-green deployments, backward-compatible migrations, feature flags)"
-- "What's your caching strategy? (Redis for session/hot data, CDN for static assets, application-level caching)"
-- "How will you handle authentication across services? (JWT with short expiry, OAuth2 with refresh tokens, mTLS for service-to-service)"
-- "What's your approach to data partitioning if you need to scale? (Sharding strategy, read replicas, multi-region considerations)"`
+  Examples: ["OpenTelemetry + Prometheus + Grafana stack", "Datadog for unified observability", "ELK stack with custom dashboards"]`
 
 	default:
 		// Default to novice if unknown

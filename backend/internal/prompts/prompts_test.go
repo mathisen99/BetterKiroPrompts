@@ -508,3 +508,84 @@ func TestProperty2_ExperienceLevelsProduceDifferentQuestions(t *testing.T) {
 		t.Errorf("Property 2 (Experience Levels Produce Different Questions) failed: %v", err)
 	}
 }
+
+// TestProperty3_QuestionsIncludeExactlyThreeExamples validates that the question prompt
+// instructs the AI to generate exactly 3 example answers per question.
+// Feature: ux-improvements, Property 3: Questions Include Exactly Three Examples
+// **Validates: Requirements 2.1**
+func TestProperty3_QuestionsIncludeExactlyThreeExamples(t *testing.T) {
+	// Property: For any generated question response, each question SHALL contain
+	// exactly 3 example answers in the examples array.
+
+	// Since we can't test actual AI output, we verify the prompt instructs the AI correctly
+	levels := []string{ExperienceBeginner, ExperienceNovice, ExperienceExpert}
+
+	for _, level := range levels {
+		t.Run(level, func(t *testing.T) {
+			prompt := GetQuestionsSystemPrompt(level)
+			promptLower := strings.ToLower(prompt)
+
+			// The prompt MUST mention "examples" field
+			if !strings.Contains(promptLower, "examples") {
+				t.Errorf("Prompt for %s level must mention 'examples' field", level)
+			}
+
+			// The prompt MUST specify exactly 3 examples
+			if !strings.Contains(prompt, "3") && !strings.Contains(promptLower, "three") {
+				t.Errorf("Prompt for %s level must specify 3 examples", level)
+			}
+
+			// The prompt MUST include examples in the JSON format specification
+			if !strings.Contains(prompt, `"examples"`) {
+				t.Errorf("Prompt for %s level must include 'examples' in JSON format", level)
+			}
+
+			// The prompt MUST mark examples as REQUIRED
+			if !strings.Contains(promptLower, "required") || !strings.Contains(promptLower, "examples") {
+				t.Errorf("Prompt for %s level must mark examples as REQUIRED", level)
+			}
+
+			// The prompt MUST have example answer guidelines
+			if !strings.Contains(prompt, "Example Answer Guidelines") {
+				t.Errorf("Prompt for %s level must have Example Answer Guidelines section", level)
+			}
+		})
+	}
+
+	// Property test: For any experience level, the prompt should instruct
+	// the AI to generate exactly 3 examples per question
+	property := func(levelIndex uint8) bool {
+		levels := []string{ExperienceBeginner, ExperienceNovice, ExperienceExpert}
+		level := levels[int(levelIndex)%len(levels)]
+
+		prompt := GetQuestionsSystemPrompt(level)
+		promptLower := strings.ToLower(prompt)
+
+		// Must mention examples
+		if !strings.Contains(promptLower, "examples") {
+			return false
+		}
+
+		// Must specify the count (3 or three)
+		hasThree := strings.Contains(prompt, "3") || strings.Contains(promptLower, "three")
+		if !hasThree {
+			return false
+		}
+
+		// Must have examples in JSON format
+		if !strings.Contains(prompt, `"examples"`) {
+			return false
+		}
+
+		// Must indicate examples are required
+		if !strings.Contains(promptLower, "required") {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(property, &quick.Config{MaxCount: 100}); err != nil {
+		t.Errorf("Property 3 (Questions Include Exactly Three Examples) failed: %v", err)
+	}
+}

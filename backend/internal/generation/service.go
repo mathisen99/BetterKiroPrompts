@@ -31,9 +31,10 @@ var (
 
 // Question represents a follow-up question for the user.
 type Question struct {
-	ID   int    `json:"id"`
-	Text string `json:"text"`
-	Hint string `json:"hint,omitempty"`
+	ID       int      `json:"id"`
+	Text     string   `json:"text"`
+	Hint     string   `json:"hint,omitempty"`
+	Examples []string `json:"examples"` // 3 clickable example answers
 }
 
 // Answer represents a user's answer to a question.

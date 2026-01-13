@@ -14,6 +14,7 @@ export interface Question {
   id: number
   text: string
   hint?: string
+  examples: string[] // 3 clickable example answers
 }
 
 export interface GeneratedFile {

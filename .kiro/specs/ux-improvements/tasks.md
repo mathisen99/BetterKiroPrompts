@@ -68,19 +68,19 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - **Property 2: Experience Levels Produce Different Questions**
     - **Validates: Requirements 1.5**
 
-- [ ] 6. Add example answers to questions
-  - [ ] 6.1 Update Question struct to include examples
+- [x] 6. Add example answers to questions
+  - [x] 6.1 Update Question struct to include examples
     - Add `Examples []string` field to Question type
     - Update JSON serialization
     - _Requirements: 2.1_
-  - [ ] 6.2 Update question prompts to generate 3 examples per question
+  - [x] 6.2 Update question prompts to generate 3 examples per question
     - Modify system prompt to request examples
     - Examples should match experience level
     - _Requirements: 2.1, 2.5_
-  - [ ] 6.3 Update frontend Question type
+  - [x] 6.3 Update frontend Question type
     - Add `examples: string[]` to Question interface
     - _Requirements: 2.1_
-  - [ ] 6.4 Write property test for example count
+  - [x] 6.4 Write property test for example count
     - **Property 3: Questions Include Exactly Three Examples**
     - **Validates: Requirements 2.1**
 

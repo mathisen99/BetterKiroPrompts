@@ -73,6 +73,7 @@ describe('Property 1: State Persistence Consistency', () => {
     id: fc.integer({ min: 1, max: 1000 }),
     text: fc.string({ minLength: 1, maxLength: 200 }),
     hint: fc.option(fc.string({ minLength: 1, maxLength: 100 }), { nil: undefined }),
+    examples: fc.array(fc.string({ minLength: 1, maxLength: 100 }), { minLength: 3, maxLength: 3 }),
   })
 
   const answersArb: fc.Arbitrary<Record<number, string>> = fc
