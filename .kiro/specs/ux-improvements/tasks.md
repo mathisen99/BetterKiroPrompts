@@ -100,30 +100,30 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - Use existing UI spinner component or add one
     - _Requirements: 3.3_
 
-- [ ] 9. Implement clickable example answers UI
-  - [ ] 9.1 Create ExampleAnswers component
+- [x] 9. Implement clickable example answers UI
+  - [x] 9.1 Create ExampleAnswers component
     - Display 3 clickable example buttons per question
     - On click, populate answer field
     - _Requirements: 2.2_
-  - [ ] 9.2 Integrate ExampleAnswers into QuestionFlow
+  - [x] 9.2 Integrate ExampleAnswers into QuestionFlow
     - Show examples below each question
     - Allow editing after selection
     - Preserve free-text input option
     - _Requirements: 2.2, 2.3, 2.4_
 
-- [ ] 10. Improve navigation visibility
-  - [ ] 10.1 Make "Browse Gallery" button more prominent on landing page
+- [x] 10. Improve navigation visibility
+  - [x] 10.1 Make "Browse Gallery" button more prominent on landing page
     - Increase size and contrast
     - Use primary button styling
     - _Requirements: 6.1_
-  - [ ] 10.2 Add visible "Back to Home" link on gallery page
+  - [x] 10.2 Add visible "Back to Home" link on gallery page
     - Add clear navigation link or logo that returns to landing
     - _Requirements: 6.2_
-  - [ ] 10.3 Improve modal close button visibility
+  - [x] 10.3 Improve modal close button visibility
     - Increase close button size to 44x44px minimum
     - Add high contrast styling
     - _Requirements: 6.3, 6.4_
-  - [ ] 10.4 Ensure modal closes on outside click and Escape key
+  - [x] 10.4 Ensure modal closes on outside click and Escape key
     - Verify click-outside behavior works
     - Add Escape key handler if missing
     - _Requirements: 6.5, 6.6_

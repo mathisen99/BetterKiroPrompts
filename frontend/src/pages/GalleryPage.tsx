@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GalleryList } from '@/components/Gallery/GalleryList'
 import { GalleryDetail } from '@/components/Gallery/GalleryDetail'
@@ -130,16 +130,26 @@ export function GalleryPage({ onBack, initialItemId }: GalleryPageProps) {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Gallery</h1>
-            <p className="text-muted-foreground">
-              Browse community generations for inspiration
-            </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={onBack} aria-label="Go back">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Gallery</h1>
+              <p className="text-muted-foreground">
+                Browse community generations for inspiration
+              </p>
+            </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="gap-2"
+          >
+            <Home className="h-4 w-4" />
+            Back to Home
+          </Button>
         </div>
 
         {/* Error state */}

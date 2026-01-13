@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useCallback, useRef } from 'react'
 import { X, Star, Eye, Clock, Copy, Download, Package, FileText, FolderCog, Webhook, Bot } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,26 @@ export function GalleryDetail({
   isRating,
 }: GalleryDetailProps) {
   const files = generation.files as GeneratedFile[]
+  const modalContentRef = useRef<HTMLDivElement>(null)
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  // Handle click outside modal content to close
+  const handleBackdropClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking directly on the backdrop, not on modal content
+    if (event.target === event.currentTarget) {
+      onClose()
+    }
+  }, [onClose])
 
   const groupedFiles = useMemo(() => {
     const groups: Record<string, GeneratedFile[]> = {
@@ -140,16 +160,23 @@ export function GalleryDetail({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/80 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-4xl my-8">
-        {/* Close button */}
+    <div 
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/80 backdrop-blur-sm p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gallery-detail-title"
+    >
+      <div ref={modalContentRef} className="relative w-full max-w-4xl my-8">
+        {/* Close button - prominent with high contrast */}
         <Button
-          variant="ghost"
+          variant="default"
           size="icon"
-          className="absolute -top-2 -right-2 z-10"
+          className="absolute top-4 right-4 z-10 h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
           onClick={onClose}
+          aria-label="Close modal"
         >
-          <X className="h-5 w-5" />
+          <X className="h-6 w-6" />
         </Button>
 
         {/* Header card */}
@@ -158,7 +185,7 @@ export function GalleryDetail({
             <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
-                  <CardTitle className="text-xl">{generation.projectIdea}</CardTitle>
+                  <CardTitle id="gallery-detail-title" className="text-xl">{generation.projectIdea}</CardTitle>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{generation.category}</Badge>
                     <Badge variant="outline">{generation.experienceLevel}</Badge>
