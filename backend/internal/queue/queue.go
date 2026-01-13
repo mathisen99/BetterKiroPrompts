@@ -3,7 +3,9 @@
 package queue
 
 import (
+	"better-kiro-prompts/internal/logger"
 	"context"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -24,6 +26,7 @@ type RequestQueue struct {
 	waiting       atomic.Int64
 	processed     atomic.Int64
 	mu            sync.RWMutex
+	log           *slog.Logger
 }
 
 // NewRequestQueue creates a new request queue with the specified maximum concurrency.
@@ -37,17 +40,51 @@ func NewRequestQueue(maxConcurrent int) *RequestQueue {
 	}
 }
 
+// NewRequestQueueWithLogger creates a new request queue with logging support.
+func NewRequestQueueWithLogger(maxConcurrent int, log *slog.Logger) *RequestQueue {
+	if maxConcurrent <= 0 {
+		maxConcurrent = DefaultMaxConcurrent
+	}
+	return &RequestQueue{
+		maxConcurrent: maxConcurrent,
+		semaphore:     make(chan struct{}, maxConcurrent),
+		log:           log,
+	}
+}
+
 // Acquire attempts to acquire a slot in the queue.
 // It blocks until a slot is available or the context is cancelled.
 // Returns nil on success, or the context error if cancelled/timed out.
 func (q *RequestQueue) Acquire(ctx context.Context) error {
+	requestID := logger.GetRequestID(ctx)
+
+	if q.log != nil {
+		q.log.Debug("queue_acquire_start",
+			slog.String("request_id", requestID),
+			slog.Int("available", q.Available()),
+			slog.Int64("waiting", q.waiting.Load()),
+		)
+	}
+
 	q.waiting.Add(1)
 	defer q.waiting.Add(-1)
 
 	select {
 	case q.semaphore <- struct{}{}:
+		if q.log != nil {
+			q.log.Debug("queue_acquire_success",
+				slog.String("request_id", requestID),
+				slog.Int("available_after", q.Available()),
+			)
+		}
 		return nil
 	case <-ctx.Done():
+		if q.log != nil {
+			q.log.Warn("queue_acquire_timeout",
+				slog.String("request_id", requestID),
+				slog.String("error", ctx.Err().Error()),
+			)
+		}
 		return ctx.Err()
 	}
 }
@@ -65,9 +102,21 @@ func (q *RequestQueue) AcquireWithTimeout(timeout time.Duration) error {
 func (q *RequestQueue) Release() {
 	select {
 	case <-q.semaphore:
-		q.processed.Add(1)
+		processed := q.processed.Add(1)
+		if q.log != nil {
+			q.log.Debug("queue_release",
+				slog.Int("available_after", q.Available()),
+				slog.Int64("processed", processed),
+				slog.Int64("waiting", q.waiting.Load()),
+			)
+		}
 	default:
 		// This should never happen if Acquire/Release are paired correctly
+		if q.log != nil {
+			q.log.Warn("queue_release_unpaired",
+				slog.String("error", "release called without matching acquire"),
+			)
+		}
 	}
 }
 

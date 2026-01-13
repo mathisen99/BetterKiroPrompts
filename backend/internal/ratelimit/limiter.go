@@ -1,6 +1,9 @@
 package ratelimit
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -28,6 +31,7 @@ type Limiter struct {
 	limit  int
 	window time.Duration
 	now    func() time.Time // for testing
+	log    *slog.Logger
 }
 
 // NewLimiter creates a new rate limiter with default settings (10 requests per hour).
@@ -37,6 +41,17 @@ func NewLimiter() *Limiter {
 		limit:  DefaultLimit,
 		window: DefaultWindow,
 		now:    time.Now,
+	}
+}
+
+// NewLimiterWithLogger creates a new rate limiter with logging support.
+func NewLimiterWithLogger(log *slog.Logger) *Limiter {
+	return &Limiter{
+		store:  make(map[string]*clientState),
+		limit:  DefaultLimit,
+		window: DefaultWindow,
+		now:    time.Now,
+		log:    log,
 	}
 }
 
@@ -57,9 +72,32 @@ func NewLimiterWithConfig(limit int, window time.Duration) *Limiter {
 	}
 }
 
+// NewLimiterWithConfigAndLogger creates a new rate limiter with custom settings and logging.
+func NewLimiterWithConfigAndLogger(limit int, window time.Duration, log *slog.Logger) *Limiter {
+	if limit <= 0 {
+		limit = DefaultLimit
+	}
+	if window <= 0 {
+		window = DefaultWindow
+	}
+
+	return &Limiter{
+		store:  make(map[string]*clientState),
+		limit:  limit,
+		window: window,
+		now:    time.Now,
+		log:    log,
+	}
+}
+
 // NewRatingLimiter creates a rate limiter configured for rating submissions (20/hour).
 func NewRatingLimiter() *Limiter {
 	return NewLimiterWithConfig(RatingLimit, RatingWindow)
+}
+
+// NewRatingLimiterWithLogger creates a rate limiter for rating submissions with logging.
+func NewRatingLimiterWithLogger(log *slog.Logger) *Limiter {
+	return NewLimiterWithConfigAndLogger(RatingLimit, RatingWindow, log)
 }
 
 // Allow checks if a request from the given IP is allowed.
@@ -68,6 +106,9 @@ func NewRatingLimiter() *Limiter {
 func (l *Limiter) Allow(ip string) (bool, time.Duration) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+
+	// Hash IP for privacy in logs
+	ipHash := hashIP(ip)
 
 	now := l.now()
 	state, exists := l.store[ip]
@@ -78,6 +119,12 @@ func (l *Limiter) Allow(ip string) (bool, time.Duration) {
 			count:       1,
 			windowStart: now,
 		}
+		if l.log != nil {
+			l.log.Debug("rate_limit_allowed",
+				slog.String("ip_hash", ipHash),
+				slog.Int("remaining", l.limit-1),
+			)
+		}
 		return true, 0
 	}
 
@@ -87,6 +134,12 @@ func (l *Limiter) Allow(ip string) (bool, time.Duration) {
 		// Reset window
 		state.count = 1
 		state.windowStart = now
+		if l.log != nil {
+			l.log.Debug("rate_limit_allowed",
+				slog.String("ip_hash", ipHash),
+				slog.Int("remaining", l.limit-1),
+			)
+		}
 		return true, 0
 	}
 
@@ -94,11 +147,25 @@ func (l *Limiter) Allow(ip string) (bool, time.Duration) {
 	if state.count >= l.limit {
 		// Rate limited - return time until reset
 		retryAfter := windowEnd.Sub(now)
+		if l.log != nil {
+			l.log.Warn("rate_limit_denied",
+				slog.String("ip_hash", ipHash),
+				slog.Int("count", state.count),
+				slog.Int("limit", l.limit),
+				slog.Duration("retry_after", retryAfter),
+			)
+		}
 		return false, retryAfter
 	}
 
 	// Allow request and increment count
 	state.count++
+	if l.log != nil {
+		l.log.Debug("rate_limit_allowed",
+			slog.String("ip_hash", ipHash),
+			slog.Int("remaining", l.limit-state.count),
+		)
+	}
 	return true, 0
 }
 
@@ -144,4 +211,10 @@ func (l *Limiter) setNow(fn func() time.Time) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.now = fn
+}
+
+// hashIP creates a privacy-preserving hash of an IP address for logging.
+func hashIP(ip string) string {
+	hash := sha256.Sum256([]byte(ip))
+	return hex.EncodeToString(hash[:8]) // First 8 bytes (16 hex chars)
 }
