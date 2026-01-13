@@ -17,7 +17,7 @@ type RouterConfig struct {
 }
 
 // NewRouter creates a new HTTP router with all API routes.
-func NewRouter(cfg *RouterConfig) *http.ServeMux {
+func NewRouter(cfg *RouterConfig) http.Handler {
 	mux := http.NewServeMux()
 
 	// Health check
@@ -36,7 +36,13 @@ func NewRouter(cfg *RouterConfig) *http.ServeMux {
 		mux.HandleFunc("/", spaHandler(staticDir))
 	}
 
-	return mux
+	// Apply middleware chain: Recovery -> RequestID -> Logging
+	// Order matters: Recovery is outermost to catch panics from all handlers
+	return Chain(mux,
+		RecoveryMiddleware,
+		RequestIDMiddleware,
+		LoggingMiddleware,
+	)
 }
 
 // spaHandler serves static files and falls back to index.html for SPA routing.

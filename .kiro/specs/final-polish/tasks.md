@@ -53,29 +53,29 @@ This implementation plan covers the final polish phase, organized into logical g
     - **Property 13: Input Sanitization**
     - **Validates: Requirements 9.2, 9.3**
 
-- [ ] 4. Backend Request Infrastructure
-  - [ ] 4.1 Create request queue for OpenAI calls
+- [x] 4. Backend Request Infrastructure
+  - [x] 4.1 Create request queue for OpenAI calls
     - Create `backend/internal/queue/queue.go`
     - Implement semaphore-based concurrency limiter
     - _Requirements: 8.1, 8.3_
-  - [ ] 4.2 Write property tests for request queue
+  - [x] 4.2 Write property tests for request queue
     - **Property 11: Concurrent Request Handling**
     - **Property 12: Request Queue Fairness**
     - **Validates: Requirements 8.1, 8.3**
-  - [ ] 4.3 Create middleware for request ID and logging
+  - [x] 4.3 Create middleware for request ID and logging
     - Create `backend/internal/api/middleware.go`
     - Implement RequestIDMiddleware, LoggingMiddleware, RecoveryMiddleware
     - _Requirements: 9.5, 9.6_
-  - [ ] 4.4 Update router to use middleware chain
+  - [x] 4.4 Update router to use middleware chain
     - Modify `backend/internal/api/router.go`
     - Apply middleware to all routes
     - _Requirements: 9.5_
-  - [ ] 4.5 Implement structured error responses
+  - [x] 4.5 Implement structured error responses
     - Create `backend/internal/api/errors.go`
     - Define error codes and response format
     - Update handlers to use structured errors
     - _Requirements: 10.5, 10.6_
-  - [ ] 4.6 Write property tests for error responses
+  - [x] 4.6 Write property tests for error responses
     - **Property 14: Structured Error Responses**
     - **Validates: Requirements 10.5, 10.6**
 

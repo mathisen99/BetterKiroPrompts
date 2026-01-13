@@ -67,11 +67,7 @@ type GenerateOutputsResponse struct {
 	Files []generation.GeneratedFile `json:"files"`
 }
 
-// ErrorResponse is the standard error response format.
-type ErrorResponse struct {
-	Error      string `json:"error"`
-	RetryAfter int    `json:"retryAfter,omitempty"`
-}
+// Note: ErrorResponse is defined in errors.go
 
 // GenerateHandler holds dependencies for generation endpoints.
 type GenerateHandler struct {
@@ -93,33 +89,33 @@ func (h *GenerateHandler) HandleGenerateQuestions(w http.ResponseWriter, r *http
 	ip := getClientIP(r)
 	allowed, retryAfter := h.rateLimiter.Allow(ip)
 	if !allowed {
-		writeError(w, http.StatusTooManyRequests, "Rate limit exceeded", int(retryAfter.Seconds()))
+		WriteRateLimited(w, r, int(retryAfter.Seconds()))
 		return
 	}
 
 	// Parse request body
 	var req GenerateQuestionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid request body", 0)
+		WriteBadRequest(w, r, "Invalid request body")
 		return
 	}
 
 	// Validate input
 	if err := generation.ValidateProjectIdea(req.ProjectIdea); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 
 	// Validate experience level
 	if err := validateExperienceLevel(req.ExperienceLevel); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 
 	// Generate questions
 	questions, err := h.service.GenerateQuestions(r.Context(), req.ProjectIdea, string(req.ExperienceLevel))
 	if err != nil {
-		handleGenerationError(w, err)
+		handleGenerationError(w, r, err)
 		return
 	}
 
@@ -133,43 +129,43 @@ func (h *GenerateHandler) HandleGenerateOutputs(w http.ResponseWriter, r *http.R
 	ip := getClientIP(r)
 	allowed, retryAfter := h.rateLimiter.Allow(ip)
 	if !allowed {
-		writeError(w, http.StatusTooManyRequests, "Rate limit exceeded", int(retryAfter.Seconds()))
+		WriteRateLimited(w, r, int(retryAfter.Seconds()))
 		return
 	}
 
 	// Parse request body
 	var req GenerateOutputsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid request body", 0)
+		WriteBadRequest(w, r, "Invalid request body")
 		return
 	}
 
 	// Validate input
 	if err := generation.ValidateProjectIdea(req.ProjectIdea); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 	if err := generation.ValidateAnswers(req.Answers); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 
 	// Validate experience level
 	if err := validateExperienceLevel(req.ExperienceLevel); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 
 	// Validate hook preset
 	if err := validateHookPreset(req.HookPreset); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 		return
 	}
 
 	// Generate outputs
 	files, err := h.service.GenerateOutputs(r.Context(), req.ProjectIdea, req.Answers, string(req.ExperienceLevel), string(req.HookPreset))
 	if err != nil {
-		handleGenerationError(w, err)
+		handleGenerationError(w, r, err)
 		return
 	}
 
@@ -203,23 +199,23 @@ func getClientIP(r *http.Request) string {
 }
 
 // handleGenerationError converts generation errors to appropriate HTTP responses.
-func handleGenerationError(w http.ResponseWriter, err error) {
+func handleGenerationError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
 	case errors.Is(err, generation.ErrEmptyProjectIdea),
 		errors.Is(err, generation.ErrProjectIdeaTooLong),
 		errors.Is(err, generation.ErrAnswerTooLong):
-		writeError(w, http.StatusBadRequest, err.Error(), 0)
+		WriteValidationError(w, r, err.Error())
 	case errors.Is(err, generation.ErrInvalidResponse),
 		errors.Is(err, generation.ErrNoQuestions),
 		errors.Is(err, generation.ErrNoFiles):
-		writeError(w, http.StatusInternalServerError, "Generation failed. Please try again later.", 0)
+		WriteInternalError(w, r, "Generation failed. Please try again later.")
 	default:
 		// Check for timeout
 		if strings.Contains(err.Error(), "timed out") {
-			writeError(w, http.StatusGatewayTimeout, "Request timed out", 0)
+			WriteTimeout(w, r)
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "Generation failed. Please try again later.", 0)
+		WriteInternalError(w, r, "Generation failed. Please try again later.")
 	}
 }
 
@@ -228,18 +224,6 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(data)
-}
-
-// writeError writes an error response.
-func writeError(w http.ResponseWriter, status int, message string, retryAfter int) {
-	resp := ErrorResponse{
-		Error: message,
-	}
-	if retryAfter > 0 {
-		resp.RetryAfter = retryAfter
-		w.Header().Set("Retry-After", string(rune(retryAfter)))
-	}
-	writeJSON(w, status, resp)
 }
 
 // validateExperienceLevel validates the experience level value.
