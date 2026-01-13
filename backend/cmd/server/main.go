@@ -53,7 +53,12 @@ func main() {
 		log.Printf("Warning: OpenAI client not initialized: %v", err)
 		log.Printf("Generation endpoints will not be available")
 	} else {
-		genService := generation.NewService(openaiClient)
+		// Create generation service with repository for gallery storage
+		var repo storage.Repository
+		if db.DB != nil {
+			repo = storage.NewPostgresRepository(db.DB)
+		}
+		genService := generation.NewServiceWithDeps(openaiClient, nil, repo)
 		rateLimiter := ratelimit.NewLimiter()
 		routerCfg.GenerationService = genService
 		routerCfg.RateLimiter = rateLimiter
