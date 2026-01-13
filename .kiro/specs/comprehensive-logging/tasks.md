@@ -275,24 +275,24 @@ This plan implements comprehensive file-based logging across the entire applicat
     - All services log their operations
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ]* 15. Write Property Tests for Logger
-  - [ ]* 15.1 Write property test for JSON structure
+- [x] 15. Write Property Tests for Logger
+  - [x] 15.1 Write property test for JSON structure
     - **Property 1: Log Entry JSON Structure**
     - **Validates: Requirements 1.4, 1.5**
 
-  - [ ]* 15.2 Write property test for request ID uniqueness
+  - [x] 15.2 Write property test for request ID uniqueness
     - **Property 3: Request ID Uniqueness**
     - **Validates: Requirements 2.2**
 
-  - [ ]* 15.3 Write property test for sensitive data redaction
+  - [x] 15.3 Write property test for sensitive data redaction
     - **Property 5: Sensitive Data Redaction**
     - **Validates: Requirements 2.5, 3.5**
 
-  - [ ]* 15.4 Write property test for level filtering
+  - [x] 15.4 Write property test for level filtering
     - **Property 14: Level Filtering**
     - **Validates: Requirements 9.4, 9.5**
 
-  - [ ]* 15.5 Write property test for color mapping
+  - [x] 15.5 Write property test for color mapping
     - **Property 13: Color Mapping by Level**
     - **Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.5**
 
