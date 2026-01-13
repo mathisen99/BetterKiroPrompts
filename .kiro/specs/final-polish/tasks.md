@@ -43,13 +43,13 @@ This implementation plan covers the final polish phase, organized into logical g
     - **Property 4: Category Assignment Correctness**
     - **Validates: Requirements 5.3**
 
-- [ ] 3. Backend Input Sanitization
-  - [ ] 3.1 Create input sanitizer package
+- [x] 3. Backend Input Sanitization
+  - [x] 3.1 Create input sanitizer package
     - Create `backend/internal/sanitize/sanitize.go`
     - Implement HTML tag removal, special character escaping
     - Implement length validation
     - _Requirements: 9.2, 9.3_
-  - [ ] 3.2 Write property tests for sanitizer
+  - [x] 3.2 Write property tests for sanitizer
     - **Property 13: Input Sanitization**
     - **Validates: Requirements 9.2, 9.3**
 
