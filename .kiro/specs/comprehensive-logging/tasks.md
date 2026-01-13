@@ -108,24 +108,24 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Log storage success/failure
     - _Requirements: 4.5_
 
-- [ ] 5. Add Logging to Gallery Service
-  - [ ] 5.1 Update `backend/internal/gallery/service.go` with logger
+- [x] 5. Add Logging to Gallery Service
+  - [x] 5.1 Update `backend/internal/gallery/service.go` with logger
     - Add logger field to Service struct
     - Update constructor to accept logger
     - _Requirements: 4.1_
 
-  - [ ] 5.2 Add logging to ListGenerations
+  - [x] 5.2 Add logging to ListGenerations
     - Log start with sort_by, page, page_size, category_id
     - Log completion with item_count, total, duration
     - _Requirements: 4.5_
 
-  - [ ] 5.3 Add logging to GetGenerationWithView
+  - [x] 5.3 Add logging to GetGenerationWithView
     - Log start with generation_id
     - Log view recording (new_view boolean)
     - Log completion
     - _Requirements: 4.5_
 
-  - [ ] 5.4 Add logging to RateGeneration
+  - [x] 5.4 Add logging to RateGeneration
     - Log start with generation_id, score
     - Log rate limit checks
     - Log completion or failure

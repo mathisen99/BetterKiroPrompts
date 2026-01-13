@@ -77,7 +77,7 @@ func main() {
 
 		// Initialize gallery service with rating limiter (20 ratings/hour per IP)
 		ratingLimiter := ratelimit.NewLimiterWithConfig(20, time.Hour)
-		galleryService := gallery.NewService(repo, ratingLimiter)
+		galleryService := gallery.NewService(repo, ratingLimiter, appLog)
 		routerCfg.GalleryService = galleryService
 		routerCfg.RatingLimiter = ratingLimiter
 		appLog.App().Info("gallery_service_initialized")

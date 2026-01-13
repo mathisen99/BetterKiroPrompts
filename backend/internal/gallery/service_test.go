@@ -259,7 +259,7 @@ func TestProperty5_GalleryFilteringCorrectness(t *testing.T) {
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
 		repo := newMockRepository()
-		svc := NewService(repo, nil)
+		svc := NewService(repo, nil, nil)
 
 		// Generate random generations with various categories
 		numGenerations := 10 + r.Intn(50)
@@ -318,7 +318,7 @@ func TestProperty5_NoFilterReturnsAll(t *testing.T) {
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
 		repo := newMockRepository()
-		svc := NewService(repo, nil)
+		svc := NewService(repo, nil, nil)
 
 		// Generate random generations
 		numGenerations := 5 + r.Intn(20)
@@ -366,7 +366,7 @@ func TestProperty6_GallerySortingCorrectness(t *testing.T) {
 			property := func(seed int64) bool {
 				r := rand.New(rand.NewSource(seed))
 				repo := newMockRepository()
-				svc := NewService(repo, nil)
+				svc := NewService(repo, nil, nil)
 
 				// Generate random generations
 				numGenerations := 10 + r.Intn(30)
@@ -428,7 +428,7 @@ func TestProperty6_GallerySortingCorrectness(t *testing.T) {
 // TestProperty6_DefaultSortIsNewest tests that the default sort is "newest".
 func TestProperty6_DefaultSortIsNewest(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Add generations with known timestamps
 	now := time.Now()
@@ -472,7 +472,7 @@ func TestProperty7_PaginationBounds(t *testing.T) {
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
 		repo := newMockRepository()
-		svc := NewService(repo, nil)
+		svc := NewService(repo, nil, nil)
 
 		// Generate random number of generations
 		numGenerations := r.Intn(100) // 0 to 99
@@ -525,7 +525,7 @@ func TestProperty7_PaginationBounds(t *testing.T) {
 // TestProperty7_PaginationDefaultPageSize tests that default page size is 20.
 func TestProperty7_PaginationDefaultPageSize(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Add 50 generations
 	for i := 0; i < 50; i++ {
@@ -561,7 +561,7 @@ func TestProperty7_PaginationDefaultPageSize(t *testing.T) {
 // TestProperty7_PaginationMaxPageSize tests that page size is capped at 100.
 func TestProperty7_PaginationMaxPageSize(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Add 150 generations
 	for i := 0; i < 150; i++ {
@@ -598,7 +598,7 @@ func TestProperty7_PaginationMaxPageSize(t *testing.T) {
 // TestProperty7_PaginationEmptyResult tests pagination with no results.
 func TestProperty7_PaginationEmptyResult(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// List with no generations
 	resp, err := svc.ListGenerations(context.Background(), ListRequest{
@@ -625,7 +625,7 @@ func TestProperty7_PaginationEmptyResult(t *testing.T) {
 // TestProperty7_PaginationPageBeyondTotal tests requesting a page beyond total.
 func TestProperty7_PaginationPageBeyondTotal(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Add 5 generations
 	for i := 0; i < 5; i++ {
@@ -663,7 +663,7 @@ func TestProperty7_PaginationPageBeyondTotal(t *testing.T) {
 
 func TestService_GetGeneration(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Add a generation
 	gen := storage.Generation{
@@ -696,7 +696,7 @@ func TestService_GetGeneration(t *testing.T) {
 
 func TestService_GetGeneration_NotFound(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	_, err := svc.GetGeneration(context.Background(), "nonexistent")
 	if !errors.Is(err, ErrNotFound) {
@@ -706,7 +706,7 @@ func TestService_GetGeneration_NotFound(t *testing.T) {
 
 func TestService_GetGeneration_EmptyID(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	_, err := svc.GetGeneration(context.Background(), "")
 	if !errors.Is(err, ErrInvalidInput) {
@@ -716,7 +716,7 @@ func TestService_GetGeneration_EmptyID(t *testing.T) {
 
 func TestService_InvalidSortOption(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	_, err := svc.ListGenerations(context.Background(), ListRequest{
 		SortBy: "invalid_sort",
@@ -736,7 +736,7 @@ func TestProperty8_RatingStorageAndCalculation(t *testing.T) {
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
 		repo := newMockRepository()
-		svc := NewService(repo, nil)
+		svc := NewService(repo, nil, nil)
 
 		// Create a generation to rate
 		gen := generateRandomGeneration(r, 1)
@@ -816,7 +816,7 @@ func TestProperty8_RatingStorageAndCalculation(t *testing.T) {
 // TestProperty8_RatingValidation tests that invalid ratings are rejected.
 func TestProperty8_RatingValidation(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Create a generation
 	gen := storage.Generation{
@@ -853,7 +853,7 @@ func TestProperty8_RatingValidation(t *testing.T) {
 // TestProperty8_RatingNonexistentGeneration tests rating a nonexistent generation.
 func TestProperty8_RatingNonexistentGeneration(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	_, err := svc.RateGeneration(context.Background(), "nonexistent-id", 5, "voter1", "127.0.0.1")
 	if !errors.Is(err, ErrNotFound) {
@@ -871,7 +871,7 @@ func TestProperty9_DuplicateRatingPrevention(t *testing.T) {
 	property := func(seed int64) bool {
 		r := rand.New(rand.NewSource(seed))
 		repo := newMockRepository()
-		svc := NewService(repo, nil)
+		svc := NewService(repo, nil, nil)
 
 		// Create a generation
 		gen := generateRandomGeneration(r, 1)
@@ -948,7 +948,7 @@ func TestProperty9_DuplicateRatingPrevention(t *testing.T) {
 // TestProperty9_MultipleUpdatesFromSameVoter tests multiple updates from the same voter.
 func TestProperty9_MultipleUpdatesFromSameVoter(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil)
+	svc := NewService(repo, nil, nil)
 
 	// Create a generation
 	gen := storage.Generation{
@@ -1013,7 +1013,7 @@ func TestProperty10_RateLimitEnforcement(t *testing.T) {
 		// Create a rate limiter with a small limit for testing
 		testLimit := 3 + r.Intn(5) // 3-7 requests
 		limiter := ratelimit.NewLimiterWithConfig(testLimit, time.Hour)
-		svc := NewService(repo, limiter)
+		svc := NewService(repo, limiter, nil)
 
 		// Create a generation
 		gen := generateRandomGeneration(r, 1)
@@ -1063,7 +1063,7 @@ func TestProperty10_RateLimitIPIsolation(t *testing.T) {
 
 	// Create a rate limiter with limit of 2
 	limiter := ratelimit.NewLimiterWithConfig(2, time.Hour)
-	svc := NewService(repo, limiter)
+	svc := NewService(repo, limiter, nil)
 
 	// Create a generation
 	gen := storage.Generation{
@@ -1101,7 +1101,7 @@ func TestProperty10_RateLimitIPIsolation(t *testing.T) {
 // TestProperty10_RateLimitWithoutLimiter tests that service works without rate limiter.
 func TestProperty10_RateLimitWithoutLimiter(t *testing.T) {
 	repo := newMockRepository()
-	svc := NewService(repo, nil) // No rate limiter
+	svc := NewService(repo, nil, nil) // No rate limiter
 
 	// Create a generation
 	gen := storage.Generation{

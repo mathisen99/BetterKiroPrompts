@@ -4,8 +4,11 @@ package gallery
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"math"
+	"time"
 
+	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/ratelimit"
 	"better-kiro-prompts/internal/storage"
 )
@@ -54,18 +57,38 @@ type ListResponse struct {
 type Service struct {
 	repo        storage.Repository
 	rateLimiter *ratelimit.Limiter
+	log         *slog.Logger
 }
 
 // NewService creates a new gallery service.
-func NewService(repo storage.Repository, rateLimiter *ratelimit.Limiter) *Service {
+func NewService(repo storage.Repository, rateLimiter *ratelimit.Limiter, log *logger.Logger) *Service {
+	var slogger *slog.Logger
+	if log != nil {
+		slogger = log.App()
+	}
 	return &Service{
 		repo:        repo,
 		rateLimiter: rateLimiter,
+		log:         slogger,
 	}
 }
 
 // ListGenerations retrieves a paginated list of generations with optional filtering.
 func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListResponse, error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
+	// Log start
+	if s.log != nil {
+		s.log.Info("gallery_list_start",
+			slog.String("request_id", requestID),
+			slog.String("sort_by", req.SortBy),
+			slog.Int("page", req.Page),
+			slog.Int("page_size", req.PageSize),
+			slog.Any("category_id", req.CategoryID),
+		)
+	}
+
 	// Validate and normalize inputs
 	if req.Page < 1 {
 		req.Page = 1
@@ -82,6 +105,12 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 		req.SortBy = "newest"
 	}
 	if !ValidSortOptions[req.SortBy] {
+		if s.log != nil {
+			s.log.Warn("gallery_list_invalid_sort",
+				slog.String("request_id", requestID),
+				slog.String("sort_by", req.SortBy),
+			)
+		}
 		return nil, ErrInvalidSort
 	}
 
@@ -96,6 +125,13 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 	// Fetch from repository
 	items, total, err := s.repo.ListGenerations(ctx, filter)
 	if err != nil {
+		if s.log != nil {
+			s.log.Error("gallery_list_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+				slog.Duration("duration", time.Since(start)),
+			)
+		}
 		return nil, err
 	}
 
@@ -103,6 +139,16 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 	totalPages := int(math.Ceil(float64(total) / float64(req.PageSize)))
 	if totalPages < 1 {
 		totalPages = 1
+	}
+
+	// Log completion
+	if s.log != nil {
+		s.log.Info("gallery_list_complete",
+			slog.String("request_id", requestID),
+			slog.Int("item_count", len(items)),
+			slog.Int("total", total),
+			slog.Duration("duration", time.Since(start)),
+		)
 	}
 
 	return &ListResponse{
@@ -139,7 +185,24 @@ func (s *Service) GetGeneration(ctx context.Context, id string) (*storage.Genera
 // GetGenerationWithView retrieves a single generation by ID and records a view
 // deduplicated by IP hash. Only increments view count for new unique views.
 func (s *Service) GetGenerationWithView(ctx context.Context, id string, ipHash string) (*storage.Generation, error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
+	// Log start
+	if s.log != nil {
+		s.log.Info("gallery_get_start",
+			slog.String("request_id", requestID),
+			slog.String("generation_id", id),
+		)
+	}
+
 	if id == "" {
+		if s.log != nil {
+			s.log.Warn("gallery_get_invalid_input",
+				slog.String("request_id", requestID),
+				slog.String("error", "empty generation id"),
+			)
+		}
 		return nil, ErrInvalidInput
 	}
 
@@ -147,14 +210,45 @@ func (s *Service) GetGenerationWithView(ctx context.Context, id string, ipHash s
 	gen, err := s.repo.GetGeneration(ctx, id)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
+			if s.log != nil {
+				s.log.Warn("gallery_get_not_found",
+					slog.String("request_id", requestID),
+					slog.String("generation_id", id),
+				)
+			}
 			return nil, ErrNotFound
+		}
+		if s.log != nil {
+			s.log.Error("gallery_get_failed",
+				slog.String("request_id", requestID),
+				slog.String("generation_id", id),
+				slog.String("error", err.Error()),
+			)
 		}
 		return nil, err
 	}
 
 	// Record view with IP deduplication (fire and forget - don't fail if this fails)
+	newView := false
 	if ipHash != "" {
-		_, _ = s.repo.RecordView(ctx, id, ipHash)
+		newView, _ = s.repo.RecordView(ctx, id, ipHash)
+		if s.log != nil {
+			s.log.Debug("gallery_view_recorded",
+				slog.String("request_id", requestID),
+				slog.String("generation_id", id),
+				slog.Bool("new_view", newView),
+			)
+		}
+	}
+
+	// Log completion
+	if s.log != nil {
+		s.log.Info("gallery_get_complete",
+			slog.String("request_id", requestID),
+			slog.String("generation_id", id),
+			slog.Bool("new_view", newView),
+			slog.Duration("duration", time.Since(start)),
+		)
 	}
 
 	return gen, nil
@@ -163,11 +257,35 @@ func (s *Service) GetGenerationWithView(ctx context.Context, id string, ipHash s
 // RateGeneration submits or updates a rating for a generation.
 // Returns the retry-after duration if rate limited.
 func (s *Service) RateGeneration(ctx context.Context, genID string, score int, voterHash string, clientIP string) (retryAfter int, err error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
+	// Log start
+	if s.log != nil {
+		s.log.Info("gallery_rate_start",
+			slog.String("request_id", requestID),
+			slog.String("generation_id", genID),
+			slog.Int("score", score),
+		)
+	}
+
 	// Validate inputs
 	if genID == "" || voterHash == "" {
+		if s.log != nil {
+			s.log.Warn("gallery_rate_invalid_input",
+				slog.String("request_id", requestID),
+				slog.String("error", "empty generation id or voter hash"),
+			)
+		}
 		return 0, ErrInvalidInput
 	}
 	if score < 1 || score > 5 {
+		if s.log != nil {
+			s.log.Warn("gallery_rate_invalid_score",
+				slog.String("request_id", requestID),
+				slog.Int("score", score),
+			)
+		}
 		return 0, ErrInvalidRating
 	}
 
@@ -175,7 +293,19 @@ func (s *Service) RateGeneration(ctx context.Context, genID string, score int, v
 	if s.rateLimiter != nil {
 		allowed, duration := s.rateLimiter.Allow(clientIP)
 		if !allowed {
+			if s.log != nil {
+				s.log.Warn("gallery_rate_limited",
+					slog.String("request_id", requestID),
+					slog.String("generation_id", genID),
+					slog.Duration("retry_after", duration),
+				)
+			}
 			return int(duration.Seconds()), ErrRateLimited
+		}
+		if s.log != nil {
+			s.log.Debug("gallery_rate_limit_allowed",
+				slog.String("request_id", requestID),
+			)
 		}
 	}
 
@@ -183,7 +313,20 @@ func (s *Service) RateGeneration(ctx context.Context, genID string, score int, v
 	_, err = s.repo.GetGeneration(ctx, genID)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
+			if s.log != nil {
+				s.log.Warn("gallery_rate_not_found",
+					slog.String("request_id", requestID),
+					slog.String("generation_id", genID),
+				)
+			}
 			return 0, ErrNotFound
+		}
+		if s.log != nil {
+			s.log.Error("gallery_rate_get_failed",
+				slog.String("request_id", requestID),
+				slog.String("generation_id", genID),
+				slog.String("error", err.Error()),
+			)
 		}
 		return 0, err
 	}
@@ -191,7 +334,24 @@ func (s *Service) RateGeneration(ctx context.Context, genID string, score int, v
 	// Create or update rating
 	err = s.repo.CreateOrUpdateRating(ctx, genID, score, voterHash)
 	if err != nil {
+		if s.log != nil {
+			s.log.Error("gallery_rate_failed",
+				slog.String("request_id", requestID),
+				slog.String("generation_id", genID),
+				slog.String("error", err.Error()),
+			)
+		}
 		return 0, err
+	}
+
+	// Log completion
+	if s.log != nil {
+		s.log.Info("gallery_rate_complete",
+			slog.String("request_id", requestID),
+			slog.String("generation_id", genID),
+			slog.Int("score", score),
+			slog.Duration("duration", time.Since(start)),
+		)
 	}
 
 	return 0, nil
