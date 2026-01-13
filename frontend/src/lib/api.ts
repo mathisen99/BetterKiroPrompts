@@ -314,12 +314,20 @@ export interface Finding {
   code_example?: string
 }
 
+export interface ReviewStats {
+  total_findings: number
+  reviewable_findings: number  // high/medium/critical only
+  reviewed_findings: number    // actually sent to AI (max 10)
+  matched_findings: number     // successfully matched with AI response
+}
+
 export interface ScanJob {
   id: string
   status: ScanStatus
   repo_url: string
   languages: string[]
   findings: Finding[]
+  review_stats?: ReviewStats
   error?: string
   created_at: string
   completed_at?: string

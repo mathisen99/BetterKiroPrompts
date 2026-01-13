@@ -632,8 +632,14 @@ func parseTruffleHogOutput(output []byte) []RawFinding {
 			continue
 		}
 
+		// Skip .git directory findings - these are local clone artifacts, not repo issues
+		filePath := result.SourceMetadata.Data.Filesystem.File
+		if strings.Contains(filePath, "/.git/") || strings.HasSuffix(filePath, "/.git") {
+			continue
+		}
+
 		findings = append(findings, RawFinding{
-			FilePath:    result.SourceMetadata.Data.Filesystem.File,
+			FilePath:    filePath,
 			LineNumber:  result.SourceMetadata.Data.Filesystem.Line,
 			Description: "Secret detected: " + result.DetectorName,
 			Severity:    "high",

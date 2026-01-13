@@ -86,9 +86,9 @@ function FindingCard({ finding }: { finding: Finding }) {
     <Card className={`${config.bgColor} ${config.borderColor} border overflow-hidden`}>
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <div className="flex items-start gap-2 min-w-0 flex-1">
-            <FileCode className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-            <span className="font-mono text-sm break-all" title={cleanPath}>
+          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+            <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="font-mono text-sm truncate" title={cleanPath}>
               {cleanPath}
               {finding.line_number && (
                 <span className="text-muted-foreground">:{finding.line_number}</span>
@@ -268,6 +268,30 @@ export function ScanResults({ job }: ScanResultsProps) {
                   {lang}
                 </Badge>
               ))}
+            </div>
+          )}
+          
+          {/* AI Review Stats */}
+          {job.review_stats && (
+            <div className="mt-4 p-3 rounded-md bg-primary/5 border border-primary/20">
+              <div className="flex items-center gap-2 text-sm">
+                <Wrench className="h-4 w-4 text-primary" />
+                <span className="font-medium text-primary">AI Review</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {job.review_stats.matched_findings > 0 ? (
+                  <>
+                    Reviewed {job.review_stats.reviewed_findings} of {job.review_stats.reviewable_findings} high/medium severity issues
+                    {job.review_stats.reviewable_findings > 10 && (
+                      <span className="text-yellow-500"> (limited to 10 for AI review)</span>
+                    )}
+                  </>
+                ) : job.review_stats.reviewable_findings === 0 ? (
+                  'No high/medium severity issues to review'
+                ) : (
+                  'AI review completed but no matches found'
+                )}
+              </p>
             </div>
           )}
         </CardContent>

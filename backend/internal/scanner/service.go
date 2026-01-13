@@ -33,14 +33,15 @@ var (
 
 // ScanJob represents a security scan job.
 type ScanJob struct {
-	ID          string     `json:"id"`
-	Status      string     `json:"status"`
-	RepoURL     string     `json:"repo_url"`
-	Languages   []string   `json:"languages"`
-	Findings    []Finding  `json:"findings"`
-	Error       string     `json:"error,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	ID          string       `json:"id"`
+	Status      string       `json:"status"`
+	RepoURL     string       `json:"repo_url"`
+	Languages   []string     `json:"languages"`
+	Findings    []Finding    `json:"findings"`
+	ReviewStats *ReviewStats `json:"review_stats,omitempty"`
+	Error       string       `json:"error,omitempty"`
+	CreatedAt   time.Time    `json:"created_at"`
+	CompletedAt *time.Time   `json:"completed_at,omitempty"`
 }
 
 // ScanRequest represents a request to start a scan.
@@ -362,6 +363,7 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	)
 
 	// Phase 5: AI review (if findings exist and client available)
+	var reviewStats *ReviewStats
 	if len(findings) > 0 && s.reviewer.HasClient() {
 		s.log.Info("scan_phase_review_start",
 			slog.String("job_id", jobID),
@@ -370,18 +372,20 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 		reviewStart := time.Now()
 		_ = s.updateJobStatus(ctx, jobID, StatusReviewing, "")
 
-		reviewedFindings, reviewErr := s.reviewer.Review(ctx, repoPath, findings)
+		reviewResult, reviewErr := s.reviewer.Review(ctx, repoPath, findings)
 		if reviewErr != nil {
 			s.log.Warn("scan_phase_review_partial",
 				slog.String("job_id", jobID),
 				slog.String("error", reviewErr.Error()),
 			)
 		}
-		findings = reviewedFindings
+		findings = reviewResult.Findings
+		reviewStats = &reviewResult.Stats
 
 		s.log.Info("scan_phase_review_complete",
 			slog.String("job_id", jobID),
 			slog.Int("reviewed_findings", len(findings)),
+			slog.Int("matched_findings", reviewStats.MatchedFindings),
 			slog.Duration("duration", time.Since(reviewStart)),
 		)
 	} else {
@@ -398,7 +402,7 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	}
 
 	// Complete job
-	_ = s.completeJob(ctx, jobID, findings)
+	_ = s.completeJobWithStats(ctx, jobID, findings, reviewStats)
 
 	s.log.Info("scan_pipeline_complete",
 		slog.String("job_id", jobID),
@@ -425,7 +429,7 @@ func (s *Service) loadJob(ctx context.Context, jobID string) (*ScanJob, error) {
 	job := &ScanJob{}
 
 	query := `
-		SELECT id, repo_url, status, languages, error, created_at, completed_at
+		SELECT id, repo_url, status, languages, error, created_at, completed_at, review_stats
 		FROM scan_jobs
 		WHERE id = $1
 	`
@@ -433,10 +437,11 @@ func (s *Service) loadJob(ctx context.Context, jobID string) (*ScanJob, error) {
 	var languagesJSON []byte
 	var errorStr sql.NullString
 	var completedAt sql.NullTime
+	var reviewStatsJSON []byte
 
 	err := s.db.QueryRowContext(ctx, query, jobID).Scan(
 		&job.ID, &job.RepoURL, &job.Status, &languagesJSON,
-		&errorStr, &job.CreatedAt, &completedAt,
+		&errorStr, &job.CreatedAt, &completedAt, &reviewStatsJSON,
 	)
 	if err == sql.ErrNoRows {
 		return nil, ErrJobNotFound
@@ -453,6 +458,12 @@ func (s *Service) loadJob(ctx context.Context, jobID string) (*ScanJob, error) {
 	}
 	if completedAt.Valid {
 		job.CompletedAt = &completedAt.Time
+	}
+	if reviewStatsJSON != nil {
+		var stats ReviewStats
+		if json.Unmarshal(reviewStatsJSON, &stats) == nil {
+			job.ReviewStats = &stats
+		}
 	}
 
 	// Load findings
@@ -540,12 +551,19 @@ func (s *Service) failJob(ctx context.Context, jobID, errorMsg string) error {
 	return err
 }
 
-func (s *Service) completeJob(ctx context.Context, jobID string, findings []Finding) error {
+func (s *Service) completeJobWithStats(ctx context.Context, jobID string, findings []Finding, stats *ReviewStats) error {
 	now := time.Now()
 
-	// Update job status
-	query := `UPDATE scan_jobs SET status = $1, completed_at = $2 WHERE id = $3`
-	_, err := s.db.ExecContext(ctx, query, StatusCompleted, now, jobID)
+	// Update job status with optional review stats
+	var err error
+	if stats != nil {
+		statsJSON, _ := json.Marshal(stats)
+		query := `UPDATE scan_jobs SET status = $1, completed_at = $2, review_stats = $3 WHERE id = $4`
+		_, err = s.db.ExecContext(ctx, query, StatusCompleted, now, statsJSON, jobID)
+	} else {
+		query := `UPDATE scan_jobs SET status = $1, completed_at = $2 WHERE id = $3`
+		_, err = s.db.ExecContext(ctx, query, StatusCompleted, now, jobID)
+	}
 	if err != nil {
 		return err
 	}

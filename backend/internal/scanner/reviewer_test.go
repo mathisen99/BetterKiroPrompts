@@ -137,8 +137,8 @@ func TestCodeReviewer_mergeRemediation(t *testing.T) {
 
 	lineNum := 10
 	findings := []Finding{
-		{ID: "1", FilePath: "main.go", LineNumber: &lineNum, Description: "Issue 1"},
-		{ID: "2", FilePath: "util.go", LineNumber: &lineNum, Description: "Issue 2"},
+		{ID: "1", FilePath: "main.go", LineNumber: &lineNum, Description: "Issue 1", Severity: "high"},
+		{ID: "2", FilePath: "util.go", LineNumber: &lineNum, Description: "Issue 2", Severity: "high"},
 	}
 
 	review := &ReviewResponse{
@@ -147,7 +147,7 @@ func TestCodeReviewer_mergeRemediation(t *testing.T) {
 		},
 	}
 
-	merged := r.mergeRemediation(findings, review)
+	merged, matchCount := r.mergeRemediation(findings, review)
 
 	// First finding should have remediation
 	if merged[0].Remediation != "Fix for main.go" {
@@ -157,6 +157,11 @@ func TestCodeReviewer_mergeRemediation(t *testing.T) {
 	// Second finding should not have remediation
 	if merged[1].Remediation != "" {
 		t.Errorf("Expected no remediation for util.go, got %q", merged[1].Remediation)
+	}
+
+	// Match count should be 1
+	if matchCount != 1 {
+		t.Errorf("Expected matchCount 1, got %d", matchCount)
 	}
 }
 

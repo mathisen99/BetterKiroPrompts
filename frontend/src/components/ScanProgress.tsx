@@ -9,6 +9,8 @@ interface ScanProgressProps {
 }
 
 // Status configuration for display
+// Steps array: ['Clone', 'Scan', 'Review', 'Done'] with indices 0, 1, 2, 3
+// The step value indicates which step is currently ACTIVE (highlighted)
 const statusConfig: Record<ScanStatus, {
   icon: typeof Loader2
   label: string
@@ -25,25 +27,25 @@ const statusConfig: Record<ScanStatus, {
     icon: GitBranch,
     label: 'Cloning Repository',
     description: 'Downloading repository files...',
-    step: 1,
+    step: 0, // Clone step is active
   },
   scanning: {
     icon: Search,
     label: 'Running Security Tools',
     description: 'Analyzing code with Trivy, Semgrep, and more...',
-    step: 2,
+    step: 1, // Scan step is active
   },
   reviewing: {
     icon: Bot,
     label: 'AI Code Review',
     description: 'Generating remediation guidance...',
-    step: 3,
+    step: 2, // Review step is active
   },
   completed: {
     icon: Loader2,
     label: 'Completed',
     description: 'Scan finished',
-    step: 4,
+    step: 3, // Done step is active
   },
   failed: {
     icon: Loader2,
