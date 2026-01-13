@@ -46,6 +46,7 @@ export interface GenerateOutputsRequest {
 
 export interface GenerateOutputsResponse {
   files: GeneratedFile[]
+  generationId?: string // ID of stored generation for gallery link
 }
 
 export interface ErrorResponse {

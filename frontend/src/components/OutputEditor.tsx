@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import type { GeneratedFile } from '@/lib/api'
 import { downloadAllAsZip } from '@/lib/zip'
-import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot, Eye, Pencil } from 'lucide-react'
+import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot, Eye, Pencil, ExternalLink } from 'lucide-react'
 import { SyntaxHighlighter } from './SyntaxHighlighter'
 import { detectLanguage } from '@/lib/syntax'
 
@@ -16,6 +16,8 @@ interface OutputEditorProps {
   onEdit: (path: string, content: string) => void
   onReset: (path: string) => void
   getFileContent: (path: string) => string
+  generationId?: string | null
+  onViewInGallery?: (generationId: string) => void
 }
 
 export function OutputEditor({
@@ -24,6 +26,8 @@ export function OutputEditor({
   onEdit,
   onReset,
   getFileContent,
+  generationId,
+  onViewInGallery,
 }: OutputEditorProps) {
   // Track which files are in edit mode (default: highlighted view)
   const [editModeFiles, setEditModeFiles] = useState<Set<string>>(new Set())
@@ -200,10 +204,22 @@ export function OutputEditor({
                 Edit files below, then download individually or as a ZIP
               </CardDescription>
             </div>
-            <Button onClick={handleDownloadAll} className="gap-2 w-full sm:w-auto">
-              <Package className="h-4 w-4" />
-              Download All (ZIP)
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {generationId && onViewInGallery && (
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => onViewInGallery(generationId)}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  View in Gallery
+                </Button>
+              )}
+              <Button onClick={handleDownloadAll} className="gap-2">
+                <Package className="h-4 w-4" />
+                Download All (ZIP)
+              </Button>
+            </div>
           </div>
         </CardHeader>
       </Card>

@@ -255,12 +255,12 @@ This implementation plan covers the final polish phase, organized into logical g
     - Generate consistent hash from localStorage + fingerprint
     - _Requirements: 7.4_
 
-- [ ] 19. Final Integration
-  - [ ] 19.1 Update API response types
+- [x] 19. Final Integration
+  - [x] 19.1 Update API response types
     - Add generationId to GenerateOutputsResponse
     - Add gallery types
     - _Requirements: 5.1_
-  - [ ] 19.2 Connect generation success to gallery
+  - [x] 19.2 Connect generation success to gallery
     - Show "View in Gallery" link after successful generation
     - _Requirements: 6.4_
 

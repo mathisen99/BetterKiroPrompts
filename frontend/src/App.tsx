@@ -12,6 +12,7 @@ function App() {
   const [currentPhase, setCurrentPhase] = useState<Phase>('level-select')
   const [currentView, setCurrentView] = useState<AppView>('main')
   const [resetKey, setResetKey] = useState(0)
+  const [initialGalleryItemId, setInitialGalleryItemId] = useState<string | null>(null)
   
   const handlePhaseChange = useCallback((phase: Phase) => {
     setCurrentPhase(phase)
@@ -26,10 +27,17 @@ function App() {
   }, [])
 
   const handleOpenGallery = useCallback(() => {
+    setInitialGalleryItemId(null)
+    setCurrentView('gallery')
+  }, [])
+
+  const handleViewInGallery = useCallback((generationId: string) => {
+    setInitialGalleryItemId(generationId)
     setCurrentView('gallery')
   }, [])
 
   const handleCloseGallery = useCallback(() => {
+    setInitialGalleryItemId(null)
     setCurrentView('main')
   }, [])
 
@@ -42,7 +50,7 @@ function App() {
     return (
       <div className="min-h-screen">
         <NightSkyBackground />
-        <GalleryPage onBack={handleCloseGallery} />
+        <GalleryPage onBack={handleCloseGallery} initialItemId={initialGalleryItemId} />
       </div>
     )
   }
@@ -89,7 +97,7 @@ function App() {
             </button>
           </div>
         )}
-        <LandingPage key={resetKey} onPhaseChange={handlePhaseChange} />
+        <LandingPage key={resetKey} onPhaseChange={handlePhaseChange} onViewInGallery={handleViewInGallery} />
       </main>
     </div>
   )

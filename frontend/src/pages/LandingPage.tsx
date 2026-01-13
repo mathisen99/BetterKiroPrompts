@@ -16,6 +16,7 @@ import { SuccessCelebration } from '@/components/shared/SuccessCelebration'
 
 interface LandingPageProps {
   onPhaseChange?: (phase: Phase) => void
+  onViewInGallery?: (generationId: string) => void
 }
 
 type FailedOperation = 'questions' | 'outputs' | null
@@ -39,6 +40,7 @@ interface LandingPageState {
   canRetry: boolean
   failedOperation: FailedOperation
   loadingStartTime: number | null // Track when loading started for progress display
+  generationId: string | null // ID of stored generation for gallery link
 }
 
 const EXAMPLE_IDEAS = [
@@ -172,10 +174,11 @@ function createInitialState(): LandingPageState {
     canRetry: false,
     failedOperation: null,
     loadingStartTime: null,
+    generationId: null,
   }
 }
 
-export function LandingPage({ onPhaseChange }: LandingPageProps) {
+export function LandingPage({ onPhaseChange, onViewInGallery }: LandingPageProps) {
   const [state, setState] = useState<LandingPageState>(createInitialState)
 
   // Notify parent of phase changes
@@ -324,6 +327,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
         canRetry: false,
         failedOperation: null,
         loadingStartTime: null,
+        generationId: response.generationId ?? null,
       }))
     } catch (err) {
       const { message, retryAfter, code, canRetry } = getErrorMessage(err)
@@ -468,6 +472,8 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
             onEdit={handleEdit}
             onReset={handleReset}
             getFileContent={getFileContent}
+            generationId={state.generationId}
+            onViewInGallery={onViewInGallery}
           />
         </div>
       )}

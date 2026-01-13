@@ -18,9 +18,10 @@ import { toast } from 'sonner'
 
 interface GalleryPageProps {
   onBack: () => void
+  initialItemId?: string | null
 }
 
-export function GalleryPage({ onBack }: GalleryPageProps) {
+export function GalleryPage({ onBack, initialItemId }: GalleryPageProps) {
   const [items, setItems] = useState<GalleryItem[]>([])
   const [filters, setFilters] = useState<GalleryFilters>({
     sortBy: 'newest',
@@ -30,8 +31,8 @@ export function GalleryPage({ onBack }: GalleryPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Detail modal state
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Detail modal state - initialize with initialItemId if provided
+  const [selectedId, setSelectedId] = useState<string | null>(initialItemId ?? null)
   const [selectedGeneration, setSelectedGeneration] = useState<GalleryDetailType | null>(null)
   const [userRating, setUserRating] = useState<number | null>(null)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
