@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ExampleAnswers } from '@/components/ExampleAnswers'
 import type { Question } from '@/lib/api'
 import { ArrowLeft, ArrowRight, CheckCircle2, MessageSquare, Send } from 'lucide-react'
 
@@ -166,6 +167,14 @@ export function QuestionFlow({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Example answers - clickable to populate answer field */}
+            {currentQuestion.examples && currentQuestion.examples.length > 0 && (
+              <ExampleAnswers
+                examples={currentQuestion.examples}
+                onSelect={(example) => setCurrentAnswer(example)}
+              />
+            )}
+
             <Textarea
               id="answer"
               value={currentAnswer}
