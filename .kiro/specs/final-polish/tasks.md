@@ -6,40 +6,40 @@ This implementation plan covers the final polish phase, organized into logical g
 
 ## Tasks
 
-- [ ] 1. Database Schema and Migrations
-  - [ ] 1.1 Create migration for categories table
+- [x] 1. Database Schema and Migrations
+  - [x] 1.1 Create migration for categories table
     - Create `backend/migrations/20260113000001_create_categories.sql`
     - Define categories table with id, name, keywords array
     - Insert default categories (API, CLI, Web App, Mobile, Other)
     - _Requirements: 5.2, 5.3_
-  - [ ] 1.2 Create migration for generations table
+  - [x] 1.2 Create migration for generations table
     - Create `backend/migrations/20260113000002_create_generations.sql`
     - Define generations table with all required fields
     - Add foreign key to categories, indexes for sorting
     - _Requirements: 5.1, 5.2_
-  - [ ] 1.3 Create migration for ratings table
+  - [x] 1.3 Create migration for ratings table
     - Create `backend/migrations/20260113000003_create_ratings.sql`
     - Define ratings table with unique constraint on (generation_id, voter_hash)
     - Add index on generation_id
     - _Requirements: 7.2_
-  - [ ] 1.4 Update database connection with pooling
+  - [x] 1.4 Update database connection with pooling
     - Modify `backend/internal/db/db.go` to configure connection pool
     - Set max open connections, max idle, connection lifetime
     - _Requirements: 8.2_
 
-- [ ] 2. Backend Storage Layer
-  - [ ] 2.1 Create storage repository interface and implementation
+- [x] 2. Backend Storage Layer
+  - [x] 2.1 Create storage repository interface and implementation
     - Create `backend/internal/storage/repository.go` with Repository interface
     - Implement PostgreSQL repository with parameterized queries
     - _Requirements: 5.1, 5.4, 5.5_
-  - [ ] 2.2 Write property tests for storage repository
+  - [x] 2.2 Write property tests for storage repository
     - **Property 3: Generation Record Completeness**
     - **Validates: Requirements 5.2, 5.6**
-  - [ ] 2.3 Implement category matching logic
+  - [x] 2.3 Implement category matching logic
     - Create `backend/internal/storage/category.go`
     - Implement keyword-based category detection
     - _Requirements: 5.3_
-  - [ ] 2.4 Write property tests for category matching
+  - [x] 2.4 Write property tests for category matching
     - **Property 4: Category Assignment Correctness**
     - **Validates: Requirements 5.3**
 
