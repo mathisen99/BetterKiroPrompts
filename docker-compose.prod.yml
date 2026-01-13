@@ -31,8 +31,28 @@ services:
       - app-network
     restart: unless-stopped
 
+  # Security scanner container - only starts with --profile scan
+  scanner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.scanner
+    profiles:
+      - scan
+    volumes:
+      - scan-repos:/scan/repos
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    networks:
+      - app-network
+
 volumes:
   postgres_data:
+  scan-repos:
 
 networks:
   app-network:
