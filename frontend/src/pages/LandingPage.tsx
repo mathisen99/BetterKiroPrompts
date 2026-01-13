@@ -18,6 +18,8 @@ interface LandingPageProps {
   onPhaseChange?: (phase: Phase) => void
 }
 
+type FailedOperation = 'questions' | 'outputs' | null
+
 interface LandingPageState {
   phase: Phase
   experienceLevel: ExperienceLevel | null
@@ -29,10 +31,13 @@ interface LandingPageState {
   generatedFiles: GeneratedFile[]
   editedFiles: Map<string, string>
   error: string | null
+  errorCode: string | null
   retryAfter: number | null
   showRestorePrompt: boolean
   pendingRestore: SessionState | null
   showCelebration: boolean
+  canRetry: boolean
+  failedOperation: FailedOperation
 }
 
 const EXAMPLE_IDEAS = [
@@ -44,48 +49,69 @@ const EXAMPLE_IDEAS = [
 ]
 
 // Helper to get user-friendly error message
-function getErrorMessage(err: unknown): { message: string; retryAfter: number | null } {
+function getErrorMessage(err: unknown): { message: string; retryAfter: number | null; code: string; canRetry: boolean } {
   if (err instanceof ApiError) {
-    // Rate limit error
+    // Rate limit error - can retry after waiting
     if (err.status === 429) {
       return {
         message: 'Too many requests. Please wait before trying again.',
         retryAfter: err.retryAfter ?? null,
+        code: 'RATE_LIMITED',
+        canRetry: false, // Must wait for rate limit
       }
     }
-    // Timeout error
+    // Timeout error - can retry
     if (err.status === 504 || err.message.toLowerCase().includes('timeout')) {
       return {
-        message: 'Request timed out. Please refresh and start over.',
+        message: 'Request timed out. Your progress is saved.',
         retryAfter: null,
+        code: 'TIMEOUT',
+        canRetry: true,
       }
     }
-    // Server error
+    // Service unavailable - can retry
+    if (err.status === 503) {
+      return {
+        message: 'Service temporarily unavailable. Please try again.',
+        retryAfter: err.retryAfter ?? null,
+        code: 'SERVICE_UNAVAILABLE',
+        canRetry: true,
+      }
+    }
+    // Server error - can retry
     if (err.status >= 500) {
       return {
-        message: 'Generation failed. Please refresh and try again.',
+        message: 'Something went wrong. Please try again.',
         retryAfter: null,
+        code: 'SERVER_ERROR',
+        canRetry: true,
       }
     }
-    // Client error (bad input, etc.)
+    // Client error (bad input, etc.) - cannot retry without changes
     return {
       message: err.message,
       retryAfter: err.retryAfter ?? null,
+      code: 'VALIDATION_ERROR',
+      canRetry: false,
     }
   }
   
-  // Network error (fetch failed)
+  // Network error (fetch failed) - can retry
   if (err instanceof TypeError && err.message.includes('fetch')) {
     return {
-      message: 'Unable to connect. Please check your connection and refresh.',
+      message: 'Unable to connect. Check your connection and try again.',
       retryAfter: null,
+      code: 'NETWORK_ERROR',
+      canRetry: true,
     }
   }
   
-  // Unknown error
+  // Unknown error - can retry
   return {
-    message: 'An unexpected error occurred. Please refresh and try again.',
+    message: 'An unexpected error occurred. Please try again.',
     retryAfter: null,
+    code: 'UNKNOWN_ERROR',
+    canRetry: true,
   }
 }
 
@@ -137,10 +163,13 @@ function createInitialState(): LandingPageState {
     generatedFiles: [],
     editedFiles: new Map(),
     error: null,
+    errorCode: null,
     retryAfter: null,
     showRestorePrompt: hasRestorableState,
     pendingRestore: hasRestorableState ? savedState : null,
     showCelebration: false,
+    canRetry: false,
+    failedOperation: null,
   }
 }
 
@@ -204,7 +233,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
     const preApiState = { ...state, projectIdea: idea, phase: 'input' as Phase }
     saveState(preApiState)
     
-    setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null }))
+    setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null, errorCode: null }))
     
     try {
       const response = await generateQuestions(idea, currentExperienceLevel!)
@@ -215,17 +244,22 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
           questions: response.questions,
           currentQuestionIndex: 0,
           answers: new Map(),
+          canRetry: false,
+          failedOperation: null as FailedOperation,
         }
         saveState(newState)
         return newState
       })
     } catch (err) {
-      const { message, retryAfter } = getErrorMessage(err)
+      const { message, retryAfter, code, canRetry } = getErrorMessage(err)
       setState(prev => ({
         ...prev,
         phase: 'error',
         error: message,
+        errorCode: code,
         retryAfter,
+        canRetry,
+        failedOperation: 'questions' as FailedOperation,
       }))
     }
   }, [state])
@@ -264,7 +298,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
   }, [])
 
   const handleQuestionsComplete = useCallback(async () => {
-    setState(prev => ({ ...prev, phase: 'generating' }))
+    setState(prev => ({ ...prev, phase: 'generating', error: null, errorCode: null }))
     
     try {
       const answers: Answer[] = Array.from(state.answers.entries()).map(([questionId, answer]) => ({
@@ -283,14 +317,19 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
         generatedFiles: response.files,
         editedFiles: new Map(),
         showCelebration: true,
+        canRetry: false,
+        failedOperation: null,
       }))
     } catch (err) {
-      const { message, retryAfter } = getErrorMessage(err)
+      const { message, retryAfter, code, canRetry } = getErrorMessage(err)
       setState(prev => ({
         ...prev,
         phase: 'error',
         error: message,
+        errorCode: code,
         retryAfter,
+        canRetry,
+        failedOperation: 'outputs' as FailedOperation,
       }))
     }
   }, [state.answers, state.projectIdea, state.experienceLevel, state.hookPreset])
@@ -301,6 +340,23 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
       phase: 'output',
       showCelebration: false,
     }))
+  }, [])
+
+  const handleRetry = useCallback(async () => {
+    if (!state.canRetry) return
+    
+    if (state.failedOperation === 'questions') {
+      // Retry question generation
+      await handleProjectSubmit(state.projectIdea)
+    } else if (state.failedOperation === 'outputs') {
+      // Retry output generation
+      await handleQuestionsComplete()
+    }
+  }, [state.canRetry, state.failedOperation, state.projectIdea, handleProjectSubmit, handleQuestionsComplete])
+
+  const handleStartOver = useCallback(() => {
+    storage.clear()
+    setState(createInitialState())
   }, [])
 
   const handleEdit = useCallback((path: string, content: string) => {
@@ -411,13 +467,14 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
 
       {state.phase === 'error' && (
         <div className="animate-phase-enter py-8 space-y-4">
-          <ErrorMessage message={state.error ?? 'An unexpected error occurred'} />
-          {state.retryAfter ? (
+          <ErrorMessage 
+            message={state.error ?? 'An unexpected error occurred'} 
+            canRetry={state.canRetry}
+            onRetry={handleRetry}
+            onStartOver={handleStartOver}
+          />
+          {state.retryAfter && (
             <RateLimitCountdown retryAfterSeconds={state.retryAfter} />
-          ) : (
-            <p className="text-sm text-muted-foreground text-center">
-              Please refresh the page to start over.
-            </p>
           )}
         </div>
       )}

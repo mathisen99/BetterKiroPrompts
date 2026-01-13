@@ -50,37 +50,6 @@ export interface ErrorResponse {
   retryAfter?: number
 }
 
-// API functions
-export async function generateQuestions(projectIdea: string, experienceLevel: ExperienceLevel): Promise<GenerateQuestionsResponse> {
-  const res = await fetch(`${API_BASE}/generate/questions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectIdea, experienceLevel }),
-  })
-  
-  if (!res.ok) {
-    const error: ErrorResponse = await res.json().catch(() => ({ error: 'Failed to generate questions' }))
-    throw new ApiError(error.error, res.status, error.retryAfter)
-  }
-  
-  return res.json()
-}
-
-export async function generateOutputs(projectIdea: string, answers: Answer[], experienceLevel: ExperienceLevel, hookPreset: HookPreset): Promise<GenerateOutputsResponse> {
-  const res = await fetch(`${API_BASE}/generate/outputs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectIdea, answers, experienceLevel, hookPreset }),
-  })
-  
-  if (!res.ok) {
-    const error: ErrorResponse = await res.json().catch(() => ({ error: 'Failed to generate outputs' }))
-    throw new ApiError(error.error, res.status, error.retryAfter)
-  }
-  
-  return res.json()
-}
-
 // Custom error class for API errors
 export class ApiError extends Error {
   status: number
@@ -92,4 +61,89 @@ export class ApiError extends Error {
     this.status = status
     this.retryAfter = retryAfter
   }
+}
+
+// Check if an error is recoverable (should auto-retry)
+function isRecoverableError(status: number): boolean {
+  return status === 503 || status === 504
+}
+
+// Generic fetch with automatic retry for recoverable errors
+async function fetchWithRetry<T>(
+  url: string,
+  options: RequestInit,
+  errorMessage: string
+): Promise<T> {
+  let lastError: ApiError | null = null
+  
+  // Try up to 2 times (initial + 1 retry)
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(url, options)
+      
+      if (!res.ok) {
+        const error: ErrorResponse = await res.json().catch(() => ({ error: errorMessage }))
+        const apiError = new ApiError(error.error, res.status, error.retryAfter)
+        
+        // Only retry on recoverable errors and first attempt
+        if (isRecoverableError(res.status) && attempt === 0) {
+          lastError = apiError
+          continue
+        }
+        
+        throw apiError
+      }
+      
+      return res.json()
+    } catch (err) {
+      // If it's already an ApiError, handle retry logic
+      if (err instanceof ApiError) {
+        if (isRecoverableError(err.status) && attempt === 0) {
+          lastError = err
+          continue
+        }
+        throw err
+      }
+      
+      // Network errors (TypeError from fetch) - retry once
+      if (err instanceof TypeError && attempt === 0) {
+        lastError = new ApiError('Network error', 0)
+        continue
+      }
+      
+      throw err
+    }
+  }
+  
+  // If we exhausted retries, throw the last error
+  if (lastError) {
+    throw lastError
+  }
+  
+  throw new ApiError(errorMessage, 500)
+}
+
+// API functions
+export async function generateQuestions(projectIdea: string, experienceLevel: ExperienceLevel): Promise<GenerateQuestionsResponse> {
+  return fetchWithRetry<GenerateQuestionsResponse>(
+    `${API_BASE}/generate/questions`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectIdea, experienceLevel }),
+    },
+    'Failed to generate questions'
+  )
+}
+
+export async function generateOutputs(projectIdea: string, answers: Answer[], experienceLevel: ExperienceLevel, hookPreset: HookPreset): Promise<GenerateOutputsResponse> {
+  return fetchWithRetry<GenerateOutputsResponse>(
+    `${API_BASE}/generate/outputs`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectIdea, answers, experienceLevel, hookPreset }),
+    },
+    'Failed to generate outputs'
+  )
 }
