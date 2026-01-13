@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button'
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon, Info } from 'lucide-react'
 
 interface CompactHeaderProps {
   onStartOver: () => void
   onOpenGallery?: () => void
+  onOpenInfo?: () => void
 }
 
-export function CompactHeader({ onStartOver, onOpenGallery }: CompactHeaderProps) {
+export function CompactHeader({ onStartOver, onOpenGallery, onOpenInfo }: CompactHeaderProps) {
   return (
     <header className="w-full mb-6">
       <div className="flex items-center justify-between">
@@ -35,6 +36,17 @@ export function CompactHeader({ onStartOver, onOpenGallery }: CompactHeaderProps
             >
               <ImageIcon className="h-4 w-4" />
               Gallery
+            </Button>
+          )}
+          {onOpenInfo && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenInfo}
+              className="text-muted-foreground hover:text-foreground gap-1.5"
+            >
+              <Info className="h-4 w-4" />
+              About
             </Button>
           )}
           <Button

@@ -6,8 +6,8 @@ This implementation plan covers the Info Page and Security Scanning features for
 
 ## Tasks
 
-- [ ] 1. Create Info Page
-  - [ ] 1.1 Create InfoPage component with content sections
+- [x] 1. Create Info Page
+  - [x] 1.1 Create InfoPage component with content sections
     - Create `frontend/src/pages/InfoPage.tsx`
     - Add hero section explaining site purpose
     - Add problem statement section (vibe-coding without thinking)
@@ -16,7 +16,7 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Add "Get Started" CTA button
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-  - [ ] 1.2 Add navigation to Info Page
+  - [x] 1.2 Add navigation to Info Page
     - Update `App.tsx` to add 'info' view state
     - Add "About" link to landing page header area
     - Add "About" link to gallery page

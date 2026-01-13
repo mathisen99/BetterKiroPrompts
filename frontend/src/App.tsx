@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react'
 import { LandingPage } from '@/pages/LandingPage'
 import { GalleryPage } from '@/pages/GalleryPage'
+import { InfoPage } from '@/pages/InfoPage'
 import { NightSkyBackground } from '@/components/shared/NightSkyBackground'
 import { CompactHeader } from '@/components/shared/CompactHeader'
 import * as storage from '@/lib/storage'
 import type { Phase } from '@/lib/storage'
 
-type AppView = 'main' | 'gallery'
+type AppView = 'main' | 'gallery' | 'info'
 
 function App() {
   const [currentPhase, setCurrentPhase] = useState<Phase>('level-select')
@@ -41,6 +42,14 @@ function App() {
     setCurrentView('main')
   }, [])
 
+  const handleOpenInfo = useCallback(() => {
+    setCurrentView('info')
+  }, [])
+
+  const handleCloseInfo = useCallback(() => {
+    setCurrentView('main')
+  }, [])
+
   // Show large logo only during level-select phase on main view
   const showLargeLogo = currentPhase === 'level-select' && currentView === 'main'
   const showCompactHeader = !showLargeLogo && currentView === 'main'
@@ -50,7 +59,20 @@ function App() {
     return (
       <div className="min-h-screen">
         <NightSkyBackground />
-        <GalleryPage onBack={handleCloseGallery} initialItemId={initialGalleryItemId} />
+        <GalleryPage onBack={handleCloseGallery} initialItemId={initialGalleryItemId} onOpenInfo={handleOpenInfo} />
+      </div>
+    )
+  }
+
+  // Info view
+  if (currentView === 'info') {
+    return (
+      <div className="min-h-screen">
+        <NightSkyBackground />
+        <InfoPage
+          onNavigateHome={handleCloseInfo}
+          onNavigateGallery={handleOpenGallery}
+        />
       </div>
     )
   }
@@ -68,7 +90,7 @@ function App() {
         {/* Compact header for non-landing phases */}
         {showCompactHeader && (
           <div className="max-w-3xl mx-auto">
-            <CompactHeader onStartOver={handleStartOver} onOpenGallery={handleOpenGallery} />
+            <CompactHeader onStartOver={handleStartOver} onOpenGallery={handleOpenGallery} onOpenInfo={handleOpenInfo} />
           </div>
         )}
         {/* Big centered logo with fade-out animation */}
@@ -86,9 +108,9 @@ function App() {
             className="drop-shadow-[0_0_35px_rgba(99,102,241,0.5)]"
           />
         </div>
-        {/* Gallery link on landing page */}
+        {/* Gallery and About links on landing page */}
         {showLargeLogo && (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center gap-4 mb-6">
             <button
               onClick={handleOpenGallery}
               className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
@@ -99,6 +121,17 @@ function App() {
                 <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
               </svg>
               Browse Gallery
+            </button>
+            <button
+              onClick={handleOpenInfo}
+              className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg border border-border bg-background/50 hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+              About
             </button>
           </div>
         )}

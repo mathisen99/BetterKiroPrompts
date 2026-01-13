@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, Home } from 'lucide-react'
+import { ArrowLeft, Home, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GalleryList } from '@/components/Gallery/GalleryList'
 import { GalleryDetail } from '@/components/Gallery/GalleryDetail'
@@ -19,9 +19,10 @@ import { toast } from 'sonner'
 interface GalleryPageProps {
   onBack: () => void
   initialItemId?: string | null
+  onOpenInfo?: () => void
 }
 
-export function GalleryPage({ onBack, initialItemId }: GalleryPageProps) {
+export function GalleryPage({ onBack, initialItemId, onOpenInfo }: GalleryPageProps) {
   const [items, setItems] = useState<GalleryItem[]>([])
   const [filters, setFilters] = useState<GalleryFilters>({
     sortBy: 'newest',
@@ -142,14 +143,27 @@ export function GalleryPage({ onBack, initialItemId }: GalleryPageProps) {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="gap-2"
-          >
-            <Home className="h-4 w-4" />
-            Back to Home
-          </Button>
+          <div className="flex items-center gap-2">
+            {onOpenInfo && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onOpenInfo}
+                className="gap-1.5"
+              >
+                <Info className="h-4 w-4" />
+                About
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         {/* Error state */}
