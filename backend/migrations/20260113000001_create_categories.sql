@@ -13,5 +13,5 @@ INSERT INTO categories (name, keywords) VALUES
     ('CLI', ARRAY['cli', 'command', 'terminal', 'shell', 'script', 'console']),
     ('Web App', ARRAY['web', 'frontend', 'react', 'vue', 'angular', 'website', 'webapp']),
     ('Mobile', ARRAY['mobile', 'ios', 'android', 'react native', 'flutter', 'app']),
-    ('Other', ARRAY[])
+    ('Other', ARRAY[]::TEXT[])
 ON CONFLICT (name) DO NOTHING;
