@@ -11,6 +11,14 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+// Connection pool configuration
+const (
+	defaultMaxOpenConns    = 25
+	defaultMaxIdleConns    = 5
+	defaultConnMaxLifetime = 5 * time.Minute
+	defaultConnMaxIdleTime = 1 * time.Minute
+)
+
 var DB *sql.DB
 
 func Connect(ctx context.Context) error {
@@ -26,11 +34,18 @@ func Connect(ctx context.Context) error {
 		return err
 	}
 
+	// Configure connection pool for concurrent access
+	DB.SetMaxOpenConns(defaultMaxOpenConns)
+	DB.SetMaxIdleConns(defaultMaxIdleConns)
+	DB.SetConnMaxLifetime(defaultConnMaxLifetime)
+	DB.SetConnMaxIdleTime(defaultConnMaxIdleTime)
+
 	// Retry connection with backoff (postgres may not be ready yet)
 	maxRetries := 5
-	for i := 0; i < maxRetries; i++ {
+	for i := range maxRetries {
 		if err = DB.PingContext(ctx); err == nil {
-			log.Println("Database connected successfully")
+			log.Printf("Database connected successfully (pool: max=%d, idle=%d)",
+				defaultMaxOpenConns, defaultMaxIdleConns)
 			return nil
 		}
 		log.Printf("Database connection attempt %d/%d failed: %v", i+1, maxRetries, err)
@@ -38,4 +53,12 @@ func Connect(ctx context.Context) error {
 	}
 
 	return fmt.Errorf("failed to connect to database after %d attempts: %w", maxRetries, err)
+}
+
+// Close closes the database connection pool
+func Close() error {
+	if DB != nil {
+		return DB.Close()
+	}
+	return nil
 }
