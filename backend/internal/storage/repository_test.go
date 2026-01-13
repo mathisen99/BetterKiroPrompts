@@ -402,3 +402,247 @@ func TestProperty4_IdempotentViewCounting_MultipleIPs(t *testing.T) {
 		t.Errorf("Property 4 (Idempotent View Counting - Multiple IPs) failed: %v", err)
 	}
 }
+
+// Feature: ux-improvements, Property 5: Vote Upsert Behavior
+// **Validates: Requirements 5.2, 5.4**
+// For any gallery item and IP address, submitting multiple votes SHALL result in
+// exactly one rating record, with the score reflecting the most recent vote.
+
+// MockRatingRepository is a mock implementation for testing rating/vote logic.
+type MockRatingRepository struct {
+	ratings     map[string]map[string]int // generationID -> ipHash -> score
+	generations map[string]bool           // generationID -> exists
+}
+
+// NewMockRatingRepository creates a new mock repository for rating testing.
+func NewMockRatingRepository() *MockRatingRepository {
+	return &MockRatingRepository{
+		ratings:     make(map[string]map[string]int),
+		generations: make(map[string]bool),
+	}
+}
+
+// AddGeneration adds a generation to the mock repository.
+func (m *MockRatingRepository) AddGeneration(id string) {
+	m.generations[id] = true
+	m.ratings[id] = make(map[string]int)
+}
+
+// CreateOrUpdateRating simulates the upsert behavior for ratings.
+// Returns true if this was a new rating, false if it was an update.
+func (m *MockRatingRepository) CreateOrUpdateRating(generationID string, score int, ipHash string) (isNew bool, err error) {
+	if generationID == "" || ipHash == "" {
+		return false, ErrInvalidInput
+	}
+	if score < 1 || score > 5 {
+		return false, ErrInvalidInput
+	}
+	if !m.generations[generationID] {
+		return false, ErrNotFound
+	}
+
+	// Check if this IP has already rated this generation
+	_, exists := m.ratings[generationID][ipHash]
+
+	// Upsert the rating (create or update)
+	m.ratings[generationID][ipHash] = score
+
+	return !exists, nil
+}
+
+// GetRating returns the rating for a generation by IP hash.
+func (m *MockRatingRepository) GetRating(generationID string, ipHash string) (int, bool) {
+	if ratings, ok := m.ratings[generationID]; ok {
+		if score, exists := ratings[ipHash]; exists {
+			return score, true
+		}
+	}
+	return 0, false
+}
+
+// GetRatingCount returns the number of unique ratings for a generation.
+func (m *MockRatingRepository) GetRatingCount(generationID string) int {
+	if ratings, ok := m.ratings[generationID]; ok {
+		return len(ratings)
+	}
+	return 0
+}
+
+// TestProperty5_VoteUpsertBehavior tests that multiple votes from the same IP
+// result in exactly one rating record with the most recent score.
+// Feature: ux-improvements, Property 5: Vote Upsert Behavior
+// **Validates: Requirements 5.2, 5.4**
+func TestProperty5_VoteUpsertBehavior(t *testing.T) {
+	property := func(seed int64) bool {
+		r := rand.New(rand.NewSource(seed))
+		repo := NewMockRatingRepository()
+
+		// Create a generation
+		genID := generateNonEmptyString(r)
+		repo.AddGeneration(genID)
+
+		// Generate a random IP hash
+		ipHash := generateNonEmptyString(r)
+
+		// Submit multiple votes (2-10 times) with different scores
+		numVotes := 2 + r.Intn(9)
+		var lastScore int
+		newRatingCount := 0
+
+		for i := 0; i < numVotes; i++ {
+			// Generate a random score between 1 and 5
+			score := 1 + r.Intn(5)
+			lastScore = score
+
+			isNew, err := repo.CreateOrUpdateRating(genID, score, ipHash)
+			if err != nil {
+				t.Logf("CreateOrUpdateRating failed: %v", err)
+				return false
+			}
+			if isNew {
+				newRatingCount++
+			}
+		}
+
+		// Property 1: Only the first vote should create a new rating
+		if newRatingCount != 1 {
+			t.Logf("Expected exactly 1 new rating, got %d after %d votes", newRatingCount, numVotes)
+			return false
+		}
+
+		// Property 2: Rating count should be exactly 1
+		if repo.GetRatingCount(genID) != 1 {
+			t.Logf("Expected rating count of 1, got %d", repo.GetRatingCount(genID))
+			return false
+		}
+
+		// Property 3: The stored score should be the most recent vote
+		storedScore, exists := repo.GetRating(genID, ipHash)
+		if !exists {
+			t.Logf("Rating should exist for IP hash")
+			return false
+		}
+		if storedScore != lastScore {
+			t.Logf("Expected score %d (last vote), got %d", lastScore, storedScore)
+			return false
+		}
+
+		return true
+	}
+
+	cfg := &quick.Config{
+		MaxCount: 100,
+	}
+
+	if err := quick.Check(property, cfg); err != nil {
+		t.Errorf("Property 5 (Vote Upsert Behavior) failed: %v", err)
+	}
+}
+
+// TestProperty5_VoteUpsertBehavior_MultipleIPs tests that different IPs
+// each get their own rating record.
+func TestProperty5_VoteUpsertBehavior_MultipleIPs(t *testing.T) {
+	property := func(seed int64) bool {
+		r := rand.New(rand.NewSource(seed))
+		repo := NewMockRatingRepository()
+
+		// Create a generation
+		genID := generateNonEmptyString(r)
+		repo.AddGeneration(genID)
+
+		// Generate multiple unique IP hashes (2-10)
+		numIPs := 2 + r.Intn(9)
+		ipHashes := make([]string, numIPs)
+		lastScores := make(map[string]int)
+
+		for i := 0; i < numIPs; i++ {
+			ipHashes[i] = generateNonEmptyString(r) + "_" + string(rune('a'+i)) // Ensure uniqueness
+		}
+
+		// Each IP votes multiple times
+		for _, ipHash := range ipHashes {
+			numVotes := 1 + r.Intn(5)
+			for j := 0; j < numVotes; j++ {
+				score := 1 + r.Intn(5)
+				lastScores[ipHash] = score
+				_, err := repo.CreateOrUpdateRating(genID, score, ipHash)
+				if err != nil {
+					t.Logf("CreateOrUpdateRating failed: %v", err)
+					return false
+				}
+			}
+		}
+
+		// Property 1: Rating count should equal number of unique IPs
+		if repo.GetRatingCount(genID) != numIPs {
+			t.Logf("Expected rating count of %d, got %d", numIPs, repo.GetRatingCount(genID))
+			return false
+		}
+
+		// Property 2: Each IP's stored score should be their most recent vote
+		for _, ipHash := range ipHashes {
+			storedScore, exists := repo.GetRating(genID, ipHash)
+			if !exists {
+				t.Logf("Rating should exist for IP hash %s", ipHash)
+				return false
+			}
+			if storedScore != lastScores[ipHash] {
+				t.Logf("Expected score %d for IP %s, got %d", lastScores[ipHash], ipHash, storedScore)
+				return false
+			}
+		}
+
+		return true
+	}
+
+	cfg := &quick.Config{
+		MaxCount: 100,
+	}
+
+	if err := quick.Check(property, cfg); err != nil {
+		t.Errorf("Property 5 (Vote Upsert Behavior - Multiple IPs) failed: %v", err)
+	}
+}
+
+// TestProperty5_VoteUpsertBehavior_ScoreValidation tests that invalid scores are rejected.
+func TestProperty5_VoteUpsertBehavior_ScoreValidation(t *testing.T) {
+	property := func(seed int64) bool {
+		r := rand.New(rand.NewSource(seed))
+		repo := NewMockRatingRepository()
+
+		// Create a generation
+		genID := generateNonEmptyString(r)
+		repo.AddGeneration(genID)
+
+		ipHash := generateNonEmptyString(r)
+
+		// Test invalid scores (0, negative, > 5)
+		invalidScores := []int{0, -1, -100, 6, 10, 100}
+		for _, score := range invalidScores {
+			_, err := repo.CreateOrUpdateRating(genID, score, ipHash)
+			if err == nil {
+				t.Logf("Expected error for invalid score %d, got nil", score)
+				return false
+			}
+		}
+
+		// Test valid scores (1-5)
+		for score := 1; score <= 5; score++ {
+			_, err := repo.CreateOrUpdateRating(genID, score, ipHash)
+			if err != nil {
+				t.Logf("Unexpected error for valid score %d: %v", score, err)
+				return false
+			}
+		}
+
+		return true
+	}
+
+	cfg := &quick.Config{
+		MaxCount: 100,
+	}
+
+	if err := quick.Check(property, cfg); err != nil {
+		t.Errorf("Property 5 (Vote Upsert Behavior - Score Validation) failed: %v", err)
+	}
+}

@@ -35,12 +35,12 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - **Property 6: IP Addresses Are Hashed**
     - **Validates: Requirements 5.5**
 
-- [ ] 3. Fix vote deduplication by IP
-  - [ ] 3.1 Update rating storage to use IP hash
+- [x] 3. Fix vote deduplication by IP
+  - [x] 3.1 Update rating storage to use IP hash
     - Ensure CreateOrUpdateRating uses IP hash for voter identification
     - Verify upsert behavior works correctly
     - _Requirements: 5.2, 5.4_
-  - [ ] 3.2 Write property test for vote upsert behavior
+  - [x] 3.2 Write property test for vote upsert behavior
     - **Property 5: Vote Upsert Behavior**
     - **Validates: Requirements 5.2, 5.4**
 

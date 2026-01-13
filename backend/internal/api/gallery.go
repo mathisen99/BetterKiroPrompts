@@ -171,10 +171,7 @@ func (h *GalleryHandler) HandleGetGalleryItem(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Get voter hash from query for user rating
-	voterHash := r.URL.Query().Get("voterHash")
-
-	// Hash the client IP for view tracking
+	// Hash the client IP for view tracking and rating lookup
 	clientIP := getClientIP(r)
 	ipHash := hashIP(clientIP)
 
@@ -193,11 +190,8 @@ func (h *GalleryHandler) HandleGetGalleryItem(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Get user rating if voter hash provided
-	var userRating int
-	if voterHash != "" {
-		userRating, _ = h.service.GetUserRating(r.Context(), id, voterHash)
-	}
+	// Get user rating using IP hash (Requirements 5.2, 5.4)
+	userRating, _ := h.service.GetUserRating(r.Context(), id, ipHash)
 
 	writeJSON(w, http.StatusOK, GalleryDetailResponse{
 		Generation: GalleryDetail{
@@ -217,6 +211,7 @@ func (h *GalleryHandler) HandleGetGalleryItem(w http.ResponseWriter, r *http.Req
 }
 
 // HandleRateGalleryItem handles POST /api/gallery/{id}/rate.
+// Uses IP hash for vote deduplication per Requirements 5.2, 5.4, 5.5.
 func (h *GalleryHandler) HandleRateGalleryItem(w http.ResponseWriter, r *http.Request) {
 	// Extract ID from path using Go 1.22+ PathValue
 	id := r.PathValue("id")
@@ -238,12 +233,6 @@ func (h *GalleryHandler) HandleRateGalleryItem(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Validate voter hash
-	if req.VoterHash == "" {
-		WriteValidationError(w, r, "Voter hash is required")
-		return
-	}
-
 	// Check rating rate limit
 	ip := getClientIP(r)
 	if h.ratingLimiter != nil {
@@ -254,8 +243,12 @@ func (h *GalleryHandler) HandleRateGalleryItem(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	// Submit rating
-	retryAfter, err := h.service.RateGeneration(r.Context(), id, req.Score, req.VoterHash, ip)
+	// Use IP hash for voter identification (Requirements 5.2, 5.4, 5.5)
+	// This ensures one vote per IP address per generation
+	ipHash := hashIP(ip)
+
+	// Submit rating using IP hash for deduplication
+	retryAfter, err := h.service.RateGeneration(r.Context(), id, req.Score, ipHash, ip)
 	if err != nil {
 		if errors.Is(err, gallery.ErrNotFound) {
 			WriteNotFound(w, r, "Generation not found")
