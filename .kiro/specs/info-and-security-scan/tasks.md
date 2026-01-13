@@ -58,8 +58,8 @@ This implementation plan covers the Info Page and Security Scanning features for
   - [x] Verify all tools are installed in container
   - [x] Test container starts correctly
 
-- [ ] 5. Create Database Schema for Scans
-  - [ ] 5.1 Create migration for scan tables
+- [x] 5. Create Database Schema for Scans
+  - [x] 5.1 Create migration for scan tables
     - Create `backend/migrations/005_create_scan_tables.sql`
     - Create scan_jobs table with status, languages, error fields
     - Create scan_findings table with severity, tool, file_path, remediation
