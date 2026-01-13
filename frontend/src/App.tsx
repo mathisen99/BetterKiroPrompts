@@ -1,12 +1,16 @@
 import { useState, useCallback } from 'react'
 import { LandingPage } from '@/pages/LandingPage'
+import { GalleryPage } from '@/pages/GalleryPage'
 import { NightSkyBackground } from '@/components/shared/NightSkyBackground'
 import { CompactHeader } from '@/components/shared/CompactHeader'
 import * as storage from '@/lib/storage'
 import type { Phase } from '@/lib/storage'
 
+type AppView = 'main' | 'gallery'
+
 function App() {
   const [currentPhase, setCurrentPhase] = useState<Phase>('level-select')
+  const [currentView, setCurrentView] = useState<AppView>('main')
   const [resetKey, setResetKey] = useState(0)
   
   const handlePhaseChange = useCallback((phase: Phase) => {
@@ -18,11 +22,30 @@ function App() {
     storage.clear()
     setResetKey(k => k + 1)
     setCurrentPhase('level-select')
+    setCurrentView('main')
   }, [])
 
-  // Show large logo only during level-select phase
-  const showLargeLogo = currentPhase === 'level-select'
-  const showCompactHeader = !showLargeLogo
+  const handleOpenGallery = useCallback(() => {
+    setCurrentView('gallery')
+  }, [])
+
+  const handleCloseGallery = useCallback(() => {
+    setCurrentView('main')
+  }, [])
+
+  // Show large logo only during level-select phase on main view
+  const showLargeLogo = currentPhase === 'level-select' && currentView === 'main'
+  const showCompactHeader = !showLargeLogo && currentView === 'main'
+
+  // Gallery view
+  if (currentView === 'gallery') {
+    return (
+      <div className="min-h-screen">
+        <NightSkyBackground />
+        <GalleryPage onBack={handleCloseGallery} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">
@@ -37,7 +60,7 @@ function App() {
         {/* Compact header for non-landing phases */}
         {showCompactHeader && (
           <div className="max-w-3xl mx-auto">
-            <CompactHeader onStartOver={handleStartOver} />
+            <CompactHeader onStartOver={handleStartOver} onOpenGallery={handleOpenGallery} />
           </div>
         )}
         {/* Big centered logo with fade-out animation */}
@@ -55,6 +78,17 @@ function App() {
             className="drop-shadow-[0_0_35px_rgba(99,102,241,0.5)]"
           />
         </div>
+        {/* Gallery link on landing page */}
+        {showLargeLogo && (
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={handleOpenGallery}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Browse Gallery →
+            </button>
+          </div>
+        )}
         <LandingPage key={resetKey} onPhaseChange={handlePhaseChange} />
       </main>
     </div>

@@ -223,28 +223,28 @@ This implementation plan covers the final polish phase, organized into logical g
 - [x] 16. Checkpoint - Frontend Core Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 17. Frontend Gallery
-  - [ ] 17.1 Create gallery API functions
+- [x] 17. Frontend Gallery
+  - [x] 17.1 Create gallery API functions
     - Add to `frontend/src/lib/api.ts`
     - Implement listGallery, getGalleryItem, rateGalleryItem
     - _Requirements: 6.1, 6.4, 7.2_
-  - [ ] 17.2 Create GalleryList component
+  - [x] 17.2 Create GalleryList component
     - Create `frontend/src/components/Gallery/GalleryList.tsx`
     - Implement paginated list with filters
     - _Requirements: 6.1, 6.2, 6.3_
-  - [ ] 17.3 Create GalleryDetail component
+  - [x] 17.3 Create GalleryDetail component
     - Create `frontend/src/components/Gallery/GalleryDetail.tsx`
     - Show full generation with copy/download
     - _Requirements: 6.4, 6.6_
-  - [ ] 17.4 Create Rating component
+  - [x] 17.4 Create Rating component
     - Create `frontend/src/components/Gallery/Rating.tsx`
     - Implement 1-5 star interface
     - _Requirements: 7.1, 7.5_
-  - [ ] 17.5 Create GalleryPage
+  - [x] 17.5 Create GalleryPage
     - Create `frontend/src/pages/GalleryPage.tsx`
     - Integrate list, detail modal, and rating
     - _Requirements: 6.1_
-  - [ ] 17.6 Add gallery navigation
+  - [x] 17.6 Add gallery navigation
     - Add Gallery link to header/navigation
     - Update App.tsx with routing if needed
     - _Requirements: 6.1_

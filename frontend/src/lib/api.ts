@@ -184,3 +184,98 @@ export async function generateOutputs(projectIdea: string, answers: Answer[], ex
     'Failed to generate outputs'
   )
 }
+
+// Gallery types
+export interface GalleryItem {
+  id: string
+  projectIdea: string
+  category: string
+  avgRating: number
+  ratingCount: number
+  viewCount: number
+  createdAt: string
+  preview: string
+}
+
+export interface GalleryListResponse {
+  items: GalleryItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface GalleryDetail {
+  id: string
+  projectIdea: string
+  experienceLevel: string
+  hookPreset: string
+  files: GeneratedFile[]
+  category: string
+  avgRating: number
+  ratingCount: number
+  viewCount: number
+  createdAt: string
+}
+
+export interface GalleryDetailResponse {
+  generation: GalleryDetail
+  userRating: number
+}
+
+export interface GalleryFilters {
+  category?: number
+  sortBy: 'newest' | 'highest_rated' | 'most_viewed'
+  page: number
+  pageSize?: number
+}
+
+export interface RateResponse {
+  success: boolean
+}
+
+// Gallery API functions
+export async function listGallery(filters: GalleryFilters): Promise<GalleryListResponse> {
+  const params = new URLSearchParams()
+  if (filters.category !== undefined) {
+    params.set('category', String(filters.category))
+  }
+  params.set('sort', filters.sortBy)
+  params.set('page', String(filters.page))
+  if (filters.pageSize) {
+    params.set('pageSize', String(filters.pageSize))
+  }
+
+  return fetchWithRetry<GalleryListResponse>(
+    `${API_BASE}/gallery?${params.toString()}`,
+    { method: 'GET' },
+    'Failed to load gallery'
+  )
+}
+
+export async function getGalleryItem(id: string, voterHash?: string): Promise<GalleryDetailResponse> {
+  const params = new URLSearchParams()
+  if (voterHash) {
+    params.set('voterHash', voterHash)
+  }
+  const queryString = params.toString()
+  const url = queryString ? `${API_BASE}/gallery/${id}?${queryString}` : `${API_BASE}/gallery/${id}`
+
+  return fetchWithRetry<GalleryDetailResponse>(
+    url,
+    { method: 'GET' },
+    'Failed to load gallery item'
+  )
+}
+
+export async function rateGalleryItem(id: string, score: number, voterHash: string): Promise<RateResponse> {
+  return fetchWithRetry<RateResponse>(
+    `${API_BASE}/gallery/${id}/rate`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score, voterHash }),
+    },
+    'Failed to submit rating'
+  )
+}
