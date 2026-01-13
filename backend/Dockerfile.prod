@@ -1,24 +1,13 @@
-# Build stage
-FROM golang:1.25.5-alpine AS builder
-
-WORKDIR /app
-
-COPY go.mod go.sum* ./
-RUN go mod download
-
-COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server ./cmd/server
-
-# Runtime stage
+# Runtime stage - uses pre-built binary from build.sh
 FROM alpine:latest
 
 WORKDIR /app
 
-RUN apk --no-cache add ca-certificates git
+RUN apk --no-cache add ca-certificates git docker-cli
 
-COPY --from=builder /app/server .
-COPY --from=builder /app/static ./static
+# Copy pre-built binary and static files from build.sh
+COPY server .
+COPY static ./static
 
 EXPOSE 8080
 

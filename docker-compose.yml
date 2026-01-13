@@ -51,6 +51,8 @@ services:
       - scan
     volumes:
       - scan-repos:/scan/repos
+    env_file:
+      - .env
     deploy:
       resources:
         limits:
@@ -58,8 +60,10 @@ services:
           memory: 2G
     networks:
       - app-network
-    # No outbound network access during scans except for vuln DB updates
-    # Network isolation handled at runtime by the scanner service
+    # Keep container running for docker exec
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["tail -f /dev/null"]
+    restart: unless-stopped
 
 volumes:
   postgres_data:

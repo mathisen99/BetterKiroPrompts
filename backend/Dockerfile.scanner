@@ -92,13 +92,10 @@ COPY --from=rust-builder /usr/local/cargo/bin/cargo-audit /usr/local/bin/
 RUN gem install bundler-audit brakeman --no-document
 
 # =============================================================================
-# Configure non-root user for security
+# Configure working directory
 # =============================================================================
-RUN adduser -D -u 1000 scanner \
-    && mkdir -p /scan/repos \
-    && chown -R scanner:scanner /scan
+RUN mkdir -p /scan/repos
 
-USER scanner
 WORKDIR /scan
 
 # Verify all tools are installed

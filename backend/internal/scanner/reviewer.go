@@ -21,6 +21,7 @@ const (
 type CodeReviewer struct {
 	client   *openai.Client
 	maxFiles int
+	model    string
 }
 
 // CodeReviewerOption is a functional option for configuring a CodeReviewer.
@@ -33,11 +34,19 @@ func WithMaxFiles(max int) CodeReviewerOption {
 	}
 }
 
+// WithModel sets the model to use for code review.
+func WithModel(model string) CodeReviewerOption {
+	return func(r *CodeReviewer) {
+		r.model = model
+	}
+}
+
 // NewCodeReviewer creates a new CodeReviewer.
 func NewCodeReviewer(client *openai.Client, opts ...CodeReviewerOption) *CodeReviewer {
 	r := &CodeReviewer{
 		client:   client,
 		maxFiles: DefaultMaxFilesToReview,
+		model:    "gpt-5.1-codex-max", // Use codex model for security code review
 	}
 	for _, opt := range opts {
 		opt(r)
@@ -117,13 +126,13 @@ func (r *CodeReviewer) Review(ctx context.Context, repoPath string, findings []F
 	// Build the review request
 	userPrompt := r.buildUserPrompt(findings, fileContents)
 
-	// Call the AI
+	// Call the AI with codex model
 	messages := []openai.Message{
 		{Role: "system", Content: codeReviewSystemPrompt},
 		{Role: "user", Content: userPrompt},
 	}
 
-	response, err := r.client.ChatCompletion(ctx, messages)
+	response, err := r.client.ChatCompletionWithModel(ctx, messages, r.model)
 	if err != nil {
 		// AI review failed, return findings without remediation
 		return findings, nil

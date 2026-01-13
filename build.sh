@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
@@ -35,18 +34,18 @@ build_all() {
 
 case "${1:-}" in
     "")
-        # ./build.sh - build everything and start
+        # ./build.sh - stop, rebuild, start
+        log "Stopping containers..."
+        docker compose -f docker-compose.prod.yml --profile scan down 2>/dev/null || true
         build_all
         log "Starting containers..."
         docker compose -f docker-compose.prod.yml --profile scan up -d
         log "Stack running at http://localhost:8080"
         ;;
     --restart)
-        # ./build.sh --restart - stop, rebuild, start
-        log "Stopping containers..."
-        docker compose -f docker-compose.prod.yml --profile scan down
-        build_all
-        log "Starting containers..."
+        # ./build.sh --restart - just restart without rebuild
+        log "Restarting containers..."
+        docker compose -f docker-compose.prod.yml --profile scan down 2>/dev/null || true
         docker compose -f docker-compose.prod.yml --profile scan up -d
         log "Stack running at http://localhost:8080"
         ;;
@@ -60,9 +59,8 @@ case "${1:-}" in
         echo "Usage: ./build.sh [OPTION]"
         echo ""
         echo "Options:"
-        echo "  (none)      Build everything and start"
-        echo "  --restart   Stop, rebuild everything, and start"
+        echo "  (none)      Stop, rebuild everything, and start"
+        echo "  --restart   Restart without rebuilding"
         echo "  --stop      Stop all containers"
-        exit 1
         ;;
 esac

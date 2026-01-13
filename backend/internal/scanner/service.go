@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -138,9 +139,12 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	var repoPath string
 	var err error
 
+	log.Printf("[Scanner] Starting scan for job %s", jobID)
+
 	defer func() {
 		// Cleanup cloned repo
 		if repoPath != "" {
+			log.Printf("[Scanner] Cleaning up repo path: %s", repoPath)
 			_ = s.cloner.Cleanup(repoPath)
 		}
 	}()
@@ -148,24 +152,31 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	// Load job
 	job, err := s.loadJob(ctx, jobID)
 	if err != nil {
+		log.Printf("[Scanner] Failed to load job %s: %v", jobID, err)
 		return
 	}
 
 	// Clone repository
+	log.Printf("[Scanner] Cloning repository: %s", job.RepoURL)
 	_ = s.updateJobStatus(ctx, jobID, StatusCloning, "")
 	cloneResult, err := s.cloner.Clone(ctx, job.RepoURL)
 	if err != nil {
+		log.Printf("[Scanner] Clone failed: %v", err)
 		_ = s.failJob(ctx, jobID, fmt.Sprintf("Clone failed: %v", err))
 		return
 	}
 	repoPath = cloneResult.Path
+	log.Printf("[Scanner] Clone successful, path: %s", repoPath)
 
 	// Detect languages
+	log.Printf("[Scanner] Detecting languages...")
 	languages, err := s.detector.DetectLanguages(repoPath)
 	if err != nil {
+		log.Printf("[Scanner] Language detection failed: %v", err)
 		_ = s.failJob(ctx, jobID, fmt.Sprintf("Language detection failed: %v", err))
 		return
 	}
+	log.Printf("[Scanner] Detected languages: %v", languages)
 
 	// Convert to string slice for storage
 	langStrings := make([]string, len(languages))
@@ -175,24 +186,34 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	_ = s.updateJobLanguages(ctx, jobID, langStrings)
 
 	// Run security tools
+	log.Printf("[Scanner] Running security tools...")
 	_ = s.updateJobStatus(ctx, jobID, StatusScanning, "")
 	toolNames := s.toolRunner.GetToolsForLanguages(languages)
+	log.Printf("[Scanner] Tools to run: %v", toolNames)
+
 	var results []ToolResult
 	for _, toolName := range toolNames {
+		log.Printf("[Scanner] Running tool: %s", toolName)
 		result := s.toolRunner.RunToolByName(ctx, toolName, repoPath, languages)
+		log.Printf("[Scanner] Tool %s completed: %d findings, timedOut=%v, error=%v",
+			toolName, len(result.Findings), result.TimedOut, result.Error)
 		results = append(results, result)
 	}
 
 	// Aggregate findings
+	log.Printf("[Scanner] Aggregating findings from %d tool results...", len(results))
 	findings := s.aggregator.AggregateAndProcess(results)
+	log.Printf("[Scanner] Total findings after aggregation: %d", len(findings))
 
 	// AI review (if findings exist and client available)
 	if len(findings) > 0 && s.reviewer.HasClient() {
+		log.Printf("[Scanner] Running AI review on %d findings...", len(findings))
 		_ = s.updateJobStatus(ctx, jobID, StatusReviewing, "")
 		findings, _ = s.reviewer.Review(ctx, repoPath, findings)
 	}
 
 	// Complete job
+	log.Printf("[Scanner] Completing job with %d findings", len(findings))
 	_ = s.completeJob(ctx, jobID, findings)
 }
 

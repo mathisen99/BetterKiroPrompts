@@ -195,6 +195,11 @@ func ValidateInput(input string) error {
 // ChatCompletion sends a request to the GPT-5.2 Responses API.
 // The context can be used to set a timeout or cancel the request.
 func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string, error) {
+	return c.ChatCompletionWithModel(ctx, messages, c.model)
+}
+
+// ChatCompletionWithModel sends a request using a specific model.
+func (c *Client) ChatCompletionWithModel(ctx context.Context, messages []Message, model string) (string, error) {
 	if len(messages) == 0 {
 		return "", ErrEmptyInput
 	}
@@ -203,7 +208,7 @@ func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string
 	input := convertMessagesToInput(messages)
 
 	reqBody := ResponsesRequest{
-		Model: c.model,
+		Model: model,
 		Input: input,
 		Reasoning: &Reasoning{
 			Effort: c.reasoningEffort,

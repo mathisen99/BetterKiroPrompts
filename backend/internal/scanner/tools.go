@@ -1,8 +1,10 @@
 package scanner
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -83,9 +85,15 @@ func (r *ToolRunner) runTool(ctx context.Context, name string, args []string, wo
 	}
 	dockerArgs = append(dockerArgs, args...)
 
+	log.Printf("[ToolRunner] Executing: docker %v", dockerArgs)
 	cmd := exec.CommandContext(ctx, "docker", dockerArgs...)
 
 	output, err := cmd.CombinedOutput()
+
+	log.Printf("[ToolRunner] Tool %s output length: %d bytes, error: %v", name, len(output), err)
+	if len(output) > 0 && len(output) < 500 {
+		log.Printf("[ToolRunner] Tool %s output: %s", name, string(output))
+	}
 
 	if ctx.Err() == context.DeadlineExceeded {
 		return output, true, ctx.Err()
@@ -104,6 +112,7 @@ func (r *ToolRunner) RunTrivy(ctx context.Context, repoPath string) ToolResult {
 		"--format", "json",
 		"--scanners", "vuln,secret,misconfig",
 		"--severity", "CRITICAL,HIGH,MEDIUM,LOW",
+		"--skip-dirs", ".git",
 		repoPath,
 	}
 
@@ -182,14 +191,18 @@ func (r *ToolRunner) RunGitleaks(ctx context.Context, repoPath string) ToolResul
 	start := time.Now()
 	result := ToolResult{Tool: "gitleaks"}
 
+	// Gitleaks writes JSON to report file, use a temp file
+	reportPath := filepath.Join(repoPath, ".gitleaks-report.json")
+
 	args := []string{
 		"detect",
 		"--source", repoPath,
 		"--report-format", "json",
+		"--report-path", reportPath,
 		"--no-git",
 	}
 
-	output, timedOut, err := r.runTool(ctx, "gitleaks", args, repoPath)
+	_, timedOut, err := r.runTool(ctx, "gitleaks", args, repoPath)
 	result.Duration = time.Since(start)
 	result.TimedOut = timedOut
 
@@ -197,8 +210,18 @@ func (r *ToolRunner) RunGitleaks(ctx context.Context, repoPath string) ToolResul
 		return result
 	}
 
-	// Gitleaks returns exit code 1 when findings exist
+	// Gitleaks returns exit code 1 when findings exist, that's expected
 	_ = err
+
+	// Read the report file from the scanner container
+	catArgs := []string{"exec", scannerContainer, "cat", reportPath}
+	cmd := exec.Command("docker", catArgs...)
+	output, _ := cmd.Output()
+
+	// Clean up report file
+	rmArgs := []string{"exec", scannerContainer, "rm", "-f", reportPath}
+	rmCmd := exec.Command("docker", rmArgs...)
+	_ = rmCmd.Run()
 
 	result.Findings = parseGitleaksOutput(output)
 	return result
@@ -604,6 +627,11 @@ func parseTruffleHogOutput(output []byte) []RawFinding {
 			continue
 		}
 
+		// Skip if no detector name (likely an error/log message, not a finding)
+		if result.DetectorName == "" {
+			continue
+		}
+
 		findings = append(findings, RawFinding{
 			FilePath:    result.SourceMetadata.Data.Filesystem.File,
 			LineNumber:  result.SourceMetadata.Data.Filesystem.Line,
@@ -711,8 +739,15 @@ type banditOutput struct {
 
 func parseBanditOutput(output []byte) []RawFinding {
 	var findings []RawFinding
-	var result banditOutput
 
+	// Bandit outputs INFO lines before JSON, find the JSON start
+	jsonStart := bytes.Index(output, []byte("{"))
+	if jsonStart == -1 {
+		return findings
+	}
+	output = output[jsonStart:]
+
+	var result banditOutput
 	if err := json.Unmarshal(output, &result); err != nil {
 		return findings
 	}
