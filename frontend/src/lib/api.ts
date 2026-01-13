@@ -281,3 +281,77 @@ export async function rateGalleryItem(id: string, score: number, voterHash: stri
     'Failed to submit rating'
   )
 }
+
+// Security Scan types
+export type ScanStatus = 'pending' | 'cloning' | 'scanning' | 'reviewing' | 'completed' | 'failed'
+export type FindingSeverity = 'critical' | 'high' | 'medium' | 'low' | 'info'
+
+export interface Finding {
+  id: string
+  severity: FindingSeverity
+  tool: string
+  file_path: string
+  line_number?: number
+  description: string
+  remediation?: string
+  code_example?: string
+}
+
+export interface ScanJob {
+  id: string
+  status: ScanStatus
+  repo_url: string
+  languages: string[]
+  findings: Finding[]
+  error?: string
+  created_at: string
+  completed_at?: string
+}
+
+export interface ScanConfig {
+  privateRepoEnabled: boolean
+  aiReviewEnabled?: boolean
+  maxFilesToReview?: number
+}
+
+interface ScanConfigResponse {
+  private_repo_enabled: boolean
+  ai_review_enabled?: boolean
+  max_files_to_review?: number
+}
+
+// Security Scan API functions
+export async function startScan(repoUrl: string): Promise<ScanJob> {
+  return fetchWithRetry<ScanJob>(
+    `${API_BASE}/scan`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo_url: repoUrl }),
+    },
+    'Failed to start scan'
+  )
+}
+
+export async function getScanStatus(jobId: string): Promise<ScanJob> {
+  return fetchWithRetry<ScanJob>(
+    `${API_BASE}/scan/${jobId}`,
+    { method: 'GET' },
+    'Failed to get scan status'
+  )
+}
+
+export async function getScanConfig(): Promise<ScanConfig> {
+  const response = await fetchWithRetry<ScanConfigResponse>(
+    `${API_BASE}/scan/config`,
+    { method: 'GET' },
+    'Failed to get scan configuration'
+  )
+  
+  // Transform snake_case to camelCase
+  return {
+    privateRepoEnabled: response.private_repo_enabled,
+    aiReviewEnabled: response.ai_review_enabled,
+    maxFilesToReview: response.max_files_to_review,
+  }
+}

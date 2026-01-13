@@ -170,8 +170,8 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Add scan endpoints with rate limiting
     - _Requirements: 4.1_
 
-- [ ] 9. Create Security Scan Page
-  - [ ] 9.1 Create SecurityScanPage component
+- [x] 9. Create Security Scan Page
+  - [x] 9.1 Create SecurityScanPage component
     - Create `frontend/src/pages/SecurityScanPage.tsx`
     - Add repo URL input field
     - Add scan explanation text
@@ -179,30 +179,30 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Add "Start Scan" button
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 9.2 Create scan API client functions
+  - [x] 9.2 Create scan API client functions
     - Update `frontend/src/lib/api.ts`
     - Add startScan, getScanStatus, getScanConfig functions
     - Add ScanJob, Finding, ScanConfig types
     - _Requirements: 4.5, 11.2_
 
-  - [ ] 9.3 Create scan results display
+  - [x] 9.3 Create scan results display
     - Create `frontend/src/components/ScanResults.tsx`
     - Group findings by severity
     - Show file path, line number, description, tool
     - Display remediation with syntax highlighting
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-  - [ ] 9.4 Write property test for finding display
+  - [x] 9.4 Write property test for finding display
     - **Property 11: Finding Display Completeness**
     - **Validates: Requirements 10.2, 10.3, 10.4**
 
-  - [ ] 9.5 Create scan progress indicator
+  - [x] 9.5 Create scan progress indicator
     - Create `frontend/src/components/ScanProgress.tsx`
     - Show current status (cloning, scanning, reviewing)
     - Poll for status updates
     - _Requirements: 10.5_
 
-  - [ ] 9.6 Add navigation to Security Scan Page
+  - [x] 9.6 Add navigation to Security Scan Page
     - Update `App.tsx` to add 'scan' view state
     - Add "Security Scan" link to Info Page
     - Add "Security Scan" link to navigation

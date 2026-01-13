@@ -2,12 +2,13 @@ import { useState, useCallback } from 'react'
 import { LandingPage } from '@/pages/LandingPage'
 import { GalleryPage } from '@/pages/GalleryPage'
 import { InfoPage } from '@/pages/InfoPage'
+import { SecurityScanPage } from '@/pages/SecurityScanPage'
 import { NightSkyBackground } from '@/components/shared/NightSkyBackground'
 import { CompactHeader } from '@/components/shared/CompactHeader'
 import * as storage from '@/lib/storage'
 import type { Phase } from '@/lib/storage'
 
-type AppView = 'main' | 'gallery' | 'info'
+type AppView = 'main' | 'gallery' | 'info' | 'scan'
 
 function App() {
   const [currentPhase, setCurrentPhase] = useState<Phase>('level-select')
@@ -50,6 +51,14 @@ function App() {
     setCurrentView('main')
   }, [])
 
+  const handleOpenScan = useCallback(() => {
+    setCurrentView('scan')
+  }, [])
+
+  const handleCloseScan = useCallback(() => {
+    setCurrentView('main')
+  }, [])
+
   // Show large logo only during level-select phase on main view
   const showLargeLogo = currentPhase === 'level-select' && currentView === 'main'
   const showCompactHeader = !showLargeLogo && currentView === 'main'
@@ -71,6 +80,20 @@ function App() {
         <NightSkyBackground />
         <InfoPage
           onNavigateHome={handleCloseInfo}
+          onNavigateGallery={handleOpenGallery}
+          onNavigateScan={handleOpenScan}
+        />
+      </div>
+    )
+  }
+
+  // Scan view
+  if (currentView === 'scan') {
+    return (
+      <div className="min-h-screen">
+        <NightSkyBackground />
+        <SecurityScanPage
+          onNavigateHome={handleCloseScan}
           onNavigateGallery={handleOpenGallery}
         />
       </div>
