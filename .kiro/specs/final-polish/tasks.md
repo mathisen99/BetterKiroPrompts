@@ -79,16 +79,16 @@ This implementation plan covers the final polish phase, organized into logical g
     - **Property 14: Structured Error Responses**
     - **Validates: Requirements 10.5, 10.6**
 
-- [ ] 5. Backend Timeout and OpenAI Updates
-  - [ ] 5.1 Increase OpenAI client timeout to 120 seconds
+- [x] 5. Backend Timeout and OpenAI Updates
+  - [x] 5.1 Increase OpenAI client timeout to 120 seconds
     - Modify `backend/internal/openai/client.go`
     - Update defaultTimeout constant
     - _Requirements: 3.1_
-  - [ ] 5.2 Integrate request queue with generation service
+  - [x] 5.2 Integrate request queue with generation service
     - Modify `backend/internal/generation/service.go`
     - Acquire queue slot before OpenAI calls
     - _Requirements: 8.3_
-  - [ ] 5.3 Update generation service to store results
+  - [x] 5.3 Update generation service to store results
     - Modify `backend/internal/generation/service.go`
     - Save successful generations to database
     - Return generation ID in response

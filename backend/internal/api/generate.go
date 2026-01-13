@@ -64,7 +64,8 @@ type GenerateOutputsRequest struct {
 
 // GenerateOutputsResponse is the response body for generated outputs.
 type GenerateOutputsResponse struct {
-	Files []generation.GeneratedFile `json:"files"`
+	Files        []generation.GeneratedFile `json:"files"`
+	GenerationID string                     `json:"generationId,omitempty"`
 }
 
 // Note: ErrorResponse is defined in errors.go
@@ -162,15 +163,18 @@ func (h *GenerateHandler) HandleGenerateOutputs(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Generate outputs
-	files, err := h.service.GenerateOutputs(r.Context(), req.ProjectIdea, req.Answers, string(req.ExperienceLevel), string(req.HookPreset))
+	// Generate outputs and store in database
+	result, err := h.service.GenerateAndStoreOutputs(r.Context(), req.ProjectIdea, req.Answers, string(req.ExperienceLevel), string(req.HookPreset))
 	if err != nil {
 		handleGenerationError(w, r, err)
 		return
 	}
 
 	// Return response
-	writeJSON(w, http.StatusOK, GenerateOutputsResponse{Files: files})
+	writeJSON(w, http.StatusOK, GenerateOutputsResponse{
+		Files:        result.Files,
+		GenerationID: result.GenerationID,
+	})
 }
 
 // getClientIP extracts the client IP from the request.

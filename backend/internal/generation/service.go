@@ -9,6 +9,8 @@ import (
 
 	"better-kiro-prompts/internal/openai"
 	"better-kiro-prompts/internal/prompts"
+	"better-kiro-prompts/internal/queue"
+	"better-kiro-prompts/internal/storage"
 )
 
 const (
@@ -57,16 +59,54 @@ type OutputsResponse struct {
 	Files []GeneratedFile `json:"files"`
 }
 
+// GenerationResult contains the generated files and the stored generation ID.
+type GenerationResult struct {
+	Files        []GeneratedFile `json:"files"`
+	GenerationID string          `json:"generationId,omitempty"`
+}
+
 // Service handles AI-driven generation of questions and outputs.
 type Service struct {
 	openaiClient *openai.Client
+	requestQueue *queue.RequestQueue
+	repository   storage.Repository
 }
 
 // NewService creates a new generation service.
 func NewService(client *openai.Client) *Service {
 	return &Service{
 		openaiClient: client,
+		requestQueue: nil, // Optional queue
+		repository:   nil, // Optional repository
 	}
+}
+
+// NewServiceWithQueue creates a new generation service with a request queue.
+func NewServiceWithQueue(client *openai.Client, q *queue.RequestQueue) *Service {
+	return &Service{
+		openaiClient: client,
+		requestQueue: q,
+		repository:   nil,
+	}
+}
+
+// NewServiceWithDeps creates a new generation service with all dependencies.
+func NewServiceWithDeps(client *openai.Client, q *queue.RequestQueue, repo storage.Repository) *Service {
+	return &Service{
+		openaiClient: client,
+		requestQueue: q,
+		repository:   repo,
+	}
+}
+
+// SetRequestQueue sets the request queue for the service.
+func (s *Service) SetRequestQueue(q *queue.RequestQueue) {
+	s.requestQueue = q
+}
+
+// SetRepository sets the storage repository for the service.
+func (s *Service) SetRepository(repo storage.Repository) {
+	s.repository = repo
 }
 
 // ValidateProjectIdea validates the project idea input.
@@ -95,6 +135,14 @@ func ValidateAnswers(answers []Answer) error {
 func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, experienceLevel string) ([]Question, error) {
 	if err := ValidateProjectIdea(projectIdea); err != nil {
 		return nil, err
+	}
+
+	// Acquire queue slot if queue is configured
+	if s.requestQueue != nil {
+		if err := s.requestQueue.Acquire(ctx); err != nil {
+			return nil, fmt.Errorf("failed to acquire queue slot: %w", err)
+		}
+		defer s.requestQueue.Release()
 	}
 
 	// Validate experience level
@@ -134,6 +182,14 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 	}
 	if err := ValidateAnswers(answers); err != nil {
 		return nil, err
+	}
+
+	// Acquire queue slot if queue is configured
+	if s.requestQueue != nil {
+		if err := s.requestQueue.Acquire(ctx); err != nil {
+			return nil, fmt.Errorf("failed to acquire queue slot: %w", err)
+		}
+		defer s.requestQueue.Release()
 	}
 
 	// Validate experience level and hook preset
@@ -202,6 +258,55 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 
 	// Should not reach here, but return last error if we do
 	return nil, FormatValidationError(lastErr)
+}
+
+// GenerateAndStoreOutputs generates outputs and stores them in the database.
+// Returns the generated files and the generation ID if storage is configured.
+func (s *Service) GenerateAndStoreOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) (*GenerationResult, error) {
+	// Generate the outputs
+	files, err := s.GenerateOutputs(ctx, projectIdea, answers, experienceLevel, hookPreset)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &GenerationResult{
+		Files: files,
+	}
+
+	// Store in database if repository is configured
+	if s.repository != nil {
+		// Convert files to JSON
+		filesJSON, err := json.Marshal(files)
+		if err != nil {
+			// Log error but don't fail the request - user still gets their files
+			return result, nil
+		}
+
+		// Get category based on project idea
+		categoryID, err := s.repository.GetCategoryByKeywords(ctx, projectIdea)
+		if err != nil {
+			// Default to "Other" category if lookup fails
+			categoryID = 5
+		}
+
+		// Create generation record
+		gen := &storage.Generation{
+			ProjectIdea:     strings.TrimSpace(projectIdea),
+			ExperienceLevel: experienceLevel,
+			HookPreset:      hookPreset,
+			Files:           filesJSON,
+			CategoryID:      categoryID,
+		}
+
+		if err := s.repository.CreateGeneration(ctx, gen); err != nil {
+			// Log error but don't fail the request - user still gets their files
+			return result, nil
+		}
+
+		result.GenerationID = gen.ID
+	}
+
+	return result, nil
 }
 
 // buildRetryPrompt creates a prompt explaining the validation error for retry

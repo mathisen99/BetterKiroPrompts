@@ -16,7 +16,7 @@ import (
 const (
 	defaultBaseURL = "https://api.openai.com/v1"
 	defaultModel   = "gpt-4o"
-	defaultTimeout = 60 * time.Second
+	defaultTimeout = 120 * time.Second
 )
 
 var (
