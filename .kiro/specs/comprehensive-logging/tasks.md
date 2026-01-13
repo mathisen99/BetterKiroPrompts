@@ -131,40 +131,40 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Log completion or failure
     - _Requirements: 4.5_
 
-- [ ] 6. Add Logging to Scanner Service
-  - [ ] 6.1 Update `backend/internal/scanner/service.go` with logger
+- [x] 6. Add Logging to Scanner Service
+  - [x] 6.1 Update `backend/internal/scanner/service.go` with logger
     - Add logger field to Service struct
     - Update constructor to accept logger
     - _Requirements: 6.1_
 
-  - [ ] 6.2 Add logging to runScan pipeline
+  - [x] 6.2 Add logging to runScan pipeline
     - Log scan_pipeline_start with job_id
     - Log each phase start/complete with timing
     - Log scan_pipeline_complete with total_findings, total_duration
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 6.3 Add logging to clone phase
+  - [x] 6.3 Add logging to clone phase
     - Log repo_url at start
     - Log path, duration at complete
     - Log errors with details
     - _Requirements: 6.2_
 
-  - [ ] 6.4 Add logging to language detection phase
+  - [x] 6.4 Add logging to language detection phase
     - Log detected languages and counts
     - _Requirements: 6.3_
 
-  - [ ] 6.5 Add logging to tool execution phase
+  - [x] 6.5 Add logging to tool execution phase
     - Log each tool start/complete
     - Log finding_count, timed_out, duration per tool
     - Log tool errors
     - _Requirements: 6.4_
 
-  - [ ] 6.6 Add logging to aggregation phase
+  - [x] 6.6 Add logging to aggregation phase
     - Log result_count at start
     - Log total_findings with severity breakdown at complete
     - _Requirements: 6.5_
 
-  - [ ] 6.7 Add logging to AI review phase
+  - [x] 6.7 Add logging to AI review phase
     - Log findings_to_review at start
     - Log reviewed_findings, duration at complete
     - Log skip reason if skipped

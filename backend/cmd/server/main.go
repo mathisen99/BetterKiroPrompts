@@ -115,7 +115,8 @@ func main() {
 			scanner.SetScannerContainer(scannerContainer)
 		}
 
-		scannerService := scanner.NewService(db.DB, openaiClient, githubToken)
+		scannerService := scanner.NewService(db.DB, openaiClient, githubToken,
+			scanner.WithServiceLogger(appLog.Scanner()))
 		// Scanner rate limiter: 10 scans per hour per IP (scans are resource-intensive)
 		scanRateLimiter := ratelimit.NewLimiterWithConfig(10, time.Hour)
 		routerCfg.ScannerService = scannerService

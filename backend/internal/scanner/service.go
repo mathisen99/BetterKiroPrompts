@@ -1,14 +1,16 @@
 package scanner
 
 import (
-	"better-kiro-prompts/internal/openai"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
+
+	"better-kiro-prompts/internal/logger"
+	"better-kiro-prompts/internal/openai"
 
 	"github.com/google/uuid"
 )
@@ -54,6 +56,7 @@ type Service struct {
 	toolRunner *ToolRunner
 	aggregator *Aggregator
 	reviewer   *CodeReviewer
+	log        *slog.Logger
 }
 
 // ServiceOption is a functional option for configuring a Service.
@@ -80,6 +83,15 @@ func WithServiceCodeReviewer(r *CodeReviewer) ServiceOption {
 	}
 }
 
+// WithServiceLogger sets the logger for the service.
+func WithServiceLogger(log *slog.Logger) ServiceOption {
+	return func(s *Service) {
+		if log != nil {
+			s.log = log
+		}
+	}
+}
+
 // NewService creates a new scanner service.
 func NewService(db *sql.DB, openaiClient *openai.Client, githubToken string, opts ...ServiceOption) *Service {
 	s := &Service{
@@ -89,6 +101,7 @@ func NewService(db *sql.DB, openaiClient *openai.Client, githubToken string, opt
 		toolRunner: NewToolRunner(),
 		aggregator: NewAggregator(),
 		reviewer:   NewCodeReviewer(openaiClient),
+		log:        slog.Default(),
 	}
 
 	for _, opt := range opts {
@@ -98,10 +111,28 @@ func NewService(db *sql.DB, openaiClient *openai.Client, githubToken string, opt
 	return s
 }
 
+// SetLogger sets the logger for the service.
+func (s *Service) SetLogger(log *slog.Logger) {
+	if log != nil {
+		s.log = log
+	}
+}
+
 // StartScan initiates a new security scan.
 func (s *Service) StartScan(ctx context.Context, req ScanRequest) (*ScanJob, error) {
+	requestID := logger.GetRequestID(ctx)
+
+	s.log.Info("scan_start_request",
+		slog.String("request_id", requestID),
+		slog.String("repo_url", req.RepoURL),
+	)
+
 	// Validate URL
 	if err := ValidateGitHubURL(req.RepoURL); err != nil {
+		s.log.Warn("scan_validation_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 
@@ -115,8 +146,18 @@ func (s *Service) StartScan(ctx context.Context, req ScanRequest) (*ScanJob, err
 
 	// Persist job
 	if err := s.createJob(ctx, job); err != nil {
+		s.log.Error("scan_create_job_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+		)
 		return nil, fmt.Errorf("failed to create job: %w", err)
 	}
+
+	s.log.Info("scan_job_created",
+		slog.String("request_id", requestID),
+		slog.String("job_id", job.ID),
+		slog.String("repo_url", job.RepoURL),
+	)
 
 	// Start scan in background
 	go s.runScan(context.Background(), job.ID)
@@ -126,7 +167,38 @@ func (s *Service) StartScan(ctx context.Context, req ScanRequest) (*ScanJob, err
 
 // GetJob retrieves a scan job by ID.
 func (s *Service) GetJob(ctx context.Context, jobID string) (*ScanJob, error) {
-	return s.loadJob(ctx, jobID)
+	requestID := logger.GetRequestID(ctx)
+
+	s.log.Debug("scan_get_job_start",
+		slog.String("request_id", requestID),
+		slog.String("job_id", jobID),
+	)
+
+	job, err := s.loadJob(ctx, jobID)
+	if err != nil {
+		if errors.Is(err, ErrJobNotFound) {
+			s.log.Debug("scan_get_job_not_found",
+				slog.String("request_id", requestID),
+				slog.String("job_id", jobID),
+			)
+		} else {
+			s.log.Error("scan_get_job_failed",
+				slog.String("request_id", requestID),
+				slog.String("job_id", jobID),
+				slog.String("error", err.Error()),
+			)
+		}
+		return nil, err
+	}
+
+	s.log.Debug("scan_get_job_complete",
+		slog.String("request_id", requestID),
+		slog.String("job_id", jobID),
+		slog.String("status", job.Status),
+		slog.Int("finding_count", len(job.Findings)),
+	)
+
+	return job, nil
 }
 
 // HasPrivateRepoSupport returns true if private repo scanning is available.
@@ -138,13 +210,19 @@ func (s *Service) HasPrivateRepoSupport() bool {
 func (s *Service) runScan(ctx context.Context, jobID string) {
 	var repoPath string
 	var err error
+	start := time.Now()
 
-	log.Printf("[Scanner] Starting scan for job %s", jobID)
+	s.log.Info("scan_pipeline_start",
+		slog.String("job_id", jobID),
+	)
 
 	defer func() {
 		// Cleanup cloned repo
 		if repoPath != "" {
-			log.Printf("[Scanner] Cleaning up repo path: %s", repoPath)
+			s.log.Debug("scan_cleanup_start",
+				slog.String("job_id", jobID),
+				slog.String("path", repoPath),
+			)
 			_ = s.cloner.Cleanup(repoPath)
 		}
 	}()
@@ -152,69 +230,181 @@ func (s *Service) runScan(ctx context.Context, jobID string) {
 	// Load job
 	job, err := s.loadJob(ctx, jobID)
 	if err != nil {
-		log.Printf("[Scanner] Failed to load job %s: %v", jobID, err)
+		s.log.Error("scan_load_job_failed",
+			slog.String("job_id", jobID),
+			slog.String("error", err.Error()),
+		)
 		return
 	}
 
-	// Clone repository
-	log.Printf("[Scanner] Cloning repository: %s", job.RepoURL)
+	// Phase 1: Clone repository
+	s.log.Info("scan_phase_clone_start",
+		slog.String("job_id", jobID),
+		slog.String("repo_url", job.RepoURL),
+	)
+	cloneStart := time.Now()
 	_ = s.updateJobStatus(ctx, jobID, StatusCloning, "")
 	cloneResult, err := s.cloner.Clone(ctx, job.RepoURL)
 	if err != nil {
-		log.Printf("[Scanner] Clone failed: %v", err)
+		s.log.Error("scan_phase_clone_failed",
+			slog.String("job_id", jobID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(cloneStart)),
+		)
 		_ = s.failJob(ctx, jobID, fmt.Sprintf("Clone failed: %v", err))
 		return
 	}
 	repoPath = cloneResult.Path
-	log.Printf("[Scanner] Clone successful, path: %s", repoPath)
+	s.log.Info("scan_phase_clone_complete",
+		slog.String("job_id", jobID),
+		slog.String("path", repoPath),
+		slog.Duration("duration", time.Since(cloneStart)),
+	)
 
-	// Detect languages
-	log.Printf("[Scanner] Detecting languages...")
+	// Phase 2: Detect languages
+	s.log.Info("scan_phase_detect_start",
+		slog.String("job_id", jobID),
+	)
+	detectStart := time.Now()
 	languages, err := s.detector.DetectLanguages(repoPath)
 	if err != nil {
-		log.Printf("[Scanner] Language detection failed: %v", err)
+		s.log.Error("scan_phase_detect_failed",
+			slog.String("job_id", jobID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(detectStart)),
+		)
 		_ = s.failJob(ctx, jobID, fmt.Sprintf("Language detection failed: %v", err))
 		return
 	}
-	log.Printf("[Scanner] Detected languages: %v", languages)
 
-	// Convert to string slice for storage
+	// Convert to string slice for storage and logging
 	langStrings := make([]string, len(languages))
 	for i, l := range languages {
 		langStrings[i] = string(l)
 	}
 	_ = s.updateJobLanguages(ctx, jobID, langStrings)
 
-	// Run security tools
-	log.Printf("[Scanner] Running security tools...")
-	_ = s.updateJobStatus(ctx, jobID, StatusScanning, "")
+	s.log.Info("scan_phase_detect_complete",
+		slog.String("job_id", jobID),
+		slog.Any("languages", langStrings),
+		slog.Int("language_count", len(languages)),
+		slog.Duration("duration", time.Since(detectStart)),
+	)
+
+	// Phase 3: Run security tools
 	toolNames := s.toolRunner.GetToolsForLanguages(languages)
-	log.Printf("[Scanner] Tools to run: %v", toolNames)
+	s.log.Info("scan_phase_tools_start",
+		slog.String("job_id", jobID),
+		slog.Any("tools", toolNames),
+		slog.Int("tool_count", len(toolNames)),
+	)
+	toolsStart := time.Now()
+	_ = s.updateJobStatus(ctx, jobID, StatusScanning, "")
 
 	var results []ToolResult
 	for _, toolName := range toolNames {
-		log.Printf("[Scanner] Running tool: %s", toolName)
+		toolStart := time.Now()
+		s.log.Debug("scan_tool_start",
+			slog.String("job_id", jobID),
+			slog.String("tool", toolName),
+		)
+
 		result := s.toolRunner.RunToolByName(ctx, toolName, repoPath, languages)
-		log.Printf("[Scanner] Tool %s completed: %d findings, timedOut=%v, error=%v",
-			toolName, len(result.Findings), result.TimedOut, result.Error)
+
+		s.log.Info("scan_tool_complete",
+			slog.String("job_id", jobID),
+			slog.String("tool", toolName),
+			slog.Int("finding_count", len(result.Findings)),
+			slog.Bool("timed_out", result.TimedOut),
+			slog.Bool("success", result.Error == nil),
+			slog.Duration("duration", time.Since(toolStart)),
+		)
+
+		if result.Error != nil {
+			s.log.Warn("scan_tool_error",
+				slog.String("job_id", jobID),
+				slog.String("tool", toolName),
+				slog.String("error", result.Error.Error()),
+			)
+		}
+
 		results = append(results, result)
 	}
 
-	// Aggregate findings
-	log.Printf("[Scanner] Aggregating findings from %d tool results...", len(results))
-	findings := s.aggregator.AggregateAndProcess(results)
-	log.Printf("[Scanner] Total findings after aggregation: %d", len(findings))
+	s.log.Info("scan_phase_tools_complete",
+		slog.String("job_id", jobID),
+		slog.Int("tool_count", len(toolNames)),
+		slog.Duration("duration", time.Since(toolsStart)),
+	)
 
-	// AI review (if findings exist and client available)
+	// Phase 4: Aggregate findings
+	s.log.Info("scan_phase_aggregate_start",
+		slog.String("job_id", jobID),
+		slog.Int("result_count", len(results)),
+	)
+	aggStart := time.Now()
+	findings := s.aggregator.AggregateAndProcess(results)
+
+	// Count by severity
+	severityCounts := map[string]int{"critical": 0, "high": 0, "medium": 0, "low": 0}
+	for _, f := range findings {
+		severityCounts[f.Severity]++
+	}
+
+	s.log.Info("scan_phase_aggregate_complete",
+		slog.String("job_id", jobID),
+		slog.Int("total_findings", len(findings)),
+		slog.Int("critical", severityCounts["critical"]),
+		slog.Int("high", severityCounts["high"]),
+		slog.Int("medium", severityCounts["medium"]),
+		slog.Int("low", severityCounts["low"]),
+		slog.Duration("duration", time.Since(aggStart)),
+	)
+
+	// Phase 5: AI review (if findings exist and client available)
 	if len(findings) > 0 && s.reviewer.HasClient() {
-		log.Printf("[Scanner] Running AI review on %d findings...", len(findings))
+		s.log.Info("scan_phase_review_start",
+			slog.String("job_id", jobID),
+			slog.Int("findings_to_review", len(findings)),
+		)
+		reviewStart := time.Now()
 		_ = s.updateJobStatus(ctx, jobID, StatusReviewing, "")
-		findings, _ = s.reviewer.Review(ctx, repoPath, findings)
+
+		reviewedFindings, reviewErr := s.reviewer.Review(ctx, repoPath, findings)
+		if reviewErr != nil {
+			s.log.Warn("scan_phase_review_partial",
+				slog.String("job_id", jobID),
+				slog.String("error", reviewErr.Error()),
+			)
+		}
+		findings = reviewedFindings
+
+		s.log.Info("scan_phase_review_complete",
+			slog.String("job_id", jobID),
+			slog.Int("reviewed_findings", len(findings)),
+			slog.Duration("duration", time.Since(reviewStart)),
+		)
+	} else {
+		skipReason := "no_findings"
+		if len(findings) > 0 {
+			skipReason = "no_ai_client"
+		}
+		s.log.Debug("scan_phase_review_skipped",
+			slog.String("job_id", jobID),
+			slog.String("reason", skipReason),
+			slog.Bool("has_findings", len(findings) > 0),
+			slog.Bool("has_client", s.reviewer.HasClient()),
+		)
 	}
 
 	// Complete job
-	log.Printf("[Scanner] Completing job with %d findings", len(findings))
 	_ = s.completeJob(ctx, jobID, findings)
+
+	s.log.Info("scan_pipeline_complete",
+		slog.String("job_id", jobID),
+		slog.Int("total_findings", len(findings)),
+		slog.Duration("total_duration", time.Since(start)),
+	)
 }
 
 // Database operations
