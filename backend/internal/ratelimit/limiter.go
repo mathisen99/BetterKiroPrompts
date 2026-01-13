@@ -8,6 +8,11 @@ import (
 const (
 	DefaultLimit  = 10
 	DefaultWindow = time.Hour
+
+	// RatingLimit is the rate limit for rating submissions (20 per hour).
+	RatingLimit = 20
+	// RatingWindow is the time window for rating rate limiting.
+	RatingWindow = time.Hour
 )
 
 // clientState tracks the request count and window start for a client.
@@ -50,6 +55,11 @@ func NewLimiterWithConfig(limit int, window time.Duration) *Limiter {
 		window: window,
 		now:    time.Now,
 	}
+}
+
+// NewRatingLimiter creates a rate limiter configured for rating submissions (20/hour).
+func NewRatingLimiter() *Limiter {
+	return NewLimiterWithConfig(RatingLimit, RatingWindow)
 }
 
 // Allow checks if a request from the given IP is allowed.

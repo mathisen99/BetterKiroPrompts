@@ -94,39 +94,39 @@ This implementation plan covers the final polish phase, organized into logical g
     - Return generation ID in response
     - _Requirements: 5.1_
 
-- [ ] 6. Checkpoint - Backend Core Complete
+- [x] 6. Checkpoint - Backend Core Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Backend Gallery Service
-  - [ ] 7.1 Create gallery service
+- [x] 7. Backend Gallery Service
+  - [x] 7.1 Create gallery service
     - Create `backend/internal/gallery/service.go`
     - Implement ListGenerations, GetGeneration, RateGeneration
     - _Requirements: 6.1, 6.2, 6.3, 7.2_
-  - [ ] 7.2 Write property tests for gallery filtering
+  - [x] 7.2 Write property tests for gallery filtering
     - **Property 5: Gallery Filtering Correctness**
     - **Validates: Requirements 6.2**
-  - [ ] 7.3 Write property tests for gallery sorting
+  - [x] 7.3 Write property tests for gallery sorting
     - **Property 6: Gallery Sorting Correctness**
     - **Validates: Requirements 6.3**
-  - [ ] 7.4 Write property tests for pagination
+  - [x] 7.4 Write property tests for pagination
     - **Property 7: Pagination Bounds**
     - **Validates: Requirements 6.5**
 
-- [ ] 8. Backend Rating System
-  - [ ] 8.1 Implement rating endpoints
+- [x] 8. Backend Rating System
+  - [x] 8.1 Implement rating endpoints
     - Add POST /api/gallery/:id/rate endpoint
     - Add GET /api/gallery/:id endpoint with user rating
     - _Requirements: 7.1, 7.2_
-  - [ ] 8.2 Implement rating rate limiter
+  - [x] 8.2 Implement rating rate limiter
     - Create separate rate limiter for ratings (20/hour)
     - _Requirements: 7.6_
-  - [ ] 8.3 Write property tests for rating calculation
+  - [x] 8.3 Write property tests for rating calculation
     - **Property 8: Rating Storage and Calculation**
     - **Validates: Requirements 7.2, 7.3**
-  - [ ] 8.4 Write property tests for duplicate prevention
+  - [x] 8.4 Write property tests for duplicate prevention
     - **Property 9: Duplicate Rating Prevention**
     - **Validates: Requirements 7.4**
-  - [ ] 8.5 Write property tests for rating rate limit
+  - [x] 8.5 Write property tests for rating rate limit
     - **Property 10: Rate Limit Enforcement**
     - **Validates: Requirements 7.6**
 

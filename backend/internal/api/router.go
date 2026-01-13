@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"better-kiro-prompts/internal/gallery"
 	"better-kiro-prompts/internal/generation"
 	"better-kiro-prompts/internal/ratelimit"
 )
@@ -14,6 +15,8 @@ import (
 type RouterConfig struct {
 	GenerationService *generation.Service
 	RateLimiter       *ratelimit.Limiter
+	GalleryService    *gallery.Service
+	RatingLimiter     *ratelimit.Limiter
 }
 
 // NewRouter creates a new HTTP router with all API routes.
@@ -28,6 +31,14 @@ func NewRouter(cfg *RouterConfig) http.Handler {
 		genHandler := NewGenerateHandler(cfg.GenerationService, cfg.RateLimiter)
 		mux.HandleFunc("POST /api/generate/questions", genHandler.HandleGenerateQuestions)
 		mux.HandleFunc("POST /api/generate/outputs", genHandler.HandleGenerateOutputs)
+	}
+
+	// Gallery endpoints (if service is configured)
+	if cfg != nil && cfg.GalleryService != nil {
+		galleryHandler := NewGalleryHandler(cfg.GalleryService, cfg.RatingLimiter)
+		mux.HandleFunc("GET /api/gallery", galleryHandler.HandleListGallery)
+		mux.HandleFunc("GET /api/gallery/{id}", galleryHandler.HandleGetGalleryItem)
+		mux.HandleFunc("POST /api/gallery/{id}/rate", galleryHandler.HandleRateGalleryItem)
 	}
 
 	// Serve static files from ./static directory (SPA with fallback to index.html)
