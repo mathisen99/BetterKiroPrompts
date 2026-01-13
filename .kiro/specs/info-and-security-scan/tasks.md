@@ -66,19 +66,19 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Add indexes for efficient queries
     - _Requirements: 11.1, 11.3_
 
-- [ ] 6. Implement Scanner Backend Service
-  - [ ] 6.1 Create URL validator
+- [x] 6. Implement Scanner Backend Service
+  - [x] 6.1 Create URL validator
     - Create `backend/internal/scanner/validator.go`
     - Validate GitHub URL format
     - Support both https://github.com/owner/repo and .git suffix
     - Return structured validation errors
     - _Requirements: 4.1, 4.4, 4.6_
 
-  - [ ] 6.2 Write property test for URL validation
+  - [x] 6.2 Write property test for URL validation
     - **Property 1: URL Validation**
     - **Validates: Requirements 4.1, 4.4, 4.6**
 
-  - [ ] 6.3 Create repository cloner
+  - [x] 6.3 Create repository cloner
     - Create `backend/internal/scanner/cloner.go`
     - Clone to temporary directory
     - Support GitHub token for private repos
@@ -87,22 +87,22 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Never log token values
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 6.4 Write property test for token security
+  - [x] 6.4 Write property test for token security
     - **Property 3: Token Security**
     - **Validates: Requirements 5.3**
 
-  - [ ] 6.5 Create language detector
+  - [x] 6.5 Create language detector
     - Create `backend/internal/scanner/language.go`
     - Detect languages by file extension
     - Support: Go, JS, TS, Python, Java, Ruby, PHP, C, C++, Rust
     - Rank by file count
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 6.6 Write property test for language detection
+  - [x] 6.6 Write property test for language detection
     - **Property 6: Language Detection Accuracy**
     - **Validates: Requirements 6.1, 6.2, 6.3**
 
-  - [ ] 6.7 Create tool runner
+  - [x] 6.7 Create tool runner
     - Create `backend/internal/scanner/tools.go`
     - Implement RunTrivy, RunSemgrep, RunTruffleHog, RunGitleaks
     - Implement RunGovulncheck (Go)
@@ -114,22 +114,22 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Implement GetToolsForLanguages selector
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11_
 
-  - [ ] 6.8 Write property test for tool timeout
+  - [x] 6.8 Write property test for tool timeout
     - **Property 7: Tool Timeout Enforcement**
     - **Validates: Requirements 7.10, 7.11**
 
-  - [ ] 6.9 Create finding aggregator
+  - [x] 6.9 Create finding aggregator
     - Create `backend/internal/scanner/aggregator.go`
     - Parse tool outputs into unified Finding format
     - Deduplicate findings (same file, line, description)
     - Rank by severity (critical > high > medium > low > info)
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-  - [ ] 6.10 Write property test for finding aggregation
+  - [x] 6.10 Write property test for finding aggregation
     - **Property 8: Finding Aggregation Completeness**
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4**
 
-  - [ ] 6.11 Create code reviewer
+  - [x] 6.11 Create code reviewer
     - Create `backend/internal/scanner/reviewer.go`
     - Build GPT-5.1-Codex-Max request with findings and file contents
     - Enforce max files limit (default 10)
@@ -137,18 +137,18 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Handle API errors gracefully
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
 
-  - [ ] 6.12 Write property test for AI review scope
+  - [x] 6.12 Write property test for AI review scope
     - **Property 9: AI Review Scope Limitation**
     - **Validates: Requirements 9.2, 9.3, 9.7**
 
-  - [ ] 6.13 Create scanner service
+  - [x] 6.13 Create scanner service
     - Create `backend/internal/scanner/service.go`
     - Orchestrate: validate → clone → detect → scan → aggregate → review → cleanup
     - Manage scan job status transitions
     - Persist results to database
     - _Requirements: 4.5, 11.1, 11.2, 11.4_
 
-  - [ ] 6.14 Write property test for job creation round-trip
+  - [x] 6.14 Write property test for job creation round-trip
     - **Property 2: Job Creation Round-Trip**
     - **Validates: Requirements 4.5, 11.1, 11.2**
 
