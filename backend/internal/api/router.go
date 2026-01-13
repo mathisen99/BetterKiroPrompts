@@ -54,6 +54,11 @@ func NewRouter(cfg *RouterConfig) http.Handler {
 		mux.HandleFunc("GET /api/scan/{id}", scanHandler.HandleGetScan)
 	}
 
+	// Client logging endpoint (no rate limiting - logs are important)
+	if cfg != nil && cfg.Logger != nil {
+		mux.HandleFunc("POST /api/logs/client", HandleClientLogs(cfg.Logger))
+	}
+
 	// Serve static files from ./static directory (SPA with fallback to index.html)
 	staticDir := "./static"
 	if _, err := os.Stat(staticDir); err == nil {

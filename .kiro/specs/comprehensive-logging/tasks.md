@@ -203,27 +203,27 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Ensure all queries go through logging wrapper
     - _Requirements: 3.1, 3.2_
 
-- [ ] 9. Add Logging to Queue and Rate Limiter
-  - [ ] 9.1 Update `backend/internal/queue/queue.go` with logger
+- [x] 9. Add Logging to Queue and Rate Limiter
+  - [x] 9.1 Update `backend/internal/queue/queue.go` with logger
     - Add logger field
     - Log acquire start/success/timeout
     - Log release with stats
     - _Requirements: 4.1_
 
-  - [ ] 9.2 Update `backend/internal/ratelimit/limiter.go` with logger
+  - [x] 9.2 Update `backend/internal/ratelimit/limiter.go` with logger
     - Add logger field
     - Log allow/deny decisions with IP hash
     - Log remaining count at DEBUG level
     - _Requirements: 4.1_
 
-- [ ] 10. Add Client Logging Endpoint
-  - [ ] 10.1 Create `backend/internal/api/logs.go` with HandleClientLogs
+- [x] 10. Add Client Logging Endpoint
+  - [x] 10.1 Create `backend/internal/api/logs.go` with HandleClientLogs
     - Parse ClientLogRequest with array of log entries
     - Write each entry to client log file
     - Return 202 Accepted
     - _Requirements: 7.5_
 
-  - [ ] 10.2 Register `/api/logs/client` endpoint in router
+  - [x] 10.2 Register `/api/logs/client` endpoint in router
     - Add POST handler
     - No rate limiting (logs are important)
     - _Requirements: 7.5_
