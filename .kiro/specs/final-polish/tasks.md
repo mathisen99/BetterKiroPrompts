@@ -142,20 +142,20 @@ This implementation plan covers the final polish phase, organized into logical g
 - [x] 10. Checkpoint - Backend Complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Frontend LocalStorage Manager
-  - [ ] 11.1 Create storage manager utility
+- [x] 11. Frontend LocalStorage Manager
+  - [x] 11.1 Create storage manager utility
     - Create `frontend/src/lib/storage.ts`
     - Implement save, load, clear, isExpired functions
     - _Requirements: 4.1, 4.5_
-  - [ ] 11.2 Write property tests for storage manager
+  - [x] 11.2 Write property tests for storage manager
     - **Property 1: State Persistence Consistency**
     - **Validates: Requirements 4.1, 4.3**
-  - [ ] 11.3 Integrate storage manager with LandingPage
+  - [x] 11.3 Integrate storage manager with LandingPage
     - Modify `frontend/src/pages/LandingPage.tsx`
     - Save state after each action, restore on load
     - Clear on successful generation
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
-  - [ ] 11.4 Add restore prompt dialog
+  - [x] 11.4 Add restore prompt dialog
     - Create restore confirmation UI
     - Handle localStorage unavailable gracefully
     - _Requirements: 4.2, 4.7_

@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react'
 import { generateQuestions, generateOutputs, ApiError } from '@/lib/api'
 import type { Question, GeneratedFile, Answer, ExperienceLevel, HookPreset } from '@/lib/api'
+import * as storage from '@/lib/storage'
+import type { Phase, SessionState } from '@/lib/storage'
 import { ProjectInput } from '@/components/ProjectInput'
 import { QuestionFlow } from '@/components/QuestionFlow'
 import { OutputEditor } from '@/components/OutputEditor'
@@ -9,8 +11,7 @@ import { ErrorMessage } from '@/components/shared/ErrorMessage'
 import { RateLimitCountdown } from '@/components/shared/RateLimitCountdown'
 import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector'
 import { HookPresetSelector } from '@/components/HookPresetSelector'
-
-type Phase = 'level-select' | 'input' | 'questions' | 'generating' | 'output' | 'error'
+import { RestorePrompt } from '@/components/shared/RestorePrompt'
 
 interface LandingPageState {
   phase: Phase
@@ -24,6 +25,8 @@ interface LandingPageState {
   editedFiles: Map<string, string>
   error: string | null
   retryAfter: number | null
+  showRestorePrompt: boolean
+  pendingRestore: SessionState | null
 }
 
 const EXAMPLE_IDEAS = [
@@ -80,8 +83,44 @@ function getErrorMessage(err: unknown): { message: string; retryAfter: number | 
   }
 }
 
-export function LandingPage() {
-  const [state, setState] = useState<LandingPageState>({
+// Convert Map to Record for storage
+function answersMapToRecord(answers: Map<number, string>): Record<number, string> {
+  const record: Record<number, string> = {}
+  answers.forEach((value, key) => {
+    record[key] = value
+  })
+  return record
+}
+
+// Convert Record to Map for state
+function answersRecordToMap(answers: Record<number, string>): Map<number, string> {
+  return new Map(Object.entries(answers).map(([k, v]) => [Number(k), v]))
+}
+
+// Save current state to localStorage
+function saveState(state: LandingPageState): void {
+  // Only save meaningful phases (not generating, output, or error)
+  if (state.phase === 'generating' || state.phase === 'output' || state.phase === 'error') {
+    return
+  }
+  
+  storage.save({
+    phase: state.phase,
+    experienceLevel: state.experienceLevel,
+    projectIdea: state.projectIdea,
+    hookPreset: state.hookPreset,
+    questions: state.questions,
+    answers: answersMapToRecord(state.answers),
+    currentQuestionIndex: state.currentQuestionIndex,
+  })
+}
+
+// Create initial state, checking for restorable session
+function createInitialState(): LandingPageState {
+  const savedState = storage.load()
+  const hasRestorableState = savedState !== null && savedState.phase !== 'level-select'
+  
+  return {
     phase: 'level-select',
     experienceLevel: null,
     projectIdea: '',
@@ -93,28 +132,81 @@ export function LandingPage() {
     editedFiles: new Map(),
     error: null,
     retryAfter: null,
-  })
+    showRestorePrompt: hasRestorableState,
+    pendingRestore: hasRestorableState ? savedState : null,
+  }
+}
+
+export function LandingPage() {
+  const [state, setState] = useState<LandingPageState>(createInitialState)
+
+  const handleRestoreAccept = useCallback(() => {
+    setState(prev => {
+      if (!prev.pendingRestore) return prev
+      
+      const restored = prev.pendingRestore
+      return {
+        ...prev,
+        phase: restored.phase,
+        experienceLevel: restored.experienceLevel,
+        projectIdea: restored.projectIdea,
+        hookPreset: restored.hookPreset,
+        questions: restored.questions,
+        answers: answersRecordToMap(restored.answers),
+        currentQuestionIndex: restored.currentQuestionIndex,
+        showRestorePrompt: false,
+        pendingRestore: null,
+      }
+    })
+  }, [])
+
+  const handleRestoreDecline = useCallback(() => {
+    storage.clear()
+    setState(prev => ({
+      ...prev,
+      showRestorePrompt: false,
+      pendingRestore: null,
+    }))
+  }, [])
 
   const handleExperienceLevelSelect = useCallback((level: ExperienceLevel) => {
-    setState(prev => ({ ...prev, experienceLevel: level, phase: 'input' }))
+    setState(prev => {
+      const newState = { ...prev, experienceLevel: level, phase: 'input' as Phase }
+      saveState(newState)
+      return newState
+    })
   }, [])
 
   const handleHookPresetSelect = useCallback((preset: HookPreset) => {
-    setState(prev => ({ ...prev, hookPreset: preset }))
+    setState(prev => {
+      const newState = { ...prev, hookPreset: preset }
+      saveState(newState)
+      return newState
+    })
   }, [])
 
   const handleProjectSubmit = useCallback(async (idea: string) => {
+    const currentExperienceLevel = state.experienceLevel
+    
+    // Save state before making API call
+    const preApiState = { ...state, projectIdea: idea, phase: 'input' as Phase }
+    saveState(preApiState)
+    
     setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null }))
     
     try {
-      const response = await generateQuestions(idea, state.experienceLevel!)
-      setState(prev => ({
-        ...prev,
-        phase: 'questions',
-        questions: response.questions,
-        currentQuestionIndex: 0,
-        answers: new Map(),
-      }))
+      const response = await generateQuestions(idea, currentExperienceLevel!)
+      setState(prev => {
+        const newState = {
+          ...prev,
+          phase: 'questions' as Phase,
+          questions: response.questions,
+          currentQuestionIndex: 0,
+          answers: new Map(),
+        }
+        saveState(newState)
+        return newState
+      })
     } catch (err) {
       const { message, retryAfter } = getErrorMessage(err)
       setState(prev => ({
@@ -124,13 +216,15 @@ export function LandingPage() {
         retryAfter,
       }))
     }
-  }, [state.experienceLevel])
+  }, [state])
 
   const handleAnswer = useCallback((questionId: number, answer: string) => {
     setState(prev => {
       const newAnswers = new Map(prev.answers)
       newAnswers.set(questionId, answer)
-      return { ...prev, answers: newAnswers }
+      const newState = { ...prev, answers: newAnswers }
+      saveState(newState)
+      return newState
     })
   }, [])
 
@@ -138,17 +232,23 @@ export function LandingPage() {
     setState(prev => {
       const questionIndex = prev.questions.findIndex(q => q.id === questionId)
       if (questionIndex >= 0) {
-        return { ...prev, currentQuestionIndex: questionIndex }
+        const newState = { ...prev, currentQuestionIndex: questionIndex }
+        saveState(newState)
+        return newState
       }
       return prev
     })
   }, [])
 
   const handleNext = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      currentQuestionIndex: prev.currentQuestionIndex + 1,
-    }))
+    setState(prev => {
+      const newState = {
+        ...prev,
+        currentQuestionIndex: prev.currentQuestionIndex + 1,
+      }
+      saveState(newState)
+      return newState
+    })
   }, [])
 
   const handleQuestionsComplete = useCallback(async () => {
@@ -161,6 +261,10 @@ export function LandingPage() {
       }))
       
       const response = await generateOutputs(state.projectIdea, answers, state.experienceLevel!, state.hookPreset)
+      
+      // Clear saved state on successful generation
+      storage.clear()
+      
       setState(prev => ({
         ...prev,
         phase: 'output',
@@ -201,6 +305,19 @@ export function LandingPage() {
     const file = state.generatedFiles.find(f => f.path === path)
     return file?.content ?? ''
   }, [state.editedFiles, state.generatedFiles])
+
+  // Show restore prompt if there's saved state
+  if (state.showRestorePrompt && state.pendingRestore) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <RestorePrompt
+          projectIdea={state.pendingRestore.projectIdea}
+          onRestore={handleRestoreAccept}
+          onStartFresh={handleRestoreDecline}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
