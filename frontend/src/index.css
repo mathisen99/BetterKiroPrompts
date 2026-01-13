@@ -123,3 +123,58 @@ html {
   background-color: oklch(0.488 0.243 264.376 / 0.3);
   color: var(--color-foreground);
 }
+
+/* Night sky animations */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes cloud-drift-slow {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(30%);
+  }
+}
+
+@keyframes cloud-drift-medium {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+@keyframes cloud-drift-fast {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(80%);
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle ease-in-out infinite;
+}
+
+.animate-cloud-drift-slow {
+  animation: cloud-drift-slow 120s linear infinite;
+}
+
+.animate-cloud-drift-medium {
+  animation: cloud-drift-medium 80s linear infinite;
+}
+
+.animate-cloud-drift-fast {
+  animation: cloud-drift-fast 50s linear infinite;
+}

@@ -26,7 +26,7 @@ services:
       - POSTGRES_PASSWORD=pass
       - POSTGRES_DB=app
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     networks:
       - app-network
     restart: unless-stopped
