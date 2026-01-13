@@ -210,12 +210,12 @@ This implementation plan covers the final polish phase, organized into logical g
     - Show appropriate actions based on error type
     - _Requirements: 10.1, 10.2, 10.3_
 
-- [ ] 15. Frontend Timeout Handling
-  - [ ] 15.1 Add AbortController to API calls
+- [x] 15. Frontend Timeout Handling
+  - [x] 15.1 Add AbortController to API calls
     - Modify `frontend/src/lib/api.ts`
     - Implement timeout with AbortController
     - _Requirements: 3.4_
-  - [ ] 15.2 Update LoadingState with progress tracking
+  - [x] 15.2 Update LoadingState with progress tracking
     - Track loading start time
     - Show "taking longer than usual" after 90 seconds
     - _Requirements: 3.2, 3.3_

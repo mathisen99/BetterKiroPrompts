@@ -38,6 +38,7 @@ interface LandingPageState {
   showCelebration: boolean
   canRetry: boolean
   failedOperation: FailedOperation
+  loadingStartTime: number | null // Track when loading started for progress display
 }
 
 const EXAMPLE_IDEAS = [
@@ -170,6 +171,7 @@ function createInitialState(): LandingPageState {
     showCelebration: false,
     canRetry: false,
     failedOperation: null,
+    loadingStartTime: null,
   }
 }
 
@@ -233,7 +235,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
     const preApiState = { ...state, projectIdea: idea, phase: 'input' as Phase }
     saveState(preApiState)
     
-    setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null, errorCode: null }))
+    setState(prev => ({ ...prev, projectIdea: idea, phase: 'generating', error: null, errorCode: null, loadingStartTime: Date.now() }))
     
     try {
       const response = await generateQuestions(idea, currentExperienceLevel!)
@@ -246,6 +248,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
           answers: new Map(),
           canRetry: false,
           failedOperation: null as FailedOperation,
+          loadingStartTime: null,
         }
         saveState(newState)
         return newState
@@ -260,6 +263,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
         retryAfter,
         canRetry,
         failedOperation: 'questions' as FailedOperation,
+        loadingStartTime: null,
       }))
     }
   }, [state])
@@ -298,7 +302,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
   }, [])
 
   const handleQuestionsComplete = useCallback(async () => {
-    setState(prev => ({ ...prev, phase: 'generating', error: null, errorCode: null }))
+    setState(prev => ({ ...prev, phase: 'generating', error: null, errorCode: null, loadingStartTime: Date.now() }))
     
     try {
       const answers: Answer[] = Array.from(state.answers.entries()).map(([questionId, answer]) => ({
@@ -319,6 +323,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
         showCelebration: true,
         canRetry: false,
         failedOperation: null,
+        loadingStartTime: null,
       }))
     } catch (err) {
       const { message, retryAfter, code, canRetry } = getErrorMessage(err)
@@ -330,6 +335,7 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
         retryAfter,
         canRetry,
         failedOperation: 'outputs' as FailedOperation,
+        loadingStartTime: null,
       }))
     }
   }, [state.answers, state.projectIdea, state.experienceLevel, state.hookPreset])
@@ -448,7 +454,8 @@ export function LandingPage({ onPhaseChange }: LandingPageProps) {
                 ? 'Generating questions for your project...'
                 : 'Generating your Kiro files...'
             }
-            estimatedTime="up to 60 seconds"
+            estimatedTime="up to 2 minutes"
+            startTime={state.loadingStartTime ?? undefined}
           />
         </div>
       )}

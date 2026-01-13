@@ -1,5 +1,8 @@
 const API_BASE = '/api'
 
+// Default timeout for API requests (120 seconds as per Requirements 3.1)
+const DEFAULT_TIMEOUT_MS = 120 * 1000
+
 // Experience level type
 export type ExperienceLevel = 'beginner' | 'novice' | 'expert'
 
@@ -54,12 +57,14 @@ export interface ErrorResponse {
 export class ApiError extends Error {
   status: number
   retryAfter?: number
+  isTimeout?: boolean
 
-  constructor(message: string, status: number, retryAfter?: number) {
+  constructor(message: string, status: number, retryAfter?: number, isTimeout?: boolean) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.retryAfter = retryAfter
+    this.isTimeout = isTimeout
   }
 }
 
@@ -68,18 +73,35 @@ function isRecoverableError(status: number): boolean {
   return status === 503 || status === 504
 }
 
-// Generic fetch with automatic retry for recoverable errors
+// Create an AbortController with timeout
+function createTimeoutController(timeoutMs: number = DEFAULT_TIMEOUT_MS): { controller: AbortController; timeoutId: ReturnType<typeof setTimeout> } {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => {
+    controller.abort()
+  }, timeoutMs)
+  return { controller, timeoutId }
+}
+
+// Generic fetch with automatic retry for recoverable errors and timeout support
 async function fetchWithRetry<T>(
   url: string,
   options: RequestInit,
-  errorMessage: string
+  errorMessage: string,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<T> {
   let lastError: ApiError | null = null
   
   // Try up to 2 times (initial + 1 retry)
   for (let attempt = 0; attempt < 2; attempt++) {
+    const { controller, timeoutId } = createTimeoutController(timeoutMs)
+    
     try {
-      const res = await fetch(url, options)
+      const res = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })
+      
+      clearTimeout(timeoutId)
       
       if (!res.ok) {
         const error: ErrorResponse = await res.json().catch(() => ({ error: errorMessage }))
@@ -96,6 +118,21 @@ async function fetchWithRetry<T>(
       
       return res.json()
     } catch (err) {
+      clearTimeout(timeoutId)
+      
+      // Handle abort/timeout errors
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        const timeoutError = new ApiError('Request timed out. Please try again.', 504, undefined, true)
+        
+        // Retry once on timeout
+        if (attempt === 0) {
+          lastError = timeoutError
+          continue
+        }
+        
+        throw timeoutError
+      }
+      
       // If it's already an ApiError, handle retry logic
       if (err instanceof ApiError) {
         if (isRecoverableError(err.status) && attempt === 0) {
