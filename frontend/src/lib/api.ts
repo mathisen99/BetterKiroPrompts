@@ -1,7 +1,7 @@
 const API_BASE = '/api'
 
-// Default timeout for API requests (120 seconds as per Requirements 3.1)
-const DEFAULT_TIMEOUT_MS = 120 * 1000
+// Default timeout for API requests (180 seconds as per Requirements 4.2)
+const DEFAULT_TIMEOUT_MS = 180 * 1000
 
 // Experience level type
 export type ExperienceLevel = 'beginner' | 'novice' | 'expert'

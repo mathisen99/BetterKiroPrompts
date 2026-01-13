@@ -16,7 +16,7 @@ import (
 const (
 	defaultBaseURL = "https://api.openai.com/v1"
 	defaultModel   = "gpt-5.2"
-	defaultTimeout = 120 * time.Second
+	defaultTimeout = 180 * time.Second
 )
 
 // ReasoningEffort controls how many reasoning tokens the model generates.
