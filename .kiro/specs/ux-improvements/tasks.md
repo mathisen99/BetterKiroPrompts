@@ -44,27 +44,27 @@ This plan implements six improvement areas: experience-level-appropriate questio
     - **Property 5: Vote Upsert Behavior**
     - **Validates: Requirements 5.2, 5.4**
 
-- [ ] 4. Checkpoint - Database and timeout changes
+- [x] 4. Checkpoint - Database and timeout changes
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Differentiate experience-level prompts
-  - [ ] 5.1 Create beginner-specific question prompt
+- [x] 5. Differentiate experience-level prompts
+  - [x] 5.1 Create beginner-specific question prompt
     - Add forbidden terms list
     - Use everyday language only
     - Include examples using real-world analogies
     - _Requirements: 1.1, 1.2_
-  - [ ] 5.2 Create novice-specific question prompt
+  - [x] 5.2 Create novice-specific question prompt
     - Allow basic technical terms with explanations
     - Moderate complexity questions
     - _Requirements: 1.3_
-  - [ ] 5.3 Create expert-specific question prompt
+  - [x] 5.3 Create expert-specific question prompt
     - Full technical terminology
     - Architecture and scaling questions
     - _Requirements: 1.4_
-  - [ ] 5.4 Write property test for beginner jargon avoidance
+  - [x] 5.4 Write property test for beginner jargon avoidance
     - **Property 1: Beginner Questions Avoid Technical Jargon**
     - **Validates: Requirements 1.1, 1.2**
-  - [ ] 5.5 Write property test for experience level differentiation
+  - [x] 5.5 Write property test for experience level differentiation
     - **Property 2: Experience Levels Produce Different Questions**
     - **Validates: Requirements 1.5**
 

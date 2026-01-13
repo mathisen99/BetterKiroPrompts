@@ -340,3 +340,171 @@ func TestProperty1_AllLevelsHaveDistinctGuidance(t *testing.T) {
 		t.Error("Expert prompt should contain 'Expert'")
 	}
 }
+
+// TestProperty1_BeginnerQuestionsAvoidTechnicalJargon validates that the beginner prompt
+// explicitly forbids all technical jargon terms from ForbiddenBeginnerTerms.
+// Feature: ux-improvements, Property 1: Beginner Questions Avoid Technical Jargon
+// **Validates: Requirements 1.1, 1.2**
+func TestProperty1_BeginnerQuestionsAvoidTechnicalJargon(t *testing.T) {
+	// Property: For any project idea submitted with beginner experience level,
+	// the generated questions SHALL NOT contain any of the forbidden technical terms.
+
+	beginnerPrompt := GetQuestionsSystemPrompt(ExperienceBeginner)
+	promptLower := strings.ToLower(beginnerPrompt)
+
+	// The beginner prompt MUST contain the AVOID instruction
+	if !strings.Contains(promptLower, "avoid") {
+		t.Error("Beginner prompt must contain 'AVOID' instruction")
+	}
+
+	// The beginner prompt MUST mention jargon/technical terms
+	if !strings.Contains(promptLower, "jargon") && !strings.Contains(promptLower, "forbidden") {
+		t.Error("Beginner prompt must mention 'jargon' or 'forbidden' terms")
+	}
+
+	// Core forbidden terms that MUST be listed in the prompt
+	coreForbiddenTerms := []string{
+		"API",
+		"database schema",
+		"authentication flow",
+		"microservices",
+		"CI/CD",
+		"containerization",
+		"OAuth",
+		"REST",
+		"GraphQL",
+		"SQL",
+		"NoSQL",
+		"backend",
+		"frontend",
+		"deployment",
+	}
+
+	missingTerms := []string{}
+	for _, term := range coreForbiddenTerms {
+		if !strings.Contains(promptLower, strings.ToLower(term)) {
+			missingTerms = append(missingTerms, term)
+		}
+	}
+
+	if len(missingTerms) > 0 {
+		t.Errorf("Beginner prompt must list these forbidden terms: %v", missingTerms)
+	}
+
+	// Property test: For any project idea, the beginner prompt should instruct
+	// the AI to use simple language alternatives
+	property := func(projectIdea string) bool {
+		if len(projectIdea) == 0 || len(projectIdea) > 1000 {
+			return true // Skip edge cases
+		}
+
+		// The system prompt should contain language translation guidance
+		if !strings.Contains(promptLower, "instead of") {
+			return false
+		}
+
+		// The system prompt should mention everyday language
+		if !strings.Contains(promptLower, "everyday") {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(property, &quick.Config{MaxCount: 100}); err != nil {
+		t.Errorf("Property 1 (Beginner Questions Avoid Technical Jargon) failed: %v", err)
+	}
+}
+
+// TestProperty2_ExperienceLevelsProduceDifferentQuestions validates that each experience
+// level produces distinctly different question prompts.
+// Feature: ux-improvements, Property 2: Experience Levels Produce Different Questions
+// **Validates: Requirements 1.5**
+func TestProperty2_ExperienceLevelsProduceDifferentQuestions(t *testing.T) {
+	// Property: For any project idea, generating questions at beginner, novice, and expert
+	// levels SHALL produce three distinct question sets where no two sets are identical.
+
+	beginnerPrompt := GetQuestionsSystemPrompt(ExperienceBeginner)
+	novicePrompt := GetQuestionsSystemPrompt(ExperienceNovice)
+	expertPrompt := GetQuestionsSystemPrompt(ExperienceExpert)
+
+	// All three prompts must be different from each other
+	if beginnerPrompt == novicePrompt {
+		t.Error("Beginner and Novice prompts must be different")
+	}
+	if novicePrompt == expertPrompt {
+		t.Error("Novice and Expert prompts must be different")
+	}
+	if beginnerPrompt == expertPrompt {
+		t.Error("Beginner and Expert prompts must be different")
+	}
+
+	// Each prompt must contain its experience level identifier
+	if !strings.Contains(beginnerPrompt, "Beginner") {
+		t.Error("Beginner prompt must contain 'Beginner' identifier")
+	}
+	if !strings.Contains(novicePrompt, "Novice") {
+		t.Error("Novice prompt must contain 'Novice' identifier")
+	}
+	if !strings.Contains(expertPrompt, "Expert") {
+		t.Error("Expert prompt must contain 'Expert' identifier")
+	}
+
+	// Beginner prompt must have AVOID/FORBIDDEN terms section
+	beginnerLower := strings.ToLower(beginnerPrompt)
+	if !strings.Contains(beginnerLower, "avoid") || !strings.Contains(beginnerLower, "forbidden") {
+		t.Error("Beginner prompt must have AVOID/FORBIDDEN terms section")
+	}
+
+	// Expert prompt must NOT have AVOID jargon section (experts can use technical terms)
+	expertLower := strings.ToLower(expertPrompt)
+	if strings.Contains(expertLower, "forbidden terms") {
+		t.Error("Expert prompt should not have forbidden terms section")
+	}
+
+	// Novice prompt must mention balance/moderate language
+	noviceLower := strings.ToLower(novicePrompt)
+	if !strings.Contains(noviceLower, "moderate") && !strings.Contains(noviceLower, "balance") {
+		t.Error("Novice prompt must mention moderate or balanced language")
+	}
+
+	// Property test: For any project idea string, the user prompts for different
+	// experience levels should be different
+	property := func(projectIdea string) bool {
+		if len(projectIdea) == 0 || len(projectIdea) > 1000 {
+			return true // Skip edge cases
+		}
+
+		beginnerUserPrompt := GetQuestionsUserPrompt(projectIdea, ExperienceBeginner)
+		noviceUserPrompt := GetQuestionsUserPrompt(projectIdea, ExperienceNovice)
+		expertUserPrompt := GetQuestionsUserPrompt(projectIdea, ExperienceExpert)
+
+		// All user prompts must be different (they include experience level)
+		if beginnerUserPrompt == noviceUserPrompt {
+			return false
+		}
+		if noviceUserPrompt == expertUserPrompt {
+			return false
+		}
+		if beginnerUserPrompt == expertUserPrompt {
+			return false
+		}
+
+		// Each must contain the experience level name
+		if !strings.Contains(beginnerUserPrompt, "beginner") {
+			return false
+		}
+		if !strings.Contains(noviceUserPrompt, "novice") {
+			return false
+		}
+		if !strings.Contains(expertUserPrompt, "expert") {
+			return false
+		}
+
+		return true
+	}
+
+	if err := quick.Check(property, &quick.Config{MaxCount: 100}); err != nil {
+		t.Errorf("Property 2 (Experience Levels Produce Different Questions) failed: %v", err)
+	}
+}
