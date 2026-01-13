@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
+	"time"
 
+	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/openai"
 	"better-kiro-prompts/internal/prompts"
 	"better-kiro-prompts/internal/queue"
@@ -71,6 +74,7 @@ type Service struct {
 	openaiClient *openai.Client
 	requestQueue *queue.RequestQueue
 	repository   storage.Repository
+	log          *slog.Logger
 }
 
 // NewService creates a new generation service.
@@ -79,6 +83,7 @@ func NewService(client *openai.Client) *Service {
 		openaiClient: client,
 		requestQueue: nil, // Optional queue
 		repository:   nil, // Optional repository
+		log:          slog.Default(),
 	}
 }
 
@@ -88,6 +93,7 @@ func NewServiceWithQueue(client *openai.Client, q *queue.RequestQueue) *Service 
 		openaiClient: client,
 		requestQueue: q,
 		repository:   nil,
+		log:          slog.Default(),
 	}
 }
 
@@ -97,6 +103,27 @@ func NewServiceWithDeps(client *openai.Client, q *queue.RequestQueue, repo stora
 		openaiClient: client,
 		requestQueue: q,
 		repository:   repo,
+		log:          slog.Default(),
+	}
+}
+
+// NewServiceWithLogger creates a new generation service with all dependencies including logger.
+func NewServiceWithLogger(client *openai.Client, q *queue.RequestQueue, repo storage.Repository, log *slog.Logger) *Service {
+	if log == nil {
+		log = slog.Default()
+	}
+	return &Service{
+		openaiClient: client,
+		requestQueue: q,
+		repository:   repo,
+		log:          log,
+	}
+}
+
+// SetLogger sets the logger for the service.
+func (s *Service) SetLogger(log *slog.Logger) {
+	if log != nil {
+		s.log = log
 	}
 }
 
@@ -134,16 +161,35 @@ func ValidateAnswers(answers []Answer) error {
 
 // GenerateQuestions generates follow-up questions based on the project idea.
 func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, experienceLevel string) ([]Question, error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
+	s.log.Info("generate_questions_start",
+		slog.String("request_id", requestID),
+		slog.String("experience_level", experienceLevel),
+		slog.Int("idea_length", len(projectIdea)),
+	)
+
 	if err := ValidateProjectIdea(projectIdea); err != nil {
+		s.log.Warn("generate_questions_validation_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
 
 	// Acquire queue slot if queue is configured
 	if s.requestQueue != nil {
+		s.log.Debug("queue_acquire_start", slog.String("request_id", requestID))
 		if err := s.requestQueue.Acquire(ctx); err != nil {
+			s.log.Error("queue_acquire_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+			)
 			return nil, fmt.Errorf("failed to acquire queue slot: %w", err)
 		}
 		defer s.requestQueue.Release()
+		s.log.Debug("queue_acquire_success", slog.String("request_id", requestID))
 	}
 
 	// Validate experience level
@@ -160,15 +206,40 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 		{Role: "user", Content: userPrompt},
 	}
 
+	s.log.Debug("openai_call_start",
+		slog.String("request_id", requestID),
+		slog.String("operation", "generate_questions"),
+	)
+
 	response, err := s.openaiClient.ChatCompletion(ctx, messages)
 	if err != nil {
+		s.log.Error("generate_questions_openai_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return nil, fmt.Errorf("failed to generate questions: %w", err)
 	}
 
+	s.log.Debug("openai_call_complete",
+		slog.String("request_id", requestID),
+		slog.String("operation", "generate_questions"),
+	)
+
 	questions, err := parseQuestionsResponse(response)
 	if err != nil {
+		s.log.Error("generate_questions_parse_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+		)
 		return nil, err
 	}
+
+	s.log.Info("generate_questions_complete",
+		slog.String("request_id", requestID),
+		slog.Int("question_count", len(questions)),
+		slog.Duration("duration", time.Since(start)),
+	)
 
 	return questions, nil
 }
@@ -178,19 +249,45 @@ const maxRetries = 1
 
 // GenerateOutputs generates kickoff prompt, steering files, hooks, and AGENTS.md.
 func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) ([]GeneratedFile, error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
+	s.log.Info("generate_outputs_start",
+		slog.String("request_id", requestID),
+		slog.String("experience_level", experienceLevel),
+		slog.String("hook_preset", hookPreset),
+		slog.Int("answer_count", len(answers)),
+	)
+
 	if err := ValidateProjectIdea(projectIdea); err != nil {
+		s.log.Warn("generate_outputs_validation_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.String("validation_type", "project_idea"),
+		)
 		return nil, err
 	}
 	if err := ValidateAnswers(answers); err != nil {
+		s.log.Warn("generate_outputs_validation_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.String("validation_type", "answers"),
+		)
 		return nil, err
 	}
 
 	// Acquire queue slot if queue is configured
 	if s.requestQueue != nil {
+		s.log.Debug("queue_acquire_start", slog.String("request_id", requestID))
 		if err := s.requestQueue.Acquire(ctx); err != nil {
+			s.log.Error("queue_acquire_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+			)
 			return nil, fmt.Errorf("failed to acquire queue slot: %w", err)
 		}
 		defer s.requestQueue.Release()
+		s.log.Debug("queue_acquire_success", slog.String("request_id", requestID))
 	}
 
 	// Validate experience level and hook preset
@@ -221,14 +318,30 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 
 	var lastErr error
 	for attempt := 0; attempt <= maxRetries; attempt++ {
+		s.log.Debug("generate_outputs_attempt",
+			slog.String("request_id", requestID),
+			slog.Int("attempt", attempt+1),
+			slog.Int("max_attempts", maxRetries+1),
+		)
+
 		response, err := s.openaiClient.ChatCompletion(ctx, messages)
 		if err != nil {
+			s.log.Error("generate_outputs_openai_failed",
+				slog.String("request_id", requestID),
+				slog.Int("attempt", attempt+1),
+				slog.String("error", err.Error()),
+			)
 			return nil, fmt.Errorf("failed to generate outputs: %w", err)
 		}
 
 		files, err := parseOutputsResponse(response)
 		if err != nil {
 			lastErr = err
+			s.log.Warn("generate_outputs_parse_failed",
+				slog.String("request_id", requestID),
+				slog.Int("attempt", attempt+1),
+				slog.String("error", err.Error()),
+			)
 			if attempt < maxRetries {
 				// Add retry context to messages for the next attempt
 				messages = append(messages,
@@ -243,6 +356,12 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		// Validate generated files
 		if err := ValidateGeneratedFiles(files); err != nil {
 			lastErr = fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+			s.log.Warn("generate_outputs_validation_failed",
+				slog.String("request_id", requestID),
+				slog.Int("attempt", attempt+1),
+				slog.String("error", err.Error()),
+				slog.String("validation_type", "generated_files"),
+			)
 			if attempt < maxRetries {
 				// Add retry context to messages for the next attempt
 				messages = append(messages,
@@ -254,6 +373,13 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 			return nil, FormatValidationError(lastErr)
 		}
 
+		s.log.Info("generate_outputs_complete",
+			slog.String("request_id", requestID),
+			slog.Int("file_count", len(files)),
+			slog.Int("attempts_used", attempt+1),
+			slog.Duration("duration", time.Since(start)),
+		)
+
 		return files, nil
 	}
 
@@ -264,6 +390,8 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 // GenerateAndStoreOutputs generates outputs and stores them in the database.
 // Returns the generated files and the generation ID if storage is configured.
 func (s *Service) GenerateAndStoreOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) (*GenerationResult, error) {
+	requestID := logger.GetRequestID(ctx)
+
 	// Generate the outputs
 	files, err := s.GenerateOutputs(ctx, projectIdea, answers, experienceLevel, hookPreset)
 	if err != nil {
@@ -276,18 +404,40 @@ func (s *Service) GenerateAndStoreOutputs(ctx context.Context, projectIdea strin
 
 	// Store in database if repository is configured
 	if s.repository != nil {
+		s.log.Debug("storage_attempt_start",
+			slog.String("request_id", requestID),
+			slog.Int("file_count", len(files)),
+		)
+
 		// Convert files to JSON
 		filesJSON, err := json.Marshal(files)
 		if err != nil {
+			s.log.Error("storage_marshal_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+			)
 			// Log error but don't fail the request - user still gets their files
 			return result, nil
 		}
 
 		// Get category based on project idea
+		s.log.Debug("category_lookup_start",
+			slog.String("request_id", requestID),
+		)
 		categoryID, err := s.repository.GetCategoryByKeywords(ctx, projectIdea)
 		if err != nil {
+			s.log.Warn("category_lookup_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+				slog.Int("default_category_id", 5),
+			)
 			// Default to "Other" category if lookup fails
 			categoryID = 5
+		} else {
+			s.log.Debug("category_lookup_complete",
+				slog.String("request_id", requestID),
+				slog.Int("category_id", categoryID),
+			)
 		}
 
 		// Create generation record
@@ -300,9 +450,19 @@ func (s *Service) GenerateAndStoreOutputs(ctx context.Context, projectIdea strin
 		}
 
 		if err := s.repository.CreateGeneration(ctx, gen); err != nil {
+			s.log.Error("storage_create_failed",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+			)
 			// Log error but don't fail the request - user still gets their files
 			return result, nil
 		}
+
+		s.log.Info("storage_complete",
+			slog.String("request_id", requestID),
+			slog.String("generation_id", gen.ID),
+			slog.Int("category_id", categoryID),
+		)
 
 		result.GenerationID = gen.ID
 	}

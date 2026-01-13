@@ -80,13 +80,13 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Pass logger to LoggingMiddleware
     - _Requirements: 2.1_
 
-- [ ] 4. Add Logging to Generation Service
-  - [ ] 4.1 Update `backend/internal/generation/service.go` with logger
+- [x] 4. Add Logging to Generation Service
+  - [x] 4.1 Update `backend/internal/generation/service.go` with logger
     - Add logger field to Service struct
     - Update constructors to accept logger
     - _Requirements: 4.1_
 
-  - [ ] 4.2 Add logging to GenerateQuestions
+  - [x] 4.2 Add logging to GenerateQuestions
     - Log start with experience_level, idea_length
     - Log validation failures
     - Log queue acquisition
@@ -95,14 +95,14 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Log completion with question_count, duration
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 4.3 Add logging to GenerateOutputs
+  - [x] 4.3 Add logging to GenerateOutputs
     - Log start with experience_level, hook_preset, answer_count
     - Log each retry attempt
     - Log parse/validation failures
     - Log completion with file_count, attempts_used, duration
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 4.4 Add logging to GenerateAndStoreOutputs
+  - [x] 4.4 Add logging to GenerateAndStoreOutputs
     - Log storage attempt
     - Log category lookup
     - Log storage success/failure
