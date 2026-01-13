@@ -23,7 +23,7 @@ This implementation plan covers the Info Page and Security Scanning features for
     - Add navigation back to home and gallery from Info Page
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 2. Checkpoint - Info Page Complete
+- [x] 2. Checkpoint - Info Page Complete
   - Ensure Info Page renders correctly
   - Verify navigation works between all pages
   - Run `pnpm typecheck && pnpm lint` in frontend
