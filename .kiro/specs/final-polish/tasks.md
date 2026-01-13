@@ -130,16 +130,16 @@ This implementation plan covers the final polish phase, organized into logical g
     - **Property 10: Rate Limit Enforcement**
     - **Validates: Requirements 7.6**
 
-- [ ] 9. Backend Gallery API Routes
-  - [ ] 9.1 Create gallery API handlers
+- [x] 9. Backend Gallery API Routes
+  - [x] 9.1 Create gallery API handlers
     - Create `backend/internal/api/gallery.go`
     - Implement handlers for list, detail, rate endpoints
     - _Requirements: 6.1, 6.4, 7.2_
-  - [ ] 9.2 Register gallery routes in router
+  - [x] 9.2 Register gallery routes in router
     - Add GET /api/gallery, GET /api/gallery/:id, POST /api/gallery/:id/rate
     - _Requirements: 6.1_
 
-- [ ] 10. Checkpoint - Backend Complete
+- [x] 10. Checkpoint - Backend Complete
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 11. Frontend LocalStorage Manager
