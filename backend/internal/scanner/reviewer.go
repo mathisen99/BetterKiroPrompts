@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -95,6 +96,7 @@ type ReviewFinding struct {
 func (r *CodeReviewer) Review(ctx context.Context, repoPath string, findings []Finding) ([]Finding, error) {
 	if r.client == nil {
 		// No AI client configured, return findings as-is
+		log.Printf("[CodeReviewer] No AI client configured, skipping review")
 		return findings, nil
 	}
 
@@ -105,18 +107,32 @@ func (r *CodeReviewer) Review(ctx context.Context, repoPath string, findings []F
 
 	// Get unique files with findings, prioritized by severity
 	filesToReview := r.selectFilesToReview(findings)
+	log.Printf("[CodeReviewer] Selected %d files to review", len(filesToReview))
 
 	// Read file contents
 	fileContents := make(map[string]string)
 	for _, filePath := range filesToReview {
-		fullPath := filepath.Join(repoPath, filePath)
+		// File paths from tools may be absolute or relative
+		var fullPath string
+		if strings.HasPrefix(filePath, repoPath) {
+			fullPath = filePath
+		} else if strings.HasPrefix(filePath, "/") {
+			fullPath = filePath
+		} else {
+			fullPath = filepath.Join(repoPath, filePath)
+		}
+
 		content, err := r.readFileContent(fullPath)
 		if err != nil {
-			// Skip files we can't read
+			log.Printf("[CodeReviewer] Failed to read file %s: %v", fullPath, err)
 			continue
 		}
-		fileContents[filePath] = content
+		// Store with relative path for cleaner prompts
+		relPath := strings.TrimPrefix(filePath, repoPath+"/")
+		fileContents[relPath] = content
 	}
+
+	log.Printf("[CodeReviewer] Successfully read %d files", len(fileContents))
 
 	if len(fileContents) == 0 {
 		// No files could be read
@@ -134,16 +150,25 @@ func (r *CodeReviewer) Review(ctx context.Context, repoPath string, findings []F
 
 	response, err := r.client.ChatCompletionWithModel(ctx, messages, r.model)
 	if err != nil {
-		// AI review failed, return findings without remediation
+		// AI review failed, log and return findings without remediation
+		log.Printf("[CodeReviewer] AI review failed: %v", err)
 		return findings, nil
+	}
+
+	log.Printf("[CodeReviewer] AI response received, length: %d", len(response))
+	if len(response) < 100 {
+		log.Printf("[CodeReviewer] AI response (short): %s", response)
 	}
 
 	// Parse the response
 	reviewResponse, err := r.parseResponse(response)
 	if err != nil {
-		// Failed to parse, return findings without remediation
+		// Failed to parse, log and return findings without remediation
+		log.Printf("[CodeReviewer] Failed to parse AI response: %v", err)
 		return findings, nil
 	}
+
+	log.Printf("[CodeReviewer] Parsed %d remediation items", len(reviewResponse.Findings))
 
 	// Merge remediation into findings
 	return r.mergeRemediation(findings, reviewResponse), nil

@@ -72,17 +72,24 @@ function SeverityBadge({ severity }: { severity: FindingSeverity }) {
   )
 }
 
+// Strip the temp scan path prefix from file paths
+function cleanFilePath(filePath: string): string {
+  // Remove /scan/repos/scan-repo-XXXXXXX/ prefix
+  return filePath.replace(/^\/scan\/repos\/scan-repo-\d+\//, '')
+}
+
 function FindingCard({ finding }: { finding: Finding }) {
   const config = severityConfig[finding.severity]
+  const cleanPath = cleanFilePath(finding.file_path)
   
   return (
-    <Card className={`${config.bgColor} ${config.borderColor} border`}>
+    <Card className={`${config.bgColor} ${config.borderColor} border overflow-hidden`}>
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="font-mono text-sm truncate" title={finding.file_path}>
-              {finding.file_path}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <FileCode className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <span className="font-mono text-sm break-all" title={cleanPath}>
+              {cleanPath}
               {finding.line_number && (
                 <span className="text-muted-foreground">:{finding.line_number}</span>
               )}
