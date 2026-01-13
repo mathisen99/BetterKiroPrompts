@@ -11,9 +11,11 @@ import (
 
 	"better-kiro-prompts/internal/api"
 	"better-kiro-prompts/internal/db"
+	"better-kiro-prompts/internal/gallery"
 	"better-kiro-prompts/internal/generation"
 	"better-kiro-prompts/internal/openai"
 	"better-kiro-prompts/internal/ratelimit"
+	"better-kiro-prompts/internal/storage"
 )
 
 func main() {
@@ -29,7 +31,21 @@ func main() {
 	}
 
 	// Initialize dependencies
-	var routerCfg *api.RouterConfig
+	routerCfg := &api.RouterConfig{}
+
+	// Initialize storage repository for gallery (only if DB is connected)
+	if db.DB != nil {
+		repo := storage.NewPostgresRepository(db.DB)
+
+		// Initialize gallery service with rating limiter (20 ratings/hour per IP)
+		ratingLimiter := ratelimit.NewLimiterWithConfig(20, time.Hour)
+		galleryService := gallery.NewService(repo, ratingLimiter)
+		routerCfg.GalleryService = galleryService
+		routerCfg.RatingLimiter = ratingLimiter
+		log.Printf("Gallery service initialized")
+	} else {
+		log.Printf("Warning: Database not connected, gallery endpoints will not be available")
+	}
 
 	// Try to create OpenAI client (optional - may not have API key in dev)
 	openaiClient, err := openai.NewClient()
@@ -39,10 +55,8 @@ func main() {
 	} else {
 		genService := generation.NewService(openaiClient)
 		rateLimiter := ratelimit.NewLimiter()
-		routerCfg = &api.RouterConfig{
-			GenerationService: genService,
-			RateLimiter:       rateLimiter,
-		}
+		routerCfg.GenerationService = genService
+		routerCfg.RateLimiter = rateLimiter
 		log.Printf("Generation service initialized")
 	}
 
