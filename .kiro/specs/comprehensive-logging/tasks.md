@@ -39,24 +39,24 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Apply redaction before any log write
     - _Requirements: 2.5, 3.5_
 
-- [ ] 2. Integrate Logger into Application Startup
-  - [ ] 2.1 Update `backend/cmd/server/main.go` to initialize logger
+- [x] 2. Integrate Logger into Application Startup
+  - [x] 2.1 Update `backend/cmd/server/main.go` to initialize logger
     - Parse LOG_LEVEL from environment (default INFO)
     - Create logger with ./logs directory
     - Pass logger to all services and handlers
     - Add startup/shutdown logging
     - _Requirements: 9.1, 9.2_
 
-  - [ ] 2.2 Update `docker-compose.yml` to mount logs directory
+  - [x] 2.2 Update `docker-compose.yml` to mount logs directory
     - Add volume mount: `./logs:/app/logs`
     - Ensure directory exists on host
     - _Requirements: 8.3_
 
-  - [ ] 2.3 Update `.gitignore` to exclude logs directory
+  - [x] 2.3 Update `.gitignore` to exclude logs directory
     - Add `logs/` entry
     - _Requirements: 8.4_
 
-  - [ ] 2.4 Create `logs/README.md` explaining log structure
+  - [x] 2.4 Create `logs/README.md` explaining log structure
     - Document file naming convention
     - Document retention policy
     - Document log levels

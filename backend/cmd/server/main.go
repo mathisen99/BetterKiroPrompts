@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,18 +14,52 @@ import (
 	"better-kiro-prompts/internal/db"
 	"better-kiro-prompts/internal/gallery"
 	"better-kiro-prompts/internal/generation"
+	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/openai"
 	"better-kiro-prompts/internal/ratelimit"
 	"better-kiro-prompts/internal/scanner"
 	"better-kiro-prompts/internal/storage"
 )
 
+const version = "1.0.0"
+
 func main() {
 	ctx := context.Background()
 
-	if err := db.Connect(ctx); err != nil {
-		log.Fatal("Failed to connect to database:", err)
+	// Initialize logger first
+	logLevel := logger.ParseLevel(os.Getenv("LOG_LEVEL"))
+	logCfg := logger.Config{
+		Level:       logLevel,
+		LogDir:      "./logs",
+		MaxSizeMB:   100,
+		MaxAgeDays:  7,
+		EnableColor: true,
 	}
+
+	appLog, err := logger.New(logCfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := appLog.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error closing logger: %v\n", err)
+		}
+	}()
+
+	appLog.App().Info("application_starting",
+		slog.String("version", version),
+		slog.String("log_level", logLevel.String()),
+		slog.String("log_dir", logCfg.LogDir),
+	)
+
+	// Database connection
+	appLog.App().Info("database_connecting")
+	if err := db.Connect(ctx); err != nil {
+		appLog.App().Error("database_connection_failed", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	appLog.App().Info("database_connected")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -43,16 +78,18 @@ func main() {
 		galleryService := gallery.NewService(repo, ratingLimiter)
 		routerCfg.GalleryService = galleryService
 		routerCfg.RatingLimiter = ratingLimiter
-		log.Printf("Gallery service initialized")
+		appLog.App().Info("gallery_service_initialized")
 	} else {
-		log.Printf("Warning: Database not connected, gallery endpoints will not be available")
+		appLog.App().Warn("gallery_service_unavailable",
+			slog.String("reason", "database not connected"))
 	}
 
 	// Try to create OpenAI client (optional - may not have API key in dev)
 	openaiClient, err := openai.NewClient()
 	if err != nil {
-		log.Printf("Warning: OpenAI client not initialized: %v", err)
-		log.Printf("Generation endpoints will not be available")
+		appLog.App().Warn("openai_client_unavailable",
+			slog.String("error", err.Error()),
+			slog.String("impact", "generation endpoints will not be available"))
 	} else {
 		// Create generation service with repository for gallery storage
 		var repo storage.Repository
@@ -63,7 +100,7 @@ func main() {
 		rateLimiter := ratelimit.NewLimiter()
 		routerCfg.GenerationService = genService
 		routerCfg.RateLimiter = rateLimiter
-		log.Printf("Generation service initialized")
+		appLog.App().Info("generation_service_initialized")
 	}
 
 	// Initialize scanner service (requires DB, OpenAI client is optional for AI review)
@@ -81,14 +118,19 @@ func main() {
 		scanRateLimiter := ratelimit.NewLimiterWithConfig(10, time.Hour)
 		routerCfg.ScannerService = scannerService
 		routerCfg.ScanRateLimiter = scanRateLimiter
-		if githubToken != "" {
-			log.Printf("Scanner service initialized with private repo support")
-		} else {
-			log.Printf("Scanner service initialized (public repos only)")
-		}
+
+		appLog.App().Info("scanner_service_initialized",
+			slog.Bool("private_repo_support", githubToken != ""))
 	} else {
-		log.Printf("Warning: Database not connected, scanner endpoints will not be available")
+		appLog.App().Warn("scanner_service_unavailable",
+			slog.String("reason", "database not connected"))
 	}
+
+	appLog.App().Info("services_initialized",
+		slog.Bool("generation_enabled", routerCfg.GenerationService != nil),
+		slog.Bool("gallery_enabled", routerCfg.GalleryService != nil),
+		slog.Bool("scanner_enabled", routerCfg.ScannerService != nil),
+	)
 
 	router := api.NewRouter(routerCfg)
 
@@ -104,15 +146,16 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		log.Printf("Server starting on port %s", port)
+		appLog.App().Info("server_starting", slog.String("port", port))
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v", err)
+			appLog.App().Error("server_error", slog.String("error", err.Error()))
+			os.Exit(1)
 		}
 	}()
 
 	// Wait for shutdown signal
 	sig := <-shutdown
-	log.Printf("Received signal %v, initiating graceful shutdown...", sig)
+	appLog.App().Info("shutdown_signal_received", slog.String("signal", sig.String()))
 
 	// Create context with timeout for graceful shutdown
 	// Allow up to 30 seconds for in-flight requests to complete
@@ -121,15 +164,15 @@ func main() {
 
 	// Attempt graceful shutdown
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Graceful shutdown error: %v", err)
+		appLog.App().Error("shutdown_error", slog.String("error", err.Error()))
 	} else {
-		log.Printf("Server gracefully stopped")
+		appLog.App().Info("server_stopped_gracefully")
 	}
 
 	// Close database connection
 	if err := db.Close(); err != nil {
-		log.Printf("Error closing database connection: %v", err)
+		appLog.App().Error("database_close_error", slog.String("error", err.Error()))
 	} else {
-		log.Printf("Database connection closed")
+		appLog.App().Info("database_connection_closed")
 	}
 }

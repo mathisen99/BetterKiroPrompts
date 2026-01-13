@@ -15,6 +15,7 @@ services:
     volumes:
       - scan-repos:/scan/repos
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./logs:/app/logs
     depends_on:
       - postgres
     networks:
