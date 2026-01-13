@@ -87,7 +87,7 @@ func main() {
 	}
 
 	// Try to create OpenAI client (optional - may not have API key in dev)
-	openaiClient, err := openai.NewClient()
+	openaiClient, err := openai.NewClient(appLog.App())
 	if err != nil {
 		appLog.App().Warn("openai_client_unavailable",
 			slog.String("error", err.Error()),

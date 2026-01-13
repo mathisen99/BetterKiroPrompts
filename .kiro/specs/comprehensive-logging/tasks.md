@@ -170,13 +170,13 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Log skip reason if skipped
     - _Requirements: 6.4_
 
-- [ ] 7. Add Logging to OpenAI Client
-  - [ ] 7.1 Update `backend/internal/openai/client.go` with logger
+- [x] 7. Add Logging to OpenAI Client
+  - [x] 7.1 Update `backend/internal/openai/client.go` with logger
     - Add logger field to Client struct
     - Update constructors to accept logger
     - _Requirements: 5.1_
 
-  - [ ] 7.2 Add logging to ChatCompletion
+  - [x] 7.2 Add logging to ChatCompletion
     - Log request_start with model, prompt_length, message_count, reasoning_effort
     - Log truncated prompt preview at DEBUG level (first 500 chars)
     - Log response_received with status_code, response_length, latency

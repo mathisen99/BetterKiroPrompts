@@ -1,12 +1,14 @@
 package openai
 
 import (
+	"better-kiro-prompts/internal/logger"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -108,14 +110,20 @@ type Client struct {
 	model           string
 	reasoningEffort ReasoningEffort
 	verbosity       Verbosity
+	log             *slog.Logger
 }
 
 // NewClient creates a new OpenAI client.
 // It loads the API key from the OPENAI_API_KEY environment variable.
-func NewClient() (*Client, error) {
+func NewClient(log *slog.Logger) (*Client, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return nil, ErrEmptyAPIKey
+	}
+
+	// Use a no-op logger if none provided
+	if log == nil {
+		log = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 
 	return &Client{
@@ -127,6 +135,7 @@ func NewClient() (*Client, error) {
 		model:           defaultModel,
 		reasoningEffort: ReasoningMedium,
 		verbosity:       VerbosityMedium,
+		log:             log,
 	}, nil
 }
 
@@ -138,6 +147,7 @@ type ClientConfig struct {
 	Timeout         time.Duration
 	ReasoningEffort ReasoningEffort
 	Verbosity       Verbosity
+	Logger          *slog.Logger
 }
 
 // NewClientWithConfig creates a new OpenAI client with custom configuration.
@@ -162,6 +172,12 @@ func NewClientWithConfig(cfg ClientConfig) (*Client, error) {
 		cfg.Verbosity = VerbosityMedium
 	}
 
+	// Use a no-op logger if none provided
+	log := cfg.Logger
+	if log == nil {
+		log = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+
 	return &Client{
 		apiKey: cfg.APIKey,
 		httpClient: &http.Client{
@@ -171,6 +187,7 @@ func NewClientWithConfig(cfg ClientConfig) (*Client, error) {
 		model:           cfg.Model,
 		reasoningEffort: cfg.ReasoningEffort,
 		verbosity:       cfg.Verbosity,
+		log:             log,
 	}, nil
 }
 
@@ -200,8 +217,38 @@ func (c *Client) ChatCompletion(ctx context.Context, messages []Message) (string
 
 // ChatCompletionWithModel sends a request using a specific model.
 func (c *Client) ChatCompletionWithModel(ctx context.Context, messages []Message, model string) (string, error) {
+	requestID := logger.GetRequestID(ctx)
+	start := time.Now()
+
 	if len(messages) == 0 {
 		return "", ErrEmptyInput
+	}
+
+	// Calculate prompt metrics
+	promptLength := 0
+	for _, m := range messages {
+		promptLength += len(m.Content)
+	}
+
+	c.log.Info("openai_request_start",
+		slog.String("request_id", requestID),
+		slog.String("model", model),
+		slog.Int("prompt_length", promptLength),
+		slog.Int("message_count", len(messages)),
+		slog.String("reasoning_effort", string(c.reasoningEffort)),
+	)
+
+	// Debug: truncated preview (first 500 chars of last message)
+	if len(messages) > 0 {
+		lastMsg := messages[len(messages)-1].Content
+		preview := lastMsg
+		if len(preview) > 500 {
+			preview = preview[:500] + "..."
+		}
+		c.log.Debug("openai_request_preview",
+			slog.String("request_id", requestID),
+			slog.String("prompt_preview", preview),
+		)
 	}
 
 	// Convert messages to Responses API input format
@@ -220,11 +267,21 @@ func (c *Client) ChatCompletionWithModel(ctx context.Context, messages []Message
 
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
+		c.log.Error("openai_request_marshal_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("failed to marshal request: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/responses", bytes.NewReader(jsonBody))
 	if err != nil {
+		c.log.Error("openai_request_create_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
@@ -234,40 +291,102 @@ func (c *Client) ChatCompletionWithModel(ctx context.Context, messages []Message
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
+			c.log.Error("openai_request_timeout",
+				slog.String("request_id", requestID),
+				slog.String("error", err.Error()),
+				slog.Duration("duration", time.Since(start)),
+			)
 			return "", fmt.Errorf("request timed out: %w", err)
 		}
+		c.log.Error("openai_request_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("%w: %v", ErrRequestFailed, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		c.log.Error("openai_response_read_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("failed to read response: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		var errResp ResponsesResponse
 		if json.Unmarshal(body, &errResp) == nil && errResp.Error != nil {
+			c.log.Error("openai_response_error",
+				slog.String("request_id", requestID),
+				slog.Int("status_code", resp.StatusCode),
+				slog.String("error_type", errResp.Error.Type),
+				slog.String("error_message", errResp.Error.Message),
+				slog.Duration("latency", time.Since(start)),
+			)
 			return "", fmt.Errorf("%w: %s", ErrRequestFailed, errResp.Error.Message)
 		}
+		c.log.Error("openai_response_error",
+			slog.String("request_id", requestID),
+			slog.Int("status_code", resp.StatusCode),
+			slog.Duration("latency", time.Since(start)),
+		)
 		return "", fmt.Errorf("%w: status %d: %s", ErrRequestFailed, resp.StatusCode, string(body))
 	}
 
 	var responsesResp ResponsesResponse
 	if err := json.Unmarshal(body, &responsesResp); err != nil {
+		c.log.Error("openai_response_parse_failed",
+			slog.String("request_id", requestID),
+			slog.String("error", err.Error()),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("%w: %v", ErrInvalidResponse, err)
 	}
 
+	c.log.Info("openai_response_received",
+		slog.String("request_id", requestID),
+		slog.Int("status_code", resp.StatusCode),
+		slog.Int("response_length", len(body)),
+		slog.Duration("latency", time.Since(start)),
+	)
+
 	// Use the convenience output_text field if available
 	if responsesResp.OutputText != "" {
+		// Debug: truncated response preview
+		preview := responsesResp.OutputText
+		if len(preview) > 500 {
+			preview = preview[:500] + "..."
+		}
+		c.log.Debug("openai_response_preview",
+			slog.String("request_id", requestID),
+			slog.String("response_preview", preview),
+		)
 		return responsesResp.OutputText, nil
 	}
 
 	// Fall back to extracting from output array
 	text := extractTextFromResponse(responsesResp)
 	if text == "" {
+		c.log.Error("openai_response_empty",
+			slog.String("request_id", requestID),
+			slog.Duration("duration", time.Since(start)),
+		)
 		return "", fmt.Errorf("%w: no text content in response", ErrInvalidResponse)
 	}
+
+	// Debug: truncated response preview
+	preview := text
+	if len(preview) > 500 {
+		preview = preview[:500] + "..."
+	}
+	c.log.Debug("openai_response_preview",
+		slog.String("request_id", requestID),
+		slog.String("response_preview", preview),
+	)
 
 	return text, nil
 }
