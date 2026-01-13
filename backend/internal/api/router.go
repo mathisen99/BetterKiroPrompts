@@ -8,6 +8,7 @@ import (
 
 	"better-kiro-prompts/internal/gallery"
 	"better-kiro-prompts/internal/generation"
+	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/ratelimit"
 	"better-kiro-prompts/internal/scanner"
 )
@@ -20,6 +21,7 @@ type RouterConfig struct {
 	RatingLimiter     *ratelimit.Limiter
 	ScannerService    *scanner.Service
 	ScanRateLimiter   *ratelimit.Limiter
+	Logger            *logger.Logger
 }
 
 // NewRouter creates a new HTTP router with all API routes.
@@ -60,10 +62,18 @@ func NewRouter(cfg *RouterConfig) http.Handler {
 
 	// Apply middleware chain: Recovery -> RequestID -> Logging
 	// Order matters: Recovery is outermost to catch panics from all handlers
+	// Logger is required for Recovery and Logging middleware
+	if cfg != nil && cfg.Logger != nil {
+		return Chain(mux,
+			RecoveryMiddleware(cfg.Logger),
+			RequestIDMiddleware,
+			LoggingMiddleware(cfg.Logger),
+		)
+	}
+
+	// Fallback without logging (for testing or when logger is not configured)
 	return Chain(mux,
-		RecoveryMiddleware,
 		RequestIDMiddleware,
-		LoggingMiddleware,
 	)
 }
 

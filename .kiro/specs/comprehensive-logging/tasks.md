@@ -62,20 +62,20 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Document log levels
     - _Requirements: 8.5_
 
-- [ ] 3. Update HTTP Middleware with Logging
-  - [ ] 3.1 Update `backend/internal/api/middleware.go` LoggingMiddleware
+- [x] 3. Update HTTP Middleware with Logging
+  - [x] 3.1 Update `backend/internal/api/middleware.go` LoggingMiddleware
     - Accept logger as parameter
     - Log request_start with method, path, query, remote_addr, user_agent, content_length
     - Log request_complete with status, duration, bytes_written
     - Log security events (rate limits, validation failures)
     - _Requirements: 2.1, 2.3_
 
-  - [ ] 3.2 Update `backend/internal/api/middleware.go` RequestIDMiddleware
+  - [x] 3.2 Update `backend/internal/api/middleware.go` RequestIDMiddleware
     - Use logger context helpers
     - Ensure request ID propagates to all downstream operations
     - _Requirements: 2.2, 2.4_
 
-  - [ ] 3.3 Update `backend/internal/api/router.go` to pass logger to middleware
+  - [x] 3.3 Update `backend/internal/api/router.go` to pass logger to middleware
     - Update NewRouter to accept logger
     - Pass logger to LoggingMiddleware
     - _Requirements: 2.1_

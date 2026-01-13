@@ -67,7 +67,9 @@ func main() {
 	}
 
 	// Initialize dependencies
-	routerCfg := &api.RouterConfig{}
+	routerCfg := &api.RouterConfig{
+		Logger: appLog,
+	}
 
 	// Initialize storage repository for gallery (only if DB is connected)
 	if db.DB != nil {
