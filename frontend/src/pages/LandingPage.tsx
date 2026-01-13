@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { generateQuestions, generateOutputs, ApiError } from '@/lib/api'
 import type { Question, GeneratedFile, Answer, ExperienceLevel, HookPreset } from '@/lib/api'
 import * as storage from '@/lib/storage'
@@ -12,6 +12,11 @@ import { RateLimitCountdown } from '@/components/shared/RateLimitCountdown'
 import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector'
 import { HookPresetSelector } from '@/components/HookPresetSelector'
 import { RestorePrompt } from '@/components/shared/RestorePrompt'
+import { SuccessCelebration } from '@/components/shared/SuccessCelebration'
+
+interface LandingPageProps {
+  onPhaseChange?: (phase: Phase) => void
+}
 
 interface LandingPageState {
   phase: Phase
@@ -27,6 +32,7 @@ interface LandingPageState {
   retryAfter: number | null
   showRestorePrompt: boolean
   pendingRestore: SessionState | null
+  showCelebration: boolean
 }
 
 const EXAMPLE_IDEAS = [
@@ -134,11 +140,17 @@ function createInitialState(): LandingPageState {
     retryAfter: null,
     showRestorePrompt: hasRestorableState,
     pendingRestore: hasRestorableState ? savedState : null,
+    showCelebration: false,
   }
 }
 
-export function LandingPage() {
+export function LandingPage({ onPhaseChange }: LandingPageProps) {
   const [state, setState] = useState<LandingPageState>(createInitialState)
+
+  // Notify parent of phase changes
+  useEffect(() => {
+    onPhaseChange?.(state.phase)
+  }, [state.phase, onPhaseChange])
 
   const handleRestoreAccept = useCallback(() => {
     setState(prev => {
@@ -265,11 +277,12 @@ export function LandingPage() {
       // Clear saved state on successful generation
       storage.clear()
       
+      // Show celebration first, then transition to output
       setState(prev => ({
         ...prev,
-        phase: 'output',
         generatedFiles: response.files,
         editedFiles: new Map(),
+        showCelebration: true,
       }))
     } catch (err) {
       const { message, retryAfter } = getErrorMessage(err)
@@ -281,6 +294,14 @@ export function LandingPage() {
       }))
     }
   }, [state.answers, state.projectIdea, state.experienceLevel, state.hookPreset])
+
+  const handleCelebrationComplete = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      phase: 'output',
+      showCelebration: false,
+    }))
+  }, [])
 
   const handleEdit = useCallback((path: string, content: string) => {
     setState(prev => {
@@ -321,15 +342,22 @@ export function LandingPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {/* Success celebration overlay */}
+      {state.showCelebration && (
+        <SuccessCelebration onComplete={handleCelebrationComplete} />
+      )}
+
       {state.phase === 'level-select' && (
-        <ExperienceLevelSelector
-          onSelect={handleExperienceLevelSelect}
-          selected={state.experienceLevel ?? undefined}
-        />
+        <div className="animate-phase-enter">
+          <ExperienceLevelSelector
+            onSelect={handleExperienceLevelSelect}
+            selected={state.experienceLevel ?? undefined}
+          />
+        </div>
       )}
 
       {state.phase === 'input' && (
-        <div className="space-y-8">
+        <div className="animate-phase-enter space-y-8">
           <ProjectInput
             onSubmit={handleProjectSubmit}
             loading={false}
@@ -343,40 +371,46 @@ export function LandingPage() {
       )}
 
       {state.phase === 'questions' && (
-        <QuestionFlow
-          questions={state.questions}
-          answers={state.answers}
-          currentIndex={state.currentQuestionIndex}
-          onAnswer={handleAnswer}
-          onBack={handleBack}
-          onNext={handleNext}
-          onComplete={handleQuestionsComplete}
-        />
+        <div className="animate-phase-enter">
+          <QuestionFlow
+            questions={state.questions}
+            answers={state.answers}
+            currentIndex={state.currentQuestionIndex}
+            onAnswer={handleAnswer}
+            onBack={handleBack}
+            onNext={handleNext}
+            onComplete={handleQuestionsComplete}
+          />
+        </div>
       )}
 
       {state.phase === 'generating' && (
-        <LoadingState
-          message={
-            state.questions.length === 0
-              ? 'Generating questions for your project...'
-              : 'Generating your Kiro files...'
-          }
-          estimatedTime="up to 60 seconds"
-        />
+        <div className="animate-phase-enter">
+          <LoadingState
+            message={
+              state.questions.length === 0
+                ? 'Generating questions for your project...'
+                : 'Generating your Kiro files...'
+            }
+            estimatedTime="up to 60 seconds"
+          />
+        </div>
       )}
 
       {state.phase === 'output' && (
-        <OutputEditor
-          files={state.generatedFiles}
-          editedFiles={state.editedFiles}
-          onEdit={handleEdit}
-          onReset={handleReset}
-          getFileContent={getFileContent}
-        />
+        <div className="animate-phase-enter">
+          <OutputEditor
+            files={state.generatedFiles}
+            editedFiles={state.editedFiles}
+            onEdit={handleEdit}
+            onReset={handleReset}
+            getFileContent={getFileContent}
+          />
+        </div>
       )}
 
       {state.phase === 'error' && (
-        <div className="py-8 space-y-4">
+        <div className="animate-phase-enter py-8 space-y-4">
           <ErrorMessage message={state.error ?? 'An unexpected error occurred'} />
           {state.retryAfter ? (
             <RateLimitCountdown retryAfterSeconds={state.retryAfter} />

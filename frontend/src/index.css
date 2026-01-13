@@ -178,3 +178,88 @@ html {
 .animate-cloud-drift-fast {
   animation: cloud-drift-fast 50s linear infinite;
 }
+
+
+/* Phase transition animations */
+@keyframes phase-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes phase-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-phase-enter {
+  animation: phase-enter 0.3s ease-out forwards;
+}
+
+.animate-phase-exit {
+  animation: phase-exit 0.2s ease-in forwards;
+}
+
+/* Smooth content transitions */
+.phase-content {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.phase-content-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.phase-content-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* Success celebration animations */
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-confetti {
+  animation: confetti ease-out forwards;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.6s ease-out forwards;
+}
