@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExampleAnswers } from '@/components/ExampleAnswers'
 import type { Question } from '@/lib/api'
+import { logger } from '@/lib/logger'
 import { ArrowLeft, ArrowRight, CheckCircle2, MessageSquare, Send } from 'lucide-react'
 
 interface QuestionFlowProps {
@@ -42,8 +43,10 @@ export function QuestionFlow({
     onAnswer(currentQuestion.id, trimmed)
 
     if (isLastQuestion) {
+      logger.info(`Question flow completed - all ${questions.length} questions answered`, 'QuestionFlow')
       onComplete()
     } else {
+      logger.debug(`Question ${currentIndex + 1}/${questions.length} answered, moving to next`, 'QuestionFlow')
       onNext()
       // Pre-fill next answer if it exists
       const nextQuestion = questions[currentIndex + 1]
@@ -57,6 +60,7 @@ export function QuestionFlow({
       onAnswer(currentQuestion.id, currentAnswer.trim())
     }
     const prevQuestion = questions[currentIndex - 1]
+    logger.debug(`Navigating back from question ${currentIndex + 1} to ${currentIndex}`, 'QuestionFlow')
     onBack(prevQuestion.id)
     setCurrentAnswer(answers.get(prevQuestion.id) ?? '')
   }

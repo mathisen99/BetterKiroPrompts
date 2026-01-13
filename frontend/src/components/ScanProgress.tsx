@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { GitBranch, Search, Bot, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import type { ScanJob, ScanStatus } from '@/lib/api'
+import { logger } from '@/lib/logger'
 
 interface ScanProgressProps {
   job: ScanJob
@@ -56,6 +57,20 @@ const steps = ['Clone', 'Scan', 'Review', 'Done']
 
 export function ScanProgress({ job }: ScanProgressProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const previousStatus = useRef<ScanStatus | null>(null)
+  
+  // Log status changes
+  useEffect(() => {
+    if (previousStatus.current !== job.status) {
+      const config = statusConfig[job.status]
+      logger.info(`Scan status changed: ${job.status} - ${config.label}`, 'ScanProgress', {
+        jobId: job.id,
+        repoUrl: job.repo_url,
+        step: config.step,
+      })
+      previousStatus.current = job.status
+    }
+  }, [job.status, job.id, job.repo_url])
   
   // Track elapsed time
   useEffect(() => {

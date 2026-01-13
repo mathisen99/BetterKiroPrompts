@@ -228,8 +228,8 @@ This plan implements comprehensive file-based logging across the entire applicat
     - No rate limiting (logs are important)
     - _Requirements: 7.5_
 
-- [ ] 11. Add Frontend Log Collector
-  - [ ] 11.1 Create `frontend/src/lib/logger.ts` with LogCollector class
+- [x] 11. Add Frontend Log Collector
+  - [x] 11.1 Create `frontend/src/lib/logger.ts` with LogCollector class
     - Buffer for log entries
     - setupErrorHandlers for window.onerror and unhandledrejection
     - log(), debug(), info(), warn(), error() methods
@@ -238,18 +238,18 @@ This plan implements comprehensive file-based logging across the entire applicat
     - Colored console output
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [ ] 11.2 Update `frontend/src/lib/api.ts` to use logger
+  - [x] 11.2 Update `frontend/src/lib/api.ts` to use logger
     - Import logger
     - Add logApiCall after each fetch
     - Log errors on failures
     - _Requirements: 7.3_
 
-  - [ ] 11.3 Update `frontend/src/components/shared/ErrorBoundary.tsx` to use logger
+  - [x] 11.3 Update `frontend/src/components/shared/ErrorBoundary.tsx` to use logger
     - Import logger
     - Log React errors in componentDidCatch
     - _Requirements: 7.2_
 
-  - [ ] 11.4 Add logging to key frontend components
+  - [x] 11.4 Add logging to key frontend components
     - QuestionFlow: log phase transitions
     - OutputEditor: log file operations
     - ScanProgress: log scan status changes

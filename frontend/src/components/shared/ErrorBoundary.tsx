@@ -1,5 +1,6 @@
-import { Component, type ReactNode } from 'react'
+import { Component, type ReactNode, type ErrorInfo } from 'react'
 import { Button } from '@/components/ui/button'
+import { logger } from '@/lib/logger'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -18,6 +19,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // Log React errors to the backend
+    logger.logReactError(error, { componentStack: errorInfo.componentStack ?? undefined })
   }
 
   handleRetry = () => {

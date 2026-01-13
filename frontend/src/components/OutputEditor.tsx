@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import type { GeneratedFile } from '@/lib/api'
 import { downloadAllAsZip } from '@/lib/zip'
+import { logger } from '@/lib/logger'
 import { Copy, Download, FileText, FolderCog, Webhook, RotateCcw, Package, Bot, Eye, Pencil, ExternalLink } from 'lucide-react'
 import { SyntaxHighlighter } from './SyntaxHighlighter'
 import { detectLanguage } from '@/lib/syntax'
@@ -62,6 +63,7 @@ export function OutputEditor({
   const handleCopy = async (path: string) => {
     const content = getFileContent(path)
     await navigator.clipboard.writeText(content)
+    logger.debug(`File copied to clipboard: ${path}`, 'OutputEditor')
     toast.success('Copied to clipboard')
   }
 
@@ -75,6 +77,7 @@ export function OutputEditor({
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+    logger.info(`File downloaded: ${filename}`, 'OutputEditor')
     toast.success('Downloaded successfully')
   }
 
@@ -84,6 +87,7 @@ export function OutputEditor({
       content: getFileContent(file.path),
     }))
     downloadAllAsZip(filesWithContent)
+    logger.info(`All files downloaded as ZIP (${files.length} files)`, 'OutputEditor')
     toast.success('ZIP downloaded successfully')
   }
 

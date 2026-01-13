@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 const API_BASE = '/api'
 
 // Default timeout for API requests (180 seconds as per Requirements 4.2)
@@ -92,6 +94,8 @@ async function fetchWithRetry<T>(
   timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<T> {
   let lastError: ApiError | null = null
+  const startTime = Date.now()
+  const method = options.method || 'GET'
   
   // Try up to 2 times (initial + 1 retry)
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -104,10 +108,14 @@ async function fetchWithRetry<T>(
       })
       
       clearTimeout(timeoutId)
+      const duration = Date.now() - startTime
       
       if (!res.ok) {
         const error: ErrorResponse = await res.json().catch(() => ({ error: errorMessage }))
         const apiError = new ApiError(error.error, res.status, error.retryAfter)
+        
+        // Log the failed API call
+        logger.logApiCall(method, url, res.status, duration)
         
         // Only retry on recoverable errors and first attempt
         if (isRecoverableError(res.status) && attempt === 0) {
@@ -118,13 +126,21 @@ async function fetchWithRetry<T>(
         throw apiError
       }
       
+      // Log successful API call
+      logger.logApiCall(method, url, res.status, duration)
+      
       return res.json()
     } catch (err) {
       clearTimeout(timeoutId)
+      const duration = Date.now() - startTime
       
       // Handle abort/timeout errors
       if (err instanceof DOMException && err.name === 'AbortError') {
         const timeoutError = new ApiError('Request timed out. Please try again.', 504, undefined, true)
+        
+        // Log timeout
+        logger.logApiCall(method, url, 504, duration)
+        logger.error(`API timeout: ${method} ${url} after ${duration}ms`, undefined, 'api')
         
         // Retry once on timeout
         if (attempt === 0) {
@@ -146,6 +162,7 @@ async function fetchWithRetry<T>(
       
       // Network errors (TypeError from fetch) - retry once
       if (err instanceof TypeError && attempt === 0) {
+        logger.error(`Network error: ${method} ${url} - ${err.message}`, undefined, 'api')
         lastError = new ApiError('Network error', 0)
         continue
       }
