@@ -132,128 +132,128 @@ This plan implements a centralized TOML configuration system and comprehensive d
   - Clarify which values go where (secrets in .env, settings in config.toml)
   - _Requirements: 8.1-8.6_
 
-- [ ] 13. Create developer documentation
-  - [ ] 13.1 Write architecture overview
+- [x] 13. Create developer documentation
+  - [x] 13.1 Write architecture overview
     - Create `docs/developer.md`
     - Include architecture diagram (Mermaid)
     - Explain component relationships
     - _Requirements: 5.1_
 
-  - [ ] 13.2 Document backend packages
+  - [x] 13.2 Document backend packages
     - Explain each package in backend/internal/
     - Include purpose and key interfaces
     - _Requirements: 5.2_
 
-  - [ ] 13.3 Document frontend structure
+  - [x] 13.3 Document frontend structure
     - Explain pages, components, and lib folders
     - Include component hierarchy
     - _Requirements: 5.3_
 
-  - [ ] 13.4 Document API endpoints
+  - [x] 13.4 Document API endpoints
     - Update `docs/api.md` with complete endpoint list
     - Include request/response examples
     - _Requirements: 5.4_
 
-  - [ ] 13.5 Document database schema
+  - [x] 13.5 Document database schema
     - Explain tables and relationships
     - Document migration process
     - _Requirements: 5.5_
 
-  - [ ] 13.6 Document logging system
+  - [x] 13.6 Document logging system
     - Explain log categories and files
     - Document log format and levels
     - _Requirements: 5.6_
 
-  - [ ] 13.7 Document customization
+  - [x] 13.7 Document customization
     - Explain how to add features
     - Document AI prompt customization
     - _Requirements: 5.7, 5.8_
 
-- [ ] 14. Create self-hosting guide
-  - [ ] 14.1 Write configuration reference
+- [x] 14. Create self-hosting guide
+  - [x] 14.1 Write configuration reference
     - Create `docs/self-hosting.md`
     - Document all config.toml options with descriptions
     - Include default values and valid ranges
     - _Requirements: 6.1_
 
-  - [ ] 14.2 Write example configurations
+  - [x] 14.2 Write example configurations
     - Minimal config (generation only)
     - Full-featured config (all features)
     - High-security config (strict limits)
     - _Requirements: 6.2_
 
-  - [ ] 14.3 Document database setup
+  - [x] 14.3 Document database setup
     - PostgreSQL installation and configuration
     - Migration instructions
     - _Requirements: 6.3_
 
-  - [ ] 14.4 Document OpenAI setup
+  - [x] 14.4 Document OpenAI setup
     - API key configuration
     - Model selection guidance
     - _Requirements: 6.4_
 
-  - [ ] 14.5 Document private repo scanning
+  - [x] 14.5 Document private repo scanning
     - GitHub token setup
     - Permissions required
     - _Requirements: 6.5_
 
-  - [ ] 14.6 Document resource requirements
+  - [x] 14.6 Document resource requirements
     - CPU, memory, disk recommendations
     - Scaling considerations
     - _Requirements: 6.6_
 
-  - [ ] 14.7 Document maintenance
+  - [x] 14.7 Document maintenance
     - Backup procedures
     - Log rotation
     - Database cleanup
     - _Requirements: 6.7_
 
-  - [ ] 14.8 Document scanner customization
+  - [x] 14.8 Document scanner customization
     - Adding/removing security tools
     - Adjusting tool configurations
     - _Requirements: 6.8_
 
-- [ ] 15. Update README
-  - [ ] 15.1 Write project overview
+- [x] 15. Update README
+  - [x] 15.1 Write project overview
     - Clear explanation of what BetterKiroPrompts does
     - Target audience (beginners, self-hosters)
     - _Requirements: 4.1_
 
-  - [ ] 15.2 Write prerequisites section
+  - [x] 15.2 Write prerequisites section
     - Exact version requirements
     - Required tools (Docker, Node.js, Go)
     - _Requirements: 4.2_
 
-  - [ ] 15.3 Write quick start guide
+  - [x] 15.3 Write quick start guide
     - Copy-paste commands
     - Minimal steps to get running
     - _Requirements: 4.3_
 
-  - [ ] 15.4 Write project structure
+  - [x] 15.4 Write project structure
     - Directory layout
     - Key files explained
     - _Requirements: 4.4_
 
-  - [ ] 15.5 Add documentation links
+  - [x] 15.5 Add documentation links
     - Link to api.md, developer.md, self-hosting.md
     - _Requirements: 4.5_
 
-  - [ ] 15.6 Write configuration section
+  - [x] 15.6 Write configuration section
     - Explain .env vs config.toml
     - Quick reference for common settings
     - _Requirements: 4.6_
 
-  - [ ] 15.7 Write troubleshooting section
+  - [x] 15.7 Write troubleshooting section
     - Common errors and solutions
     - API key issues, database connection, timeouts
     - _Requirements: 4.7_
 
-  - [ ] 15.8 Document main features
+  - [x] 15.8 Document main features
     - Generation, Gallery, Security Scanning
     - Brief description of each
     - _Requirements: 4.8_
 
-- [ ] 16. Final checkpoint
+- [x] 16. Final checkpoint
   - Run full test suite
   - Verify documentation accuracy
   - Test fresh install with documentation

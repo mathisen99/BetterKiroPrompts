@@ -2,30 +2,151 @@
 
 A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking—not write applications for them.
 
+## What It Does
+
+BetterKiroPrompts helps developers (especially beginners) create high-quality Kiro configurations through an AI-driven workflow:
+
+1. **Enter your project idea** — Describe what you want to build
+2. **Answer contextual questions** — AI generates questions tailored to your experience level
+3. **Get tailored outputs** — Receive kickoff prompts, steering files, hooks, and AGENTS.md
+
+The generated files help Kiro understand your project context, enforce coding standards, and guide you through development without writing code for you.
+
+### Target Audience
+
+- **Beginners** learning to use Kiro effectively
+- **Teams** wanting consistent project scaffolding
+- **Self-hosters** running their own instance for private use
+
+## Features
+
+### AI-Driven Generation
+Enter your project idea, select your experience level (beginner/novice/expert), and answer AI-generated questions. The system produces:
+- **Kickoff Prompt** — Structured project context for Kiro
+- **Steering Files** — Rules and guidelines in `.kiro/steering/`
+- **Hooks** — Automated actions in `.kiro/hooks/`
+- **AGENTS.md** — Agent behavior documentation
+
+### Public Gallery
+Browse community-generated outputs for inspiration. Rate and filter by category, popularity, or recency.
+
+### Security Scanning
+Scan GitHub repositories for vulnerabilities using multiple security tools (Trivy, Semgrep, TruffleHog, Gitleaks) plus AI-powered code review.
+
 ## Prerequisites
 
-- Docker Engine 29.1.3+
-- Docker Compose 5.0.1+
-- Node.js 24.12.0+ (for local frontend development)
-- pnpm (for frontend package management)
+| Tool | Version | Required |
+|------|---------|----------|
+| Docker Engine | 29.1.3+ | Yes |
+| Docker Compose | 5.0.1+ | Yes |
+| Go | 1.25.5+ | For local development only |
+| Node.js | 24.12.0+ | For local development only |
+| pnpm | Latest | For local development only |
+| PostgreSQL | 18.1+ | Included in Docker Compose |
 
 ## Quick Start
 
 ```bash
-# Clone and enter directory
+# Clone the repository
 git clone <repo-url>
 cd Better-Kiro-Prompts
 
-# Copy environment file
+# Configure secrets
 cp .env.example .env
+# Edit .env and set your OPENAI_API_KEY
+
+# (Optional) Customize settings
+cp config.example.toml config.toml
 
 # Start all services
 ./build.sh up
 ```
 
-The app will be available at:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8080
+Open http://localhost:8080 in your browser.
+
+### Production Deployment
+
+```bash
+./build.sh --prod --build -d up
+```
+
+## Project Structure
+
+```
+/
+├── backend/                    # Go backend
+│   ├── cmd/server/main.go      # Application entry point
+│   ├── internal/
+│   │   ├── api/                # HTTP handlers and middleware
+│   │   ├── config/             # Configuration loading
+│   │   ├── db/                 # Database connection and migrations
+│   │   ├── gallery/            # Gallery service
+│   │   ├── generation/         # AI generation service
+│   │   ├── logger/             # Structured logging
+│   │   ├── openai/             # OpenAI API client
+│   │   ├── prompts/            # AI prompt templates
+│   │   ├── queue/              # Request queuing
+│   │   ├── ratelimit/          # Rate limiting
+│   │   ├── sanitize/           # Input sanitization
+│   │   ├── scanner/            # Security scanning
+│   │   └── storage/            # Data persistence
+│   └── migrations/             # Database migrations
+├── frontend/                   # React frontend
+│   ├── src/
+│   │   ├── components/         # React components
+│   │   ├── pages/              # Page components
+│   │   └── lib/                # API client, utilities
+│   └── package.json
+├── docs/                       # Documentation
+│   ├── api.md                  # API reference
+│   ├── developer.md            # Architecture and customization
+│   ├── self-hosting.md         # Deployment guide
+│   └── user-guide.md           # User documentation
+├── .kiro/                      # Kiro configuration
+│   ├── steering/               # Project steering files
+│   ├── specs/                  # Feature specifications
+│   └── hooks/                  # Kiro hooks
+├── config.example.toml         # Configuration template
+├── .env.example                # Environment variables template
+├── docker-compose.yml          # Development stack
+├── docker-compose.prod.yml     # Production stack
+└── build.sh                    # Build and run script
+```
+
+## Configuration
+
+BetterKiroPrompts uses a two-file configuration approach:
+
+| File | Purpose | Contains |
+|------|---------|----------|
+| `.env` | Secrets | API keys, tokens, database credentials |
+| `config.toml` | Settings | Ports, timeouts, limits, feature toggles |
+
+### Quick Reference
+
+**Required in `.env`:**
+```bash
+OPENAI_API_KEY=sk-your-api-key-here
+DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
+```
+
+**Common `config.toml` settings:**
+```toml
+[server]
+port = 8080
+
+[openai]
+model = "gpt-4"              # Or "gpt-5.2" for best quality
+timeout = "180s"
+
+[rate_limit]
+generation_limit_per_hour = 10
+
+[logging]
+level = "INFO"               # DEBUG, INFO, WARN, ERROR
+```
+
+See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration reference.
 
 ## Development Commands
 
@@ -40,37 +161,71 @@ The app will be available at:
 ./build.sh clean                 # Remove build artifacts
 ```
 
-## Project Structure
+## Documentation
 
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/api.md) | Complete API endpoint documentation |
+| [Developer Guide](docs/developer.md) | Architecture, packages, and customization |
+| [Self-Hosting Guide](docs/self-hosting.md) | Deployment and configuration |
+| [User Guide](docs/user-guide.md) | How to use the generated outputs |
+
+## Troubleshooting
+
+### "OPENAI_API_KEY not set"
+Ensure `.env` exists and contains your API key:
+```bash
+cat .env | grep OPENAI_API_KEY
+./build.sh down && ./build.sh up  # Restart to pick up changes
 ```
-/
-├── backend/
-│   ├── cmd/server/main.go       # Entry point
-│   ├── internal/api/            # HTTP handlers
-│   ├── internal/generator/      # Prompt/steering/hooks generation
-│   ├── internal/templates/      # Embedded templates
-│   └── migrations/              # Database migrations
-├── frontend/
-│   ├── src/components/          # React components
-│   ├── src/pages/               # Page components
-│   └── src/lib/                 # API client, utilities
-├── docs/
-│   ├── api.md                   # API documentation
-│   └── user-guide.md            # User guide
-└── .kiro/
-    ├── steering/                # Project steering files
-    ├── specs/                   # Feature specifications
-    └── hooks/                   # Kiro hooks
+
+### "Database connection refused"
+Check PostgreSQL is running:
+```bash
+docker ps | grep postgres
+docker logs better-kiro-prompts-postgres-1
+```
+
+### "Rate limit exceeded"
+Wait for the rate limit window to reset (1 hour), or increase limits in `config.toml`:
+```toml
+[rate_limit]
+generation_limit_per_hour = 20
+```
+
+### "AI generation timeout"
+Increase the timeout in `config.toml`:
+```toml
+[openai]
+timeout = "300s"
+```
+
+### "Repository too large" (Scanner)
+Increase the size limit in `config.toml`:
+```toml
+[scanner]
+max_repo_size_mb = 1000
+```
+
+### Debug Mode
+Enable debug logging for more detail:
+```toml
+[logging]
+level = "DEBUG"
+```
+
+Or via environment variable:
+```bash
+LOG_LEVEL=DEBUG ./build.sh up
 ```
 
 ## Tech Stack
 
-- Backend: Go 1.25.5
-- Frontend: React 19.2.3 + Vite 7.3.1 + shadcn/ui
-- Database: PostgreSQL 18.1
-- Containerization: Docker Compose
+- **Backend:** Go 1.25.5
+- **Frontend:** React 19.2.3 + Vite 7.3.1 + shadcn/ui 0.9.5
+- **Database:** PostgreSQL 18.1
+- **Containerization:** Docker Compose 5.0.1
 
-## Documentation
+## License
 
-- [API Documentation](docs/api.md)
-- [User Guide](docs/user-guide.md)
+See [LICENSE](LICENSE) for details.
