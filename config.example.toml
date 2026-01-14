@@ -1,0 +1,193 @@
+# =============================================================================
+# BetterKiroPrompts Configuration
+# =============================================================================
+#
+# This file contains all configurable settings for BetterKiroPrompts.
+# Copy this file to `config.toml` and modify as needed.
+#
+# Configuration precedence (highest to lowest):
+#   1. Environment variables (for secrets and overrides)
+#   2. config.toml values
+#   3. Default values (shown below)
+#
+# Secrets (API keys, tokens) should be set via environment variables in .env,
+# NOT in this file. See .env.example for secret configuration.
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Server Configuration
+# -----------------------------------------------------------------------------
+# HTTP server settings for the backend API.
+
+[server]
+# Port to listen on (1-65535)
+# Can be overridden with PORT environment variable
+port = 8080
+
+# Host/IP address to bind to
+# Use "0.0.0.0" to listen on all interfaces
+# Use "127.0.0.1" to only allow local connections
+host = "0.0.0.0"
+
+# Graceful shutdown timeout
+# How long to wait for active requests to complete before forcing shutdown
+# Format: Go duration string (e.g., "30s", "1m", "1m30s")
+shutdown_timeout = "30s"
+
+# -----------------------------------------------------------------------------
+# OpenAI Configuration
+# -----------------------------------------------------------------------------
+# Settings for OpenAI API integration.
+# Note: OPENAI_API_KEY must be set via environment variable, not here.
+
+[openai]
+# Model for question generation and output generation
+# Examples: "gpt-4", "gpt-4-turbo", "gpt-5.2"
+model = "gpt-5.2"
+
+# Model for security code review (optimized for code analysis)
+# This model is used by the security scanner for AI-powered code review
+code_review_model = "gpt-5.1-codex-max"
+
+# OpenAI API base URL
+# Change this if using a compatible API endpoint (e.g., Azure OpenAI)
+base_url = "https://api.openai.com/v1"
+
+# Request timeout for OpenAI API calls
+# Should be generous as generation can take time
+# Minimum: 10s
+timeout = "180s"
+
+# Reasoning effort level for AI responses
+# Options: "none", "low", "medium", "high", "xhigh"
+# Higher values may produce more thoughtful responses but take longer
+reasoning_effort = "medium"
+
+# Output verbosity level
+# Options: "low", "medium", "high"
+# Controls how detailed the generated outputs are
+verbosity = "medium"
+
+# -----------------------------------------------------------------------------
+# Rate Limiting Configuration
+# -----------------------------------------------------------------------------
+# Per-IP rate limits to prevent abuse.
+# All limits are per hour.
+
+[rate_limit]
+# Maximum AI generations per IP per hour
+# Can be overridden with RATE_LIMIT_GENERATION environment variable
+generation_limit_per_hour = 10
+
+# Maximum gallery ratings per IP per hour
+# Can be overridden with RATE_LIMIT_RATING environment variable
+rating_limit_per_hour = 20
+
+# Maximum security scans per IP per hour
+# Can be overridden with RATE_LIMIT_SCAN environment variable
+scan_limit_per_hour = 10
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+# Structured logging settings.
+# Logs are written to separate files by category (app, http, db, scanner, client).
+
+[logging]
+# Log level threshold
+# Options: "DEBUG", "INFO", "WARN", "ERROR" (case-insensitive)
+# Can be overridden with LOG_LEVEL environment variable
+level = "INFO"
+
+# Directory for log files
+# Will be created if it doesn't exist
+directory = "./logs"
+
+# Maximum size of each log file in megabytes before rotation
+# Minimum: 1
+max_size_mb = 100
+
+# Maximum age of log files in days before deletion
+# Minimum: 1
+max_age_days = 7
+
+# Enable colored output for console logs
+# Disable in production or when piping to log aggregators
+enable_color = true
+
+# -----------------------------------------------------------------------------
+# Security Scanner Configuration
+# -----------------------------------------------------------------------------
+# Settings for the repository security scanning feature.
+# Note: GITHUB_TOKEN should be set via environment variable for private repos.
+
+[scanner]
+# Maximum repository size to clone in megabytes
+# Larger repos will be rejected to prevent resource exhaustion
+# Can be overridden with SCANNER_MAX_REPO_SIZE_MB environment variable
+max_repo_size_mb = 500
+
+# Maximum number of files to send to AI for code review
+# Files are prioritized by security relevance
+# Can be overridden with SCANNER_MAX_REVIEW_FILES environment variable
+max_review_files = 10
+
+# Timeout for each security tool execution in seconds
+# Includes tools like gosec, semgrep, etc.
+# Minimum: 10
+# Can be overridden with SCANNER_TOOL_TIMEOUT_SECONDS environment variable
+tool_timeout_seconds = 300
+
+# Days to retain scan results in the database
+# Older results are automatically cleaned up
+# Minimum: 1
+# Can be overridden with SCANNER_RESULT_RETENTION_DAYS environment variable
+retention_days = 7
+
+# Timeout for git clone operations
+# Should be generous for large repos on slow connections
+# Minimum: 10s
+clone_timeout = "5m"
+
+# -----------------------------------------------------------------------------
+# Generation Configuration
+# -----------------------------------------------------------------------------
+# Settings for the AI-driven prompt generation flow.
+
+[generation]
+# Maximum length of project idea input in characters
+# Longer inputs will be truncated
+# Minimum: 100
+max_project_idea_length = 2000
+
+# Maximum length of each answer in characters
+# Longer answers will be truncated
+# Minimum: 100
+max_answer_length = 1000
+
+# Minimum number of questions to generate
+# Minimum: 1
+min_questions = 5
+
+# Maximum number of questions to generate
+# Must be >= min_questions
+max_questions = 10
+
+# Maximum retry attempts for AI generation on failure
+# Set to 0 to disable retries
+max_retries = 1
+
+# -----------------------------------------------------------------------------
+# Gallery Configuration
+# -----------------------------------------------------------------------------
+# Settings for the public gallery feature.
+
+[gallery]
+# Number of items per page in gallery listings
+# Range: 1-100
+page_size = 20
+
+# Default sort order for gallery listings
+# Options: "newest", "highest_rated", "most_viewed"
+default_sort = "newest"
