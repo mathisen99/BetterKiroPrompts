@@ -112,7 +112,7 @@ func (h *GalleryHandler) HandleListGallery(w http.ResponseWriter, r *http.Reques
 		page = p
 	}
 
-	pageSize := gallery.DefaultPageSize
+	pageSize := 0 // Let service use its configured default
 	if sizeStr := query.Get("pageSize"); sizeStr != "" {
 		s, err := strconv.Atoi(sizeStr)
 		if err != nil || s < 1 {

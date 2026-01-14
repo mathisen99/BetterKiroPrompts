@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"better-kiro-prompts/internal/config"
 	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/ratelimit"
 	"better-kiro-prompts/internal/storage"
@@ -22,9 +23,6 @@ var (
 	ErrInvalidPage   = errors.New("page must be positive")
 	ErrInvalidSort   = errors.New("invalid sort option")
 )
-
-// DefaultPageSize is the default number of items per page.
-const DefaultPageSize = 20
 
 // MaxPageSize is the maximum allowed page size.
 const MaxPageSize = 100
@@ -58,10 +56,19 @@ type Service struct {
 	repo        storage.Repository
 	rateLimiter *ratelimit.Limiter
 	log         *slog.Logger
+	pageSize    int
+	defaultSort string
 }
 
-// NewService creates a new gallery service.
+// NewService creates a new gallery service with default configuration.
 func NewService(repo storage.Repository, rateLimiter *ratelimit.Limiter, log *logger.Logger) *Service {
+	// Use defaults from config package
+	defaultCfg := config.DefaultConfig()
+	return NewServiceWithConfig(repo, rateLimiter, log, defaultCfg.Gallery)
+}
+
+// NewServiceWithConfig creates a new gallery service with the provided configuration.
+func NewServiceWithConfig(repo storage.Repository, rateLimiter *ratelimit.Limiter, log *logger.Logger, cfg config.GalleryConfig) *Service {
 	var slogger *slog.Logger
 	if log != nil {
 		slogger = log.App()
@@ -70,6 +77,8 @@ func NewService(repo storage.Repository, rateLimiter *ratelimit.Limiter, log *lo
 		repo:        repo,
 		rateLimiter: rateLimiter,
 		log:         slogger,
+		pageSize:    cfg.PageSize,
+		defaultSort: cfg.DefaultSort,
 	}
 }
 
@@ -94,7 +103,7 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 		req.Page = 1
 	}
 	if req.PageSize < 1 {
-		req.PageSize = DefaultPageSize
+		req.PageSize = s.pageSize
 	}
 	if req.PageSize > MaxPageSize {
 		req.PageSize = MaxPageSize
@@ -102,7 +111,7 @@ func (s *Service) ListGenerations(ctx context.Context, req ListRequest) (*ListRe
 
 	// Validate sort option
 	if req.SortBy == "" {
-		req.SortBy = "newest"
+		req.SortBy = s.defaultSort
 	}
 	if !ValidSortOptions[req.SortBy] {
 		if s.log != nil {
@@ -375,8 +384,9 @@ func (s *Service) GetCategories(ctx context.Context) ([]storage.Category, error)
 // CalculateTotalPages is a helper function to calculate total pages.
 // Exported for use in property tests.
 func CalculateTotalPages(total, pageSize int) int {
+	defaultCfg := config.DefaultConfig()
 	if pageSize <= 0 {
-		pageSize = DefaultPageSize
+		pageSize = defaultCfg.Gallery.PageSize
 	}
 	if total <= 0 {
 		return 1
@@ -387,8 +397,9 @@ func CalculateTotalPages(total, pageSize int) int {
 // NormalizePageSize ensures page size is within valid bounds.
 // Exported for use in property tests.
 func NormalizePageSize(pageSize int) int {
+	defaultCfg := config.DefaultConfig()
 	if pageSize < 1 {
-		return DefaultPageSize
+		return defaultCfg.Gallery.PageSize
 	}
 	if pageSize > MaxPageSize {
 		return MaxPageSize

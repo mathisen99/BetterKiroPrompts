@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"better-kiro-prompts/internal/config"
 	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/openai"
 	"better-kiro-prompts/internal/prompts"
@@ -16,11 +17,13 @@ import (
 	"better-kiro-prompts/internal/storage"
 )
 
+// Default values for generation config (used when config is not provided)
 const (
-	maxProjectIdeaLength = 2000
-	maxAnswerLength      = 1000
-	minQuestions         = 5
-	maxQuestions         = 10
+	defaultMaxProjectIdeaLength = 2000
+	defaultMaxAnswerLength      = 1000
+	defaultMinQuestions         = 5
+	defaultMaxQuestions         = 10
+	defaultMaxRetries           = 1
 )
 
 var (
@@ -75,35 +78,56 @@ type Service struct {
 	requestQueue *queue.RequestQueue
 	repository   storage.Repository
 	log          *slog.Logger
+	// Config values
+	maxProjectIdeaLength int
+	maxAnswerLength      int
+	minQuestions         int
+	maxQuestions         int
+	maxRetries           int
 }
 
-// NewService creates a new generation service.
+// NewService creates a new generation service with default config values.
 func NewService(client *openai.Client) *Service {
 	return &Service{
-		openaiClient: client,
-		requestQueue: nil, // Optional queue
-		repository:   nil, // Optional repository
-		log:          slog.Default(),
+		openaiClient:         client,
+		requestQueue:         nil, // Optional queue
+		repository:           nil, // Optional repository
+		log:                  slog.Default(),
+		maxProjectIdeaLength: defaultMaxProjectIdeaLength,
+		maxAnswerLength:      defaultMaxAnswerLength,
+		minQuestions:         defaultMinQuestions,
+		maxQuestions:         defaultMaxQuestions,
+		maxRetries:           defaultMaxRetries,
 	}
 }
 
 // NewServiceWithQueue creates a new generation service with a request queue.
 func NewServiceWithQueue(client *openai.Client, q *queue.RequestQueue) *Service {
 	return &Service{
-		openaiClient: client,
-		requestQueue: q,
-		repository:   nil,
-		log:          slog.Default(),
+		openaiClient:         client,
+		requestQueue:         q,
+		repository:           nil,
+		log:                  slog.Default(),
+		maxProjectIdeaLength: defaultMaxProjectIdeaLength,
+		maxAnswerLength:      defaultMaxAnswerLength,
+		minQuestions:         defaultMinQuestions,
+		maxQuestions:         defaultMaxQuestions,
+		maxRetries:           defaultMaxRetries,
 	}
 }
 
 // NewServiceWithDeps creates a new generation service with all dependencies.
 func NewServiceWithDeps(client *openai.Client, q *queue.RequestQueue, repo storage.Repository) *Service {
 	return &Service{
-		openaiClient: client,
-		requestQueue: q,
-		repository:   repo,
-		log:          slog.Default(),
+		openaiClient:         client,
+		requestQueue:         q,
+		repository:           repo,
+		log:                  slog.Default(),
+		maxProjectIdeaLength: defaultMaxProjectIdeaLength,
+		maxAnswerLength:      defaultMaxAnswerLength,
+		minQuestions:         defaultMinQuestions,
+		maxQuestions:         defaultMaxQuestions,
+		maxRetries:           defaultMaxRetries,
 	}
 }
 
@@ -113,10 +137,33 @@ func NewServiceWithLogger(client *openai.Client, q *queue.RequestQueue, repo sto
 		log = slog.Default()
 	}
 	return &Service{
-		openaiClient: client,
-		requestQueue: q,
-		repository:   repo,
-		log:          log,
+		openaiClient:         client,
+		requestQueue:         q,
+		repository:           repo,
+		log:                  log,
+		maxProjectIdeaLength: defaultMaxProjectIdeaLength,
+		maxAnswerLength:      defaultMaxAnswerLength,
+		minQuestions:         defaultMinQuestions,
+		maxQuestions:         defaultMaxQuestions,
+		maxRetries:           defaultMaxRetries,
+	}
+}
+
+// NewServiceWithConfig creates a new generation service with config values.
+func NewServiceWithConfig(client *openai.Client, q *queue.RequestQueue, repo storage.Repository, log *slog.Logger, cfg config.GenerationConfig) *Service {
+	if log == nil {
+		log = slog.Default()
+	}
+	return &Service{
+		openaiClient:         client,
+		requestQueue:         q,
+		repository:           repo,
+		log:                  log,
+		maxProjectIdeaLength: cfg.MaxProjectIdeaLength,
+		maxAnswerLength:      cfg.MaxAnswerLength,
+		minQuestions:         cfg.MinQuestions,
+		maxQuestions:         cfg.MaxQuestions,
+		maxRetries:           cfg.MaxRetries,
 	}
 }
 
@@ -137,22 +184,34 @@ func (s *Service) SetRepository(repo storage.Repository) {
 	s.repository = repo
 }
 
-// ValidateProjectIdea validates the project idea input.
+// ValidateProjectIdea validates the project idea input using default limits.
+// For custom limits, use Service.ValidateProjectIdeaWithConfig.
 func ValidateProjectIdea(idea string) error {
+	return ValidateProjectIdeaWithLimits(idea, defaultMaxProjectIdeaLength)
+}
+
+// ValidateProjectIdeaWithLimits validates the project idea input with custom max length.
+func ValidateProjectIdeaWithLimits(idea string, maxLength int) error {
 	trimmed := strings.TrimSpace(idea)
 	if trimmed == "" {
 		return ErrEmptyProjectIdea
 	}
-	if len(trimmed) > maxProjectIdeaLength {
+	if len(trimmed) > maxLength {
 		return ErrProjectIdeaTooLong
 	}
 	return nil
 }
 
-// ValidateAnswers validates the answers input.
+// ValidateAnswers validates the answers input using default limits.
+// For custom limits, use Service.ValidateAnswersWithConfig.
 func ValidateAnswers(answers []Answer) error {
+	return ValidateAnswersWithLimits(answers, defaultMaxAnswerLength)
+}
+
+// ValidateAnswersWithLimits validates the answers input with custom max length.
+func ValidateAnswersWithLimits(answers []Answer, maxLength int) error {
 	for _, a := range answers {
-		if len(a.Answer) > maxAnswerLength {
+		if len(a.Answer) > maxLength {
 			return ErrAnswerTooLong
 		}
 	}
@@ -170,7 +229,7 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 		slog.Int("idea_length", len(projectIdea)),
 	)
 
-	if err := ValidateProjectIdea(projectIdea); err != nil {
+	if err := ValidateProjectIdeaWithLimits(projectIdea, s.maxProjectIdeaLength); err != nil {
 		s.log.Warn("generate_questions_validation_failed",
 			slog.String("request_id", requestID),
 			slog.String("error", err.Error()),
@@ -226,7 +285,7 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 		slog.String("operation", "generate_questions"),
 	)
 
-	questions, err := parseQuestionsResponse(response)
+	questions, err := s.parseQuestionsResponse(response)
 	if err != nil {
 		s.log.Error("generate_questions_parse_failed",
 			slog.String("request_id", requestID),
@@ -244,9 +303,6 @@ func (s *Service) GenerateQuestions(ctx context.Context, projectIdea string, exp
 	return questions, nil
 }
 
-// maxRetries is the number of retry attempts for validation failures
-const maxRetries = 1
-
 // GenerateOutputs generates kickoff prompt, steering files, hooks, and AGENTS.md.
 func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answers []Answer, experienceLevel string, hookPreset string) ([]GeneratedFile, error) {
 	requestID := logger.GetRequestID(ctx)
@@ -259,7 +315,7 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		slog.Int("answer_count", len(answers)),
 	)
 
-	if err := ValidateProjectIdea(projectIdea); err != nil {
+	if err := ValidateProjectIdeaWithLimits(projectIdea, s.maxProjectIdeaLength); err != nil {
 		s.log.Warn("generate_outputs_validation_failed",
 			slog.String("request_id", requestID),
 			slog.String("error", err.Error()),
@@ -267,7 +323,7 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 		)
 		return nil, err
 	}
-	if err := ValidateAnswers(answers); err != nil {
+	if err := ValidateAnswersWithLimits(answers, s.maxAnswerLength); err != nil {
 		s.log.Warn("generate_outputs_validation_failed",
 			slog.String("request_id", requestID),
 			slog.String("error", err.Error()),
@@ -317,11 +373,11 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 	}
 
 	var lastErr error
-	for attempt := 0; attempt <= maxRetries; attempt++ {
+	for attempt := 0; attempt <= s.maxRetries; attempt++ {
 		s.log.Debug("generate_outputs_attempt",
 			slog.String("request_id", requestID),
 			slog.Int("attempt", attempt+1),
-			slog.Int("max_attempts", maxRetries+1),
+			slog.Int("max_attempts", s.maxRetries+1),
 		)
 
 		response, err := s.openaiClient.ChatCompletion(ctx, messages)
@@ -342,7 +398,7 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 				slog.Int("attempt", attempt+1),
 				slog.String("error", err.Error()),
 			)
-			if attempt < maxRetries {
+			if attempt < s.maxRetries {
 				// Add retry context to messages for the next attempt
 				messages = append(messages,
 					openai.Message{Role: "assistant", Content: response},
@@ -362,7 +418,7 @@ func (s *Service) GenerateOutputs(ctx context.Context, projectIdea string, answe
 				slog.String("error", err.Error()),
 				slog.String("validation_type", "generated_files"),
 			)
-			if attempt < maxRetries {
+			if attempt < s.maxRetries {
 				// Add retry context to messages for the next attempt
 				messages = append(messages,
 					openai.Message{Role: "assistant", Content: response},
@@ -488,6 +544,43 @@ Remember:
 Please provide the corrected JSON response.`, err)
 }
 
+func (s *Service) parseQuestionsResponse(response string) ([]Question, error) {
+	// Try to extract JSON from response (handle potential markdown code blocks)
+	jsonStr := extractJSON(response)
+
+	var qr QuestionsResponse
+	if err := json.Unmarshal([]byte(jsonStr), &qr); err != nil {
+		return nil, fmt.Errorf("%w: failed to parse questions JSON: %v", ErrInvalidResponse, err)
+	}
+
+	if len(qr.Questions) == 0 {
+		return nil, ErrNoQuestions
+	}
+
+	// Validate question count using config values
+	if len(qr.Questions) < s.minQuestions || len(qr.Questions) > s.maxQuestions {
+		// Truncate or pad if needed, but still return what we have
+		if len(qr.Questions) > s.maxQuestions {
+			qr.Questions = qr.Questions[:s.maxQuestions]
+		}
+	}
+
+	// Validate each question has required fields
+	for i, q := range qr.Questions {
+		if q.Text == "" {
+			return nil, fmt.Errorf("%w: question %d has empty text", ErrInvalidResponse, i+1)
+		}
+		// Ensure IDs are set
+		if q.ID == 0 {
+			qr.Questions[i].ID = i + 1
+		}
+	}
+
+	return qr.Questions, nil
+}
+
+// parseQuestionsResponse is a package-level function for backward compatibility with tests.
+// It uses default config values.
 func parseQuestionsResponse(response string) ([]Question, error) {
 	// Try to extract JSON from response (handle potential markdown code blocks)
 	jsonStr := extractJSON(response)
@@ -501,11 +594,11 @@ func parseQuestionsResponse(response string) ([]Question, error) {
 		return nil, ErrNoQuestions
 	}
 
-	// Validate question count
-	if len(qr.Questions) < minQuestions || len(qr.Questions) > maxQuestions {
+	// Validate question count using default values
+	if len(qr.Questions) < defaultMinQuestions || len(qr.Questions) > defaultMaxQuestions {
 		// Truncate or pad if needed, but still return what we have
-		if len(qr.Questions) > maxQuestions {
-			qr.Questions = qr.Questions[:maxQuestions]
+		if len(qr.Questions) > defaultMaxQuestions {
+			qr.Questions = qr.Questions[:defaultMaxQuestions]
 		}
 	}
 

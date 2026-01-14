@@ -45,89 +45,89 @@ This plan implements a centralized TOML configuration system and comprehensive d
   - Show default values for reference
   - _Requirements: 1.1-1.7_
 
-- [ ] 3. Integrate config with main.go
-  - [ ] 3.1 Load config at startup
+- [x] 3. Integrate config with main.go
+  - [x] 3.1 Load config at startup
     - Call `config.Load()` before initializing services
     - Log loaded configuration
     - Exit with code 1 on validation failure
     - _Requirements: 2.1, 2.3, 7.4, 7.5_
 
-  - [ ] 3.2 Pass config to services
+  - [x] 3.2 Pass config to services
     - Update service initialization to accept config values
     - Remove hardcoded constants from main.go
     - _Requirements: 1.1-1.7_
 
-- [ ] 4. Integrate config with OpenAI client
+- [x] 4. Integrate config with OpenAI client
   - Update `NewClient()` to accept config values
   - Use config for model, timeout, reasoning effort, verbosity
   - Remove hardcoded defaults from openai package
   - _Requirements: 1.2_
 
-- [ ] 5. Integrate config with rate limiter
+- [x] 5. Integrate config with rate limiter
   - Update `NewLimiter()` to accept config values
   - Use config for generation, rating, and scan limits
   - Remove hardcoded defaults from ratelimit package
   - _Requirements: 1.3_
 
-- [ ] 6. Integrate config with logger
+- [x] 6. Integrate config with logger
   - Update `New()` to accept config values
   - Use config for level, directory, max size, max age, color
   - Remove hardcoded defaults from logger package
   - _Requirements: 1.4_
 
-- [ ] 7. Integrate config with scanner
-  - [ ] 7.1 Update scanner service
+- [x] 7. Integrate config with scanner
+  - [x] 7.1 Update scanner service
     - Use config for max repo size, max review files, retention days
     - Remove hardcoded defaults from scanner package
     - _Requirements: 1.5_
 
-  - [ ] 7.2 Update cloner
+  - [x] 7.2 Update cloner
     - Use config for clone timeout, max repo size
     - Remove hardcoded defaults from cloner
     - _Requirements: 1.5_
 
-  - [ ] 7.3 Update code reviewer
+  - [x] 7.3 Update code reviewer
     - Use config for max review files, code review model
     - Remove hardcoded defaults from reviewer
     - _Requirements: 1.5_
 
-  - [ ] 7.4 Update tool runner
+  - [x] 7.4 Update tool runner
     - Use config for tool timeout
     - Remove hardcoded defaults from tool runner
     - _Requirements: 1.5_
 
-- [ ] 8. Integrate config with generation service
+- [x] 8. Integrate config with generation service
   - Use config for max lengths, question counts, retries
   - Remove hardcoded constants from generation package
   - _Requirements: 1.6_
 
-- [ ] 9. Integrate config with gallery service
+- [x] 9. Integrate config with gallery service
   - Use config for page size, default sort
   - Remove hardcoded defaults from gallery package
   - _Requirements: 1.7_
 
-- [ ] 10. Checkpoint - Ensure all tests pass
+- [x] 10. Checkpoint - Ensure all tests pass
   - Run `go test ./...` in backend
   - Verify application starts with default config
   - Verify application starts with custom config.toml
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Update Docker configuration
-  - [ ] 11.1 Update docker-compose.yml
+- [x] 11. Update Docker configuration
+  - [x] 11.1 Update docker-compose.yml
     - Add volume mount for config.toml
     - Ensure env vars still work for secrets
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 11.2 Update docker-compose.prod.yml
+  - [x] 11.2 Update docker-compose.prod.yml
     - Add volume mount for config.toml
     - Ensure production build includes config
     - _Requirements: 3.1, 3.3_
 
-  - [ ] 11.3 Update Dockerfile.prod
+  - [x] 11.3 Update Dockerfile.prod
     - Copy config.example.toml as default config
     - _Requirements: 3.3_
 
-- [ ] 12. Update .env.example
+- [x] 12. Update .env.example
   - Document relationship between .env and config.toml
   - Clarify which values go where (secrets in .env, settings in config.toml)
   - _Requirements: 8.1-8.6_

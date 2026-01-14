@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"time"
 
+	"better-kiro-prompts/internal/config"
 	"better-kiro-prompts/internal/logger"
 	"better-kiro-prompts/internal/openai"
 
@@ -51,13 +52,14 @@ type ScanRequest struct {
 
 // Service orchestrates security scanning operations.
 type Service struct {
-	db         *sql.DB
-	cloner     *Cloner
-	detector   *LanguageDetector
-	toolRunner *ToolRunner
-	aggregator *Aggregator
-	reviewer   *CodeReviewer
-	log        *slog.Logger
+	db            *sql.DB
+	cloner        *Cloner
+	detector      *LanguageDetector
+	toolRunner    *ToolRunner
+	aggregator    *Aggregator
+	reviewer      *CodeReviewer
+	log           *slog.Logger
+	retentionDays int
 }
 
 // ServiceOption is a functional option for configuring a Service.
@@ -93,16 +95,67 @@ func WithServiceLogger(log *slog.Logger) ServiceOption {
 	}
 }
 
+// WithRetentionDays sets the retention days for scan results.
+func WithRetentionDays(days int) ServiceOption {
+	return func(s *Service) {
+		if days > 0 {
+			s.retentionDays = days
+		}
+	}
+}
+
 // NewService creates a new scanner service.
 func NewService(db *sql.DB, openaiClient *openai.Client, githubToken string, opts ...ServiceOption) *Service {
 	s := &Service{
-		db:         db,
-		cloner:     NewCloner(WithGitHubToken(githubToken)),
-		detector:   NewLanguageDetector(),
-		toolRunner: NewToolRunner(),
-		aggregator: NewAggregator(),
-		reviewer:   NewCodeReviewer(openaiClient),
-		log:        slog.Default(),
+		db:            db,
+		cloner:        NewCloner(WithGitHubToken(githubToken)),
+		detector:      NewLanguageDetector(),
+		toolRunner:    NewToolRunner(),
+		aggregator:    NewAggregator(),
+		reviewer:      NewCodeReviewer(openaiClient),
+		log:           slog.Default(),
+		retentionDays: 7, // Default retention days
+	}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
+}
+
+// NewServiceWithConfig creates a new scanner service with configuration.
+func NewServiceWithConfig(db *sql.DB, openaiClient *openai.Client, githubToken string, cfg config.ScannerConfig, codeReviewModel string, opts ...ServiceOption) *Service {
+	// Create cloner with config values
+	cloner := NewCloner(
+		WithGitHubToken(githubToken),
+		WithMaxSizeMB(int64(cfg.MaxRepoSizeMB)),
+		WithCloneTimeout(cfg.CloneTimeout.Duration()),
+	)
+
+	// Create tool runner with config values
+	toolRunner := NewToolRunner(
+		WithToolTimeout(time.Duration(cfg.ToolTimeoutSeconds) * time.Second),
+	)
+
+	// Create code reviewer with config values
+	reviewerOpts := []CodeReviewerOption{
+		WithMaxFiles(cfg.MaxReviewFiles),
+	}
+	if codeReviewModel != "" {
+		reviewerOpts = append(reviewerOpts, WithModel(codeReviewModel))
+	}
+	reviewer := NewCodeReviewer(openaiClient, reviewerOpts...)
+
+	s := &Service{
+		db:            db,
+		cloner:        cloner,
+		detector:      NewLanguageDetector(),
+		toolRunner:    toolRunner,
+		aggregator:    NewAggregator(),
+		reviewer:      reviewer,
+		log:           slog.Default(),
+		retentionDays: cfg.RetentionDays,
 	}
 
 	for _, opt := range opts {
@@ -418,7 +471,7 @@ func (s *Service) createJob(ctx context.Context, job *ScanJob) error {
 		INSERT INTO scan_jobs (id, repo_url, status, created_at, expires_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`
-	expiresAt := job.CreatedAt.Add(7 * 24 * time.Hour) // 7 days retention
+	expiresAt := job.CreatedAt.Add(time.Duration(s.retentionDays) * 24 * time.Hour)
 
 	_, err := s.db.ExecContext(ctx, query,
 		job.ID, job.RepoURL, job.Status, job.CreatedAt, expiresAt)
@@ -612,5 +665,6 @@ func (s *Service) GetConfig() map[string]interface{} {
 		"private_repo_enabled": s.HasPrivateRepoSupport(),
 		"ai_review_enabled":    s.reviewer.HasClient(),
 		"max_files_to_review":  s.reviewer.GetMaxFiles(),
+		"retention_days":       s.retentionDays,
 	}
 }

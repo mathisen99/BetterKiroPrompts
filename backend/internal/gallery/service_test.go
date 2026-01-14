@@ -10,6 +10,7 @@ import (
 	"testing/quick"
 	"time"
 
+	"better-kiro-prompts/internal/config"
 	"better-kiro-prompts/internal/ratelimit"
 	"better-kiro-prompts/internal/storage"
 )
@@ -485,7 +486,7 @@ func TestProperty7_PaginationBounds(t *testing.T) {
 		// Random page size (use default if 0)
 		pageSize := r.Intn(50) // 0 to 49
 		if pageSize == 0 {
-			pageSize = DefaultPageSize
+			pageSize = config.DefaultConfig().Gallery.PageSize
 		}
 
 		// List first page
@@ -526,6 +527,7 @@ func TestProperty7_PaginationBounds(t *testing.T) {
 func TestProperty7_PaginationDefaultPageSize(t *testing.T) {
 	repo := newMockRepository()
 	svc := NewService(repo, nil, nil)
+	defaultPageSize := config.DefaultConfig().Gallery.PageSize
 
 	// Add 50 generations
 	for i := 0; i < 50; i++ {
@@ -550,11 +552,11 @@ func TestProperty7_PaginationDefaultPageSize(t *testing.T) {
 	}
 
 	// Verify default page size is 20
-	if len(resp.Items) != DefaultPageSize {
-		t.Errorf("Default page size: got %d items, expected %d", len(resp.Items), DefaultPageSize)
+	if len(resp.Items) != defaultPageSize {
+		t.Errorf("Default page size: got %d items, expected %d", len(resp.Items), defaultPageSize)
 	}
-	if resp.PageSize != DefaultPageSize {
-		t.Errorf("PageSize in response: got %d, expected %d", resp.PageSize, DefaultPageSize)
+	if resp.PageSize != defaultPageSize {
+		t.Errorf("PageSize in response: got %d, expected %d", resp.PageSize, defaultPageSize)
 	}
 }
 

@@ -9,6 +9,9 @@ RUN apk --no-cache add ca-certificates git docker-cli
 COPY server .
 COPY static ./static
 
+# Copy default config (can be overridden via volume mount)
+COPY config.example.toml config.toml
+
 EXPOSE 8080
 
 CMD ["./server"]

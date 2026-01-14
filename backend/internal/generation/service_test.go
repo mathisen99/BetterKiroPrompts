@@ -72,8 +72,8 @@ func TestProperty1_QuestionPlanStructure(t *testing.T) {
 			return false
 		}
 
-		// Verify: between 5 and 10 questions
-		if len(questions) < minQuestions || len(questions) > maxQuestions {
+		// Verify: between 5 and 10 questions (using default values)
+		if len(questions) < defaultMinQuestions || len(questions) > defaultMaxQuestions {
 			t.Logf("Invalid question count: %d", len(questions))
 			return false
 		}

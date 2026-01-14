@@ -2,6 +2,7 @@
 package logger
 
 import (
+	"better-kiro-prompts/internal/config"
 	"fmt"
 	"io"
 	"log/slog"
@@ -30,7 +31,8 @@ type Config struct {
 	EnableColor bool
 }
 
-// DefaultConfig returns a configuration with sensible defaults
+// DefaultConfig returns a configuration with sensible defaults.
+// Deprecated: Use config.DefaultConfig().Logging instead for centralized configuration.
 func DefaultConfig() Config {
 	return Config{
 		Level:       LevelInfo,
@@ -39,6 +41,18 @@ func DefaultConfig() Config {
 		MaxAgeDays:  7,
 		EnableColor: true,
 	}
+}
+
+// NewFromLoggingConfig creates a new logger instance from the centralized config.LoggingConfig.
+// This is the preferred way to create a logger when using the centralized configuration system.
+func NewFromLoggingConfig(cfg config.LoggingConfig) (*Logger, error) {
+	return New(Config{
+		Level:       ParseLevel(cfg.Level),
+		LogDir:      cfg.Directory,
+		MaxSizeMB:   cfg.MaxSizeMB,
+		MaxAgeDays:  cfg.MaxAgeDays,
+		EnableColor: cfg.EnableColor,
+	})
 }
 
 // Logger wraps slog with file rotation and colored output

@@ -2204,16 +2204,16 @@ func TestProperty6_QuestionGenerationConstraints(t *testing.T) {
 	// Test that the service enforces question count constraints
 	t.Run("question_count_bounds", func(t *testing.T) {
 		// Test minimum bound
-		if minQuestions < 5 {
-			t.Errorf("minQuestions should be at least 5, got %d", minQuestions)
+		if defaultMinQuestions < 5 {
+			t.Errorf("defaultMinQuestions should be at least 5, got %d", defaultMinQuestions)
 		}
 		// Test maximum bound
-		if maxQuestions > 10 {
-			t.Errorf("maxQuestions should be at most 10, got %d", maxQuestions)
+		if defaultMaxQuestions > 10 {
+			t.Errorf("defaultMaxQuestions should be at most 10, got %d", defaultMaxQuestions)
 		}
 		// Test valid range
-		if minQuestions > maxQuestions {
-			t.Errorf("minQuestions (%d) should not exceed maxQuestions (%d)", minQuestions, maxQuestions)
+		if defaultMinQuestions > defaultMaxQuestions {
+			t.Errorf("defaultMinQuestions (%d) should not exceed defaultMaxQuestions (%d)", defaultMinQuestions, defaultMaxQuestions)
 		}
 	})
 
@@ -2276,13 +2276,13 @@ func TestProperty6_QuestionCountValidation(t *testing.T) {
 			}
 
 			// Verify the count
-			if tc.shouldTrunc && len(questions) > maxQuestions {
+			if tc.shouldTrunc && len(questions) > defaultMaxQuestions {
 				// Simulate truncation
-				questions = questions[:maxQuestions]
+				questions = questions[:defaultMaxQuestions]
 			}
 
-			if tc.shouldTrunc && len(questions) != maxQuestions {
-				t.Errorf("Expected truncation to %d questions, got %d", maxQuestions, len(questions))
+			if tc.shouldTrunc && len(questions) != defaultMaxQuestions {
+				t.Errorf("Expected truncation to %d questions, got %d", defaultMaxQuestions, len(questions))
 			}
 		})
 	}
@@ -2323,15 +2323,15 @@ func TestProperty6_QuestionOrderingLogic(t *testing.T) {
 // Feature: phase4-production, Property 6: Question Generation Constraints
 // **Validates: Requirements 3.4, 3.6**
 func TestProperty6_PropertyBasedQuestionValidation(t *testing.T) {
-	// Property: For any valid question count between minQuestions and maxQuestions,
+	// Property: For any valid question count between defaultMinQuestions and defaultMaxQuestions,
 	// the questions should be accepted
 
 	property := func(countOffset uint8) bool {
 		// Generate a count within valid range
-		count := minQuestions + int(countOffset)%(maxQuestions-minQuestions+1)
+		count := defaultMinQuestions + int(countOffset)%(defaultMaxQuestions-defaultMinQuestions+1)
 
 		// Verify count is in valid range
-		if count < minQuestions || count > maxQuestions {
+		if count < defaultMinQuestions || count > defaultMaxQuestions {
 			return false
 		}
 
@@ -2364,11 +2364,11 @@ func TestProperty6_PropertyBasedQuestionValidation(t *testing.T) {
 // **Validates: Requirements 3.4**
 func TestProperty6_QuestionCountBoundsEnforced(t *testing.T) {
 	// Verify the constants are correctly defined
-	if minQuestions != 5 {
-		t.Errorf("minQuestions should be 5, got %d", minQuestions)
+	if defaultMinQuestions != 5 {
+		t.Errorf("defaultMinQuestions should be 5, got %d", defaultMinQuestions)
 	}
-	if maxQuestions != 10 {
-		t.Errorf("maxQuestions should be 10, got %d", maxQuestions)
+	if defaultMaxQuestions != 10 {
+		t.Errorf("defaultMaxQuestions should be 10, got %d", defaultMaxQuestions)
 	}
 
 	// Test that parseQuestionsResponse handles various counts
@@ -2417,8 +2417,8 @@ func TestProperty6_QuestionCountBoundsEnforced(t *testing.T) {
 				}
 
 				// Verify truncation for counts above maximum
-				if tc.questionCount > maxQuestions && len(result) != maxQuestions {
-					t.Errorf("Expected truncation to %d questions, got %d", maxQuestions, len(result))
+				if tc.questionCount > defaultMaxQuestions && len(result) != defaultMaxQuestions {
+					t.Errorf("Expected truncation to %d questions, got %d", defaultMaxQuestions, len(result))
 				}
 			}
 		})

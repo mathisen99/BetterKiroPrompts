@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"better-kiro-prompts/internal/config"
 	"context"
 	"os"
 	"path/filepath"
@@ -302,4 +303,53 @@ func TestIsSensitiveKey(t *testing.T) {
 			t.Errorf("isSensitiveKey(%q) = true, want false", key)
 		}
 	}
+}
+
+func TestNewFromLoggingConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create a config.LoggingConfig (from centralized config package)
+	loggingCfg := config.LoggingConfig{
+		Level:       "DEBUG",
+		Directory:   tmpDir,
+		MaxSizeMB:   10,
+		MaxAgeDays:  3,
+		EnableColor: false,
+	}
+
+	log, err := NewFromLoggingConfig(loggingCfg)
+	if err != nil {
+		t.Fatalf("failed to create logger from LoggingConfig: %v", err)
+	}
+	defer func() { _ = log.Close() }()
+
+	// Verify log directory was created
+	if _, err := os.Stat(tmpDir); os.IsNotExist(err) {
+		t.Error("log directory was not created")
+	}
+
+	// Verify level was parsed correctly
+	if log.GetLevel() != LevelDebug {
+		t.Errorf("expected level DEBUG, got %v", log.GetLevel())
+	}
+
+	// Verify all category loggers exist
+	if log.App() == nil {
+		t.Error("App logger is nil")
+	}
+	if log.HTTP() == nil {
+		t.Error("HTTP logger is nil")
+	}
+	if log.DB() == nil {
+		t.Error("DB logger is nil")
+	}
+	if log.Scanner() == nil {
+		t.Error("Scanner logger is nil")
+	}
+	if log.Client() == nil {
+		t.Error("Client logger is nil")
+	}
+
+	// Write a log entry to verify it works
+	log.App().Debug("test debug message from NewFromLoggingConfig")
 }

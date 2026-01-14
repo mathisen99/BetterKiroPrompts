@@ -25,6 +25,9 @@ build_all() {
     cd "$BACKEND_DIR"
     CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
     
+    # Copy config.example.toml to backend for Docker build
+    cp "$ROOT_DIR/config.example.toml" "$BACKEND_DIR/config.example.toml"
+    
     log "Building Docker images..."
     cd "$ROOT_DIR"
     docker compose -f docker-compose.prod.yml --profile scan build --no-cache
