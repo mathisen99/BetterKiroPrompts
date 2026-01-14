@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { ExperienceLevel } from '@/lib/api'
-import { Sprout, Leaf, TreeDeciduous } from 'lucide-react'
+import { Sprout, Leaf, TreeDeciduous, ExternalLink } from 'lucide-react'
 
 export type { ExperienceLevel }
 
@@ -86,6 +86,24 @@ export function ExperienceLevelSelector({ onSelect, selected }: ExperienceLevelS
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Disclaimer */}
+      <div className="text-center text-sm text-muted-foreground border-t border-border/50 pt-6 mt-8">
+        <p>
+          This is a community project, not affiliated with or endorsed by AWS or Kiro.
+        </p>
+        <p className="mt-1">
+          <a 
+            href="https://kiro.dev" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-primary hover:underline"
+          >
+            Visit the official Kiro website
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </p>
       </div>
     </div>
   )

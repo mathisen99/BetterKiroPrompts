@@ -48,8 +48,8 @@ Scan GitHub repositories for vulnerabilities using multiple security tools (Triv
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd Better-Kiro-Prompts
+git clone https://github.com/mathisen99/BetterKiroPrompts.git
+cd BetterKiroPrompts
 
 # Configure secrets
 cp .env.example .env
@@ -226,3 +226,15 @@ LOG_LEVEL=DEBUG ./build.sh
 ## License
 
 See [LICENSE](LICENSE) for details.
+
+## Contact
+
+- **GitHub**: [mathisen99/BetterKiroPrompts](https://github.com/mathisen99/BetterKiroPrompts)
+- **Creator**: Tommy Mathisen
+- **Discord**: Mathisen
+- **IRC**: Mathisen (Libera.Chat)
+- **Email**: tommy.mathisen@aland.net
+
+## Disclaimer
+
+This is a community project, not affiliated with or endorsed by AWS or Kiro. Visit [kiro.dev](https://kiro.dev) for the official Kiro IDE.

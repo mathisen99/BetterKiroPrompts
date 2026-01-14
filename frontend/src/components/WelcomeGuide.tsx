@@ -85,9 +85,10 @@ export function WelcomeGuide({ onContinue }: WelcomeGuideProps) {
 
       {/* Expandable section for more details */}
       <div className="space-y-4">
-        <button
+        <Button
+          variant="outline"
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+          className="w-full flex items-center justify-center gap-2"
         >
           {expanded ? (
             <>
@@ -96,11 +97,12 @@ export function WelcomeGuide({ onContinue }: WelcomeGuideProps) {
             </>
           ) : (
             <>
-              <ChevronDown className="h-4 w-4" />
+              <Package className="h-4 w-4" />
               What's in the ZIP file?
+              <ChevronDown className="h-4 w-4" />
             </>
           )}
-        </button>
+        </Button>
 
         {expanded && (
           <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">

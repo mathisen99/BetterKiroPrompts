@@ -39,8 +39,8 @@ See [Resource Requirements](#resource-requirements) for detailed recommendations
 
 1. **Clone the repository**
    ```bash
-   git clone <repo-url>
-   cd Better-Kiro-Prompts
+   git clone https://github.com/mathisen99/BetterKiroPrompts.git
+   cd BetterKiroPrompts
    ```
 
 2. **Configure secrets**
@@ -773,8 +773,16 @@ LOG_LEVEL=DEBUG ./build.sh
 
 1. Check the [API documentation](api.md)
 2. Review the [Developer Guide](developer.md)
-3. Search existing issues in the repository
+3. Search existing [GitHub issues](https://github.com/mathisen99/BetterKiroPrompts/issues)
 4. Open a new issue with:
    - Configuration (redact secrets)
    - Error messages
    - Steps to reproduce
+
+### Contact
+
+- **GitHub**: [mathisen99/BetterKiroPrompts](https://github.com/mathisen99/BetterKiroPrompts)
+- **Creator**: Tommy Mathisen
+- **Discord**: Mathisen
+- **IRC**: Mathisen (Libera.Chat)
+- **Email**: tommy.mathisen@aland.net
