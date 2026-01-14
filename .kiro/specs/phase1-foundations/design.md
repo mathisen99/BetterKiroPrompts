@@ -99,8 +99,11 @@ frontend/
 ## Environment Variables
 
 ```
-# Backend
-DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
+# Backend (set in .env)
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+POSTGRES_USER=bkp_user
+POSTGRES_PASSWORD=CHANGE_ME_IN_PRODUCTION
+POSTGRES_DB=betterkiro
 PORT=8080
 
 # Frontend

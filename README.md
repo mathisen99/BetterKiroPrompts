@@ -129,7 +129,10 @@ BetterKiroPrompts uses a two-file configuration approach:
 **Required in `.env`:**
 ```bash
 OPENAI_API_KEY=sk-your-api-key-here
-DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+POSTGRES_USER=bkp_user
+POSTGRES_PASSWORD=CHANGE_ME_IN_PRODUCTION
+POSTGRES_DB=betterkiro
 ```
 
 **Common `config.toml` settings:**

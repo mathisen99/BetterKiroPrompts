@@ -289,26 +289,27 @@ BetterKiroPrompts uses PostgreSQL for persistent storage.
 
 ### Using Docker Compose (Recommended)
 
-The included `docker-compose.yml` automatically sets up PostgreSQL:
+The included `docker-compose.yml` automatically sets up PostgreSQL. Configure credentials in `.env`:
+
+```bash
+# Database credentials - CHANGE THESE IN PRODUCTION
+POSTGRES_USER=bkp_user
+POSTGRES_PASSWORD=CHANGE_ME_IN_PRODUCTION
+POSTGRES_DB=betterkiro
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+```
+
+The docker-compose files reference these environment variables:
 
 ```yaml
 postgres:
   image: postgres:18.1
   environment:
-    - POSTGRES_USER=user
-    - POSTGRES_PASSWORD=pass
-    - POSTGRES_DB=app
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - POSTGRES_DB=${POSTGRES_DB}
   volumes:
     - postgres_data:/var/lib/postgresql
-```
-
-Configure the connection in `.env`:
-
-```bash
-DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
-POSTGRES_USER=user
-POSTGRES_PASSWORD=pass
-POSTGRES_DB=app
 ```
 
 ### External PostgreSQL
