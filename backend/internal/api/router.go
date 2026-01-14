@@ -100,9 +100,22 @@ func spaHandler(staticDir string) http.HandlerFunc {
 		// Check if file exists
 		info, err := os.Stat(path)
 		if err != nil || info.IsDir() {
+			// Add SEO headers for HTML pages
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+			w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+			w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 			// Serve index.html for SPA routing
 			http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 			return
+		}
+
+		// Set cache headers for static assets
+		if strings.HasPrefix(r.URL.Path, "/assets/") {
+			// Long cache for hashed assets
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else if strings.HasSuffix(r.URL.Path, ".ico") || strings.HasSuffix(r.URL.Path, ".png") || strings.HasSuffix(r.URL.Path, ".webmanifest") {
+			// Medium cache for favicon and manifest
+			w.Header().Set("Cache-Control", "public, max-age=86400")
 		}
 
 		// Serve the actual file
