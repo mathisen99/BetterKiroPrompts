@@ -17,13 +17,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.5'
           cache-dependency-path: backend/go.sum
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          install-mode: goinstall
           working-directory: backend
 
       - name: Run go vet
@@ -48,7 +49,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.5'
           cache-dependency-path: backend/go.sum
 
       - name: Download dependencies
@@ -75,7 +76,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.5'
           cache-dependency-path: backend/go.sum
 
       - name: Build
