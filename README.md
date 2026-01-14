@@ -1,5 +1,12 @@
 # BetterKiroPrompts
 
+[![CI](https://github.com/mathisen99/BetterKiroPrompts/actions/workflows/ci.yml/badge.svg)](https://github.com/mathisen99/BetterKiroPrompts/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/badge/Go-1.25.5-00ADD8?logo=go)](https://go.dev/)
+[![React Version](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18.1-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/github/license/mathisen99/BetterKiroPrompts)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/mathisen99/BetterKiroPrompts?include_prereleases)](https://github.com/mathisen99/BetterKiroPrompts/releases)
+
 A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking—not write applications for them.
 
 ## Why This Exists
