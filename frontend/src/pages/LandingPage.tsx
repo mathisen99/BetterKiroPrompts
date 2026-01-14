@@ -13,6 +13,7 @@ import { ExperienceLevelSelector } from '@/components/ExperienceLevelSelector'
 import { HookPresetSelector } from '@/components/HookPresetSelector'
 import { RestorePrompt } from '@/components/shared/RestorePrompt'
 import { SuccessCelebration } from '@/components/shared/SuccessCelebration'
+import { WelcomeGuide } from '@/components/WelcomeGuide'
 
 interface LandingPageProps {
   onPhaseChange?: (phase: Phase) => void
@@ -153,10 +154,10 @@ function saveState(state: LandingPageState): void {
 // Create initial state, checking for restorable session
 function createInitialState(): LandingPageState {
   const savedState = storage.load()
-  const hasRestorableState = savedState !== null && savedState.phase !== 'level-select'
+  const hasRestorableState = savedState !== null && savedState.phase !== 'welcome' && savedState.phase !== 'level-select'
   
   return {
-    phase: 'level-select',
+    phase: 'welcome',
     experienceLevel: null,
     projectIdea: '',
     hookPreset: 'default',
@@ -213,6 +214,10 @@ export function LandingPage({ onPhaseChange, onViewInGallery }: LandingPageProps
       showRestorePrompt: false,
       pendingRestore: null,
     }))
+  }, [])
+
+  const handleWelcomeContinue = useCallback(() => {
+    setState(prev => ({ ...prev, phase: 'level-select' }))
   }, [])
 
   const handleExperienceLevelSelect = useCallback((level: ExperienceLevel) => {
@@ -411,6 +416,12 @@ export function LandingPage({ onPhaseChange, onViewInGallery }: LandingPageProps
       {/* Success celebration overlay */}
       {state.showCelebration && (
         <SuccessCelebration onComplete={handleCelebrationComplete} />
+      )}
+
+      {state.phase === 'welcome' && (
+        <div className="animate-phase-enter">
+          <WelcomeGuide onContinue={handleWelcomeContinue} />
+        </div>
       )}
 
       {state.phase === 'level-select' && (

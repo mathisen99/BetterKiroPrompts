@@ -1,6 +1,6 @@
 import type { ExperienceLevel, HookPreset, Question } from './api'
 
-export type Phase = 'level-select' | 'input' | 'questions' | 'generating' | 'output' | 'error'
+export type Phase = 'welcome' | 'level-select' | 'input' | 'questions' | 'generating' | 'output' | 'error'
 
 export interface SessionState {
   phase: Phase
