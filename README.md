@@ -2,9 +2,19 @@
 
 A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking—not write applications for them.
 
+## Why This Exists
+
+This project was designed primarily for beginners. When you're new to Kiro (or AI-assisted development in general), you don't know what you don't know. You might build something that works but has security holes, missing error handling, or architectural problems that will bite you later.
+
+BetterKiroPrompts helps in two ways:
+
+1. **Better starts** — The generated prompts, steering files, and hooks force you to think through your project before coding. What are you building? What are the risks? What should the AI never do? Answering these questions upfront prevents the "I built something but now I'm stuck" problem.
+
+2. **Security awareness** — The security scanner lets you check earlier projects for vulnerabilities. Maybe you built something six months ago without thinking about secrets in code, SQL injection, or dependency vulnerabilities. The scanner catches these issues and explains them in plain language. It's not about shaming past work — it's about learning what to watch for next time.
+
 ## What It Does
 
-BetterKiroPrompts helps developers (especially beginners) create high-quality Kiro configurations through an AI-driven workflow:
+BetterKiroPrompts helps developers create high-quality Kiro configurations through an AI-driven workflow:
 
 1. **Enter your project idea** — Describe what you want to build
 2. **Answer contextual questions** — AI generates questions tailored to your experience level
@@ -14,7 +24,7 @@ The generated files help Kiro understand your project context, enforce coding st
 
 ### Target Audience
 
-- **Beginners** learning to use Kiro effectively
+- **Beginners** learning to use Kiro effectively and wanting to avoid common pitfalls
 - **Teams** wanting consistent project scaffolding
 - **Self-hosters** running their own instance for private use
 
@@ -165,6 +175,7 @@ See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration refe
 
 | Document | Description |
 |----------|-------------|
+| [Development Log](docs/DEVLOG.md) | Project journey, decisions, and lessons learned |
 | [API Reference](docs/api.md) | Complete API endpoint documentation |
 | [Developer Guide](docs/developer.md) | Architecture, packages, and customization |
 | [Self-Hosting Guide](docs/self-hosting.md) | Deployment and configuration |
