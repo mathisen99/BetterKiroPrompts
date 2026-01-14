@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AlertTriangle, AlertCircle, Info, CheckCircle, XCircle, FileCode, Wrench } from 'lucide-react'
+import { AlertTriangle, AlertCircle, Info, CheckCircle, XCircle, FileCode, Wrench, Lightbulb } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SyntaxHighlighter } from '@/components/SyntaxHighlighter'
@@ -294,6 +294,27 @@ export function ScanResults({ job }: ScanResultsProps) {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* False Positives Notice */}
+      <Card className="bg-amber-500/5 border-amber-500/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-amber-400 text-base">
+            <Lightbulb className="h-4 w-4" />
+            Common False Positives
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li><span className="text-foreground">Test files</span> — Fake credentials in unit tests (e.g., <code className="text-xs bg-muted px-1 rounded">password123</code>, <code className="text-xs bg-muted px-1 rounded">test-api-key</code>)</li>
+            <li><span className="text-foreground">Documentation</span> — Example connection strings or placeholder secrets in docs/READMEs</li>
+            <li><span className="text-foreground">Config examples</span> — Template files like <code className="text-xs bg-muted px-1 rounded">.env.example</code> with dummy values</li>
+            <li><span className="text-foreground">Base64/encoded strings</span> — Non-secret data that looks like encoded credentials</li>
+          </ul>
+          <p className="text-xs text-muted-foreground mt-3">
+            Always verify findings manually before taking action. Scanners flag patterns, not intent.
+          </p>
         </CardContent>
       </Card>
 

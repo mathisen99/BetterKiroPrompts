@@ -115,7 +115,7 @@ func DefaultConfig() *Config {
 			Model:           "gpt-5.2",
 			CodeReviewModel: "gpt-5.1-codex-max",
 			BaseURL:         "https://api.openai.com/v1",
-			Timeout:         Duration(180 * time.Second),
+			Timeout:         Duration(240 * time.Second),
 			ReasoningEffort: "medium",
 			Verbosity:       "medium",
 		},

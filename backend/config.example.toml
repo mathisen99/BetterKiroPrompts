@@ -57,7 +57,7 @@ base_url = "https://api.openai.com/v1"
 # Request timeout for OpenAI API calls
 # Should be generous as generation can take time
 # Minimum: 10s
-timeout = "180s"
+timeout = "240s"
 
 # Reasoning effort level for AI responses
 # Options: "none", "low", "medium", "high", "xhigh"

@@ -2,8 +2,8 @@ import { logger } from './logger'
 
 const API_BASE = '/api'
 
-// Default timeout for API requests (180 seconds as per Requirements 4.2)
-const DEFAULT_TIMEOUT_MS = 180 * 1000
+// Default timeout for API requests (240 seconds / 4 minutes)
+const DEFAULT_TIMEOUT_MS = 240 * 1000
 
 // Experience level type
 export type ExperienceLevel = 'beginner' | 'novice' | 'expert'

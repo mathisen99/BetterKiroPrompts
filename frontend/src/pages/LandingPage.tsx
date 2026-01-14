@@ -156,8 +156,11 @@ function createInitialState(): LandingPageState {
   const savedState = storage.load()
   const hasRestorableState = savedState !== null && savedState.phase !== 'welcome' && savedState.phase !== 'level-select'
   
+  // Skip welcome screen if user has seen it before
+  const skipWelcome = storage.hasSeenWelcome()
+  
   return {
-    phase: 'welcome',
+    phase: skipWelcome ? 'level-select' : 'welcome',
     experienceLevel: null,
     projectIdea: '',
     hookPreset: 'default',
@@ -217,6 +220,7 @@ export function LandingPage({ onPhaseChange, onViewInGallery }: LandingPageProps
   }, [])
 
   const handleWelcomeContinue = useCallback(() => {
+    storage.markWelcomeSeen()
     setState(prev => ({ ...prev, phase: 'level-select' }))
   }, [])
 

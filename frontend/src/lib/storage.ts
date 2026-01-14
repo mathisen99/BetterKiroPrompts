@@ -14,6 +14,7 @@ export interface SessionState {
 }
 
 const STORAGE_KEY = 'bkp_session'
+const WELCOME_SEEN_KEY = 'bkp_welcome_seen'
 const EXPIRY_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 /**
@@ -122,4 +123,32 @@ export function clear(): void {
  */
 export function hasRestorableState(): boolean {
   return load() !== null
+}
+
+/**
+ * Check if user has seen the welcome screen before
+ */
+export function hasSeenWelcome(): boolean {
+  if (!isStorageAvailable()) {
+    return false
+  }
+  try {
+    return localStorage.getItem(WELCOME_SEEN_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Mark that user has seen the welcome screen
+ */
+export function markWelcomeSeen(): void {
+  if (!isStorageAvailable()) {
+    return
+  }
+  try {
+    localStorage.setItem(WELCOME_SEEN_KEY, 'true')
+  } catch {
+    // Silently fail
+  }
 }

@@ -27,6 +27,9 @@ const levelColors: Record<LogLevel, string> = {
   error: '#E74C3C', // Red
 }
 
+// Only log to console in development
+const isDevelopment = import.meta.env.DEV
+
 class LogCollector {
   private buffer: LogEntry[] = []
   private flushInterval: number = 5000 // 5 seconds
@@ -129,9 +132,12 @@ class LogCollector {
   }
 
   /**
-   * Output log entry to console with colors
+   * Output log entry to console with colors (development only)
    */
   private logToConsole(entry: LogEntry): void {
+    // Skip console output in production (errors still go to backend)
+    if (!isDevelopment) return
+
     const color = levelColors[entry.level]
     const componentTag = entry.component ? `[${entry.component}]` : '[app]'
     

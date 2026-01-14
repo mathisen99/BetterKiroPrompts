@@ -19,7 +19,7 @@ const LOADING_MESSAGES: Record<LoadingType, { initial: string; stillWorking: str
     stillWorking: 'Still working on your questions...',
   },
   outputs: {
-    initial: 'Generating your files... This may take up to 3 minutes',
+    initial: 'Generating your prompt, steering files, and hooks... This may take up to 4 minutes depending on OpenAI response times',
     stillWorking: 'Still creating your files... Almost there!',
   },
 }
