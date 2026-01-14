@@ -25,8 +25,9 @@ services:
 
   postgres:
     image: postgres:18.1
-    ports:
-      - "5432:5432"
+    # Don't expose PostgreSQL externally in production - only accessible within docker network
+    # ports:
+    #   - "5432:5432"
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=pass
