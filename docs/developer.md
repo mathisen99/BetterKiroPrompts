@@ -97,7 +97,7 @@ func Connect(ctx context.Context) error
 func Close() error
 ```
 
-Migrations are in `backend/internal/db/migrations/` and run automatically on startup.
+Migrations are in `backend/migrations/` and run automatically on startup.
 
 ### gallery
 Gallery service for browsing and rating generations.
@@ -373,7 +373,7 @@ CREATE TABLE scan_findings (
 
 ### Migration Process
 
-Migrations are SQL files in `backend/internal/db/migrations/` with naming format:
+Migrations are SQL files in `backend/migrations/` with naming format:
 ```
 YYYYMMDDHHMMSS_description.sql
 ```

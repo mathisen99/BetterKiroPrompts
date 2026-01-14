@@ -40,14 +40,9 @@ inclusion: always
 Use `./build.sh` for all stack operations:
 
 ```bash
-./build.sh up                    # Start dev stack (hot reload)
-./build.sh --dev -d up           # Start dev in background
-./build.sh --prod --build -d up  # Build and start production
-./build.sh stop                  # Stop stack
-./build.sh down                  # Stop and remove containers
-./build.sh logs                  # Follow logs
-./build.sh status                # Show container status
-./build.sh clean                 # Remove build artifacts
+./build.sh           # Stop, rebuild everything, and start
+./build.sh --restart # Restart without rebuilding
+./build.sh --stop    # Stop all containers
 ```
 
 ## MCP Servers

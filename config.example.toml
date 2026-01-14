@@ -43,7 +43,7 @@ shutdown_timeout = "30s"
 
 [openai]
 # Model for question generation and output generation
-# Examples: "gpt-4", "gpt-4-turbo", "gpt-5.2"
+# Examples: "gpt-5.2", "gpt-5.1", "gpt-5-mini"
 model = "gpt-5.2"
 
 # Model for security code review (optimized for code analysis)

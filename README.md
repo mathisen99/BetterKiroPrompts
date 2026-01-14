@@ -59,15 +59,17 @@ cp .env.example .env
 cp config.example.toml config.toml
 
 # Start all services
-./build.sh up
+./build.sh
 ```
 
 Open http://localhost:8080 in your browser.
 
 ### Production Deployment
 
+The default `./build.sh` builds and runs production. Use `--restart` to restart without rebuilding:
+
 ```bash
-./build.sh --prod --build -d up
+./build.sh --restart
 ```
 
 ## Project Structure
@@ -136,7 +138,7 @@ DATABASE_URL=postgres://user:pass@postgres:5432/app?sslmode=disable
 port = 8080
 
 [openai]
-model = "gpt-4"              # Or "gpt-5.2" for best quality
+model = "gpt-5.2"            # Current standard model
 timeout = "180s"
 
 [rate_limit]
@@ -151,14 +153,9 @@ See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration refe
 ## Development Commands
 
 ```bash
-./build.sh up                    # Start dev stack (hot reload)
-./build.sh --dev -d up           # Start dev in background
-./build.sh --prod --build -d up  # Build and start production
-./build.sh stop                  # Stop stack
-./build.sh down                  # Stop and remove containers
-./build.sh logs                  # Follow logs
-./build.sh status                # Show container status
-./build.sh clean                 # Remove build artifacts
+./build.sh           # Stop, rebuild everything, and start
+./build.sh --restart # Restart without rebuilding
+./build.sh --stop    # Stop all containers
 ```
 
 ## Documentation
@@ -176,7 +173,7 @@ See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration refe
 Ensure `.env` exists and contains your API key:
 ```bash
 cat .env | grep OPENAI_API_KEY
-./build.sh down && ./build.sh up  # Restart to pick up changes
+./build.sh  # Rebuild and restart to pick up changes
 ```
 
 ### "Database connection refused"
@@ -216,7 +213,7 @@ level = "DEBUG"
 
 Or via environment variable:
 ```bash
-LOG_LEVEL=DEBUG ./build.sh up
+LOG_LEVEL=DEBUG ./build.sh
 ```
 
 ## Tech Stack

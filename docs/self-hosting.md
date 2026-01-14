@@ -57,7 +57,7 @@ See [Resource Requirements](#resource-requirements) for detailed recommendations
 
 4. **Start the application**
    ```bash
-   ./build.sh --prod --build -d up
+   ./build.sh
    ```
 
 5. **Access the application**
@@ -170,7 +170,7 @@ For basic prompt generation without security scanning:
 port = 8080
 
 [openai]
-model = "gpt-4"
+model = "gpt-5.2"
 timeout = "120s"
 
 [rate_limit]
@@ -244,8 +244,8 @@ host = "127.0.0.1"  # Local only, use reverse proxy
 shutdown_timeout = "60s"
 
 [openai]
-model = "gpt-4"
-code_review_model = "gpt-4"
+model = "gpt-5.2"
+code_review_model = "gpt-5.2"
 timeout = "120s"
 reasoning_effort = "low"  # Faster, cheaper
 verbosity = "low"
@@ -363,16 +363,16 @@ docker exec -it better-kiro-prompts-postgres-1 psql -U user -d app
 
 | Use Case | Recommended Model | Notes |
 |----------|-------------------|-------|
-| Budget-conscious | `gpt-4` | Good balance of quality and cost |
-| Best quality | `gpt-5.2` | Latest model, best results |
+| Standard | `gpt-5.2` | Current standard, recommended for most uses |
+| Budget-conscious | `gpt-5-mini` | Good balance of quality and cost |
 | Code review | `gpt-5.1-codex-max` | Optimized for code analysis |
-| Fast responses | `gpt-4-turbo` | Faster but slightly lower quality |
+| Fast responses | `gpt-5-nano` | Fastest, good for high-volume tasks |
 
 Configure in `config.toml`:
 ```toml
 [openai]
-model = "gpt-4"                      # For generation
-code_review_model = "gpt-4"          # For security scanning
+model = "gpt-5.2"                    # For generation
+code_review_model = "gpt-5.2"        # For security scanning
 ```
 
 ### Using Azure OpenAI
@@ -430,11 +430,11 @@ The security scanner can scan private GitHub repositories with proper authentica
 
 ### Enabling the Scanner Container
 
-The scanner runs in a separate container with security tools. To enable:
+The scanner runs in a separate container with security tools. It's included by default when using `./build.sh`:
 
 ```bash
-# Start with scanner profile
-./build.sh --prod --build -d up --profile scan
+# Build and start (includes scanner)
+./build.sh
 ```
 
 Or modify `docker-compose.prod.yml` to always include the scanner.
@@ -559,11 +559,7 @@ curl http://localhost:8080/api/health
 
 Response:
 ```json
-{
-  "status": "healthy",
-  "database": "connected",
-  "version": "1.0.0"
-}
+{"status": "ok"}
 ```
 
 ### Updating
@@ -575,12 +571,12 @@ Response:
 
 2. Rebuild and restart:
    ```bash
-   ./build.sh --prod --build -d up
+   ./build.sh
    ```
 
 3. Check logs for migration status:
    ```bash
-   ./build.sh logs backend
+   docker logs better-kiro-prompts-backend-1
    ```
 
 ---
@@ -644,7 +640,7 @@ The security scanner runs multiple tools based on detected languages.
 
 4. **Rebuild the scanner container:**
    ```bash
-   ./build.sh --prod --build -d up --profile scan
+   ./build.sh
    ```
 
 ### Removing Tools
@@ -698,8 +694,8 @@ args := []string{
 # Ensure .env file exists and contains the key
 cat .env | grep OPENAI_API_KEY
 
-# Restart containers to pick up changes
-./build.sh down && ./build.sh up
+# Rebuild and restart to pick up changes
+./build.sh
 ```
 
 **"Database connection refused"**
@@ -715,8 +711,8 @@ docker logs better-kiro-prompts-postgres-1
 
 **"Scanner container not found"**
 ```bash
-# Ensure scanner profile is enabled
-./build.sh --prod -d up --profile scan
+# Rebuild to ensure scanner is included
+./build.sh
 
 # Check scanner container status
 docker ps -a | grep scanner
@@ -744,15 +740,15 @@ max_repo_size_mb = 1000  # 1 GB
 ### Viewing Logs
 
 ```bash
-# All logs
-./build.sh logs
+# All container logs
+docker compose -f docker-compose.prod.yml logs
 
 # Specific service
-./build.sh logs backend
-./build.sh logs postgres
+docker logs better-kiro-prompts-backend-1
+docker logs better-kiro-prompts-postgres-1
 
 # Follow logs in real-time
-./build.sh logs -f
+docker compose -f docker-compose.prod.yml logs -f
 
 # Application log files
 ls -la ./logs/
@@ -770,7 +766,7 @@ level = "DEBUG"
 
 Or via environment variable:
 ```bash
-LOG_LEVEL=DEBUG ./build.sh up
+LOG_LEVEL=DEBUG ./build.sh
 ```
 
 ### Getting Help
