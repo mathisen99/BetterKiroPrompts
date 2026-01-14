@@ -19,6 +19,28 @@ BetterKiroPrompts helps in two ways:
 
 2. **Security awareness** — The security scanner lets beginners check their earlier projects for vulnerabilities. Maybe you built something six months ago without thinking about secrets in code, SQL injection, or dependency vulnerabilities. The scanner catches these issues and explains them in plain language. It's not about shaming past work — it's about learning what to watch for next time.
 
+### How This Differs from Kiro's Plan Agent
+
+On Day 7, I discovered Kiro has a built-in [Plan Agent](https://kiro.dev/docs/cli/chat/planning-agent/) that transforms ideas into implementation plans. For a moment, I thought I'd built something redundant. But after comparing them, they solve different problems:
+
+**Kiro's Plan Agent:** A conversational tool that helps you plan what to build. It asks questions, you answer, it creates a task breakdown. Great for experienced developers who know what questions to ask themselves.
+
+**BetterKiroPrompts:** A structured tool that helps you *think* before you plan, then outputs ready-to-use Kiro configuration files. Designed for beginners who don't know what they don't know.
+
+The key differences:
+
+1. **Experience-level adaptation** — This tool adjusts its language based on skill level. Beginners get "How do users log in?" while experts get "What consistency model fits your use case?" The plan agent doesn't adapt.
+
+2. **Ready-to-use output** — This tool generates actual `.kiro/steering/*.md` and `.kiro.hook` files. The plan agent outputs a plan document.
+
+3. **Opinionated presets** — Hook presets (Light/Basic/Default/Strict) encode best practices. Beginners don't know they need secret scanning — this tool gives it to them by default.
+
+4. **Forbidden jargon** — The question generator actively avoids terms like "API", "OAuth", "middleware" for beginners. It uses analogies instead.
+
+5. **Community gallery** — Browse and learn from what others generated.
+
+**The relationship:** Plan agent helps you plan *what* to build. This tool helps you configure *how* Kiro should help you — with guardrails appropriate to your skill level. They're complementary, not competing.
+
 ---
 
 ## My Journey

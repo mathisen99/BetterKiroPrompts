@@ -19,6 +19,34 @@ BetterKiroPrompts helps in two ways:
 
 2. **Security awareness** — The security scanner lets you check earlier projects for vulnerabilities. Maybe you built something six months ago without thinking about secrets in code, SQL injection, or dependency vulnerabilities. The scanner catches these issues and explains them in plain language. It's not about shaming past work — it's about learning what to watch for next time.
 
+## How This Differs from Kiro's Plan Agent
+
+Kiro has a built-in [Plan Agent](https://kiro.dev/docs/cli/chat/planning-agent/) that helps transform ideas into implementation plans. So why does this tool exist?
+
+**They solve different problems:**
+
+| Kiro Plan Agent | BetterKiroPrompts |
+|-----------------|-------------------|
+| Helps you *plan* what to build | Helps you *think* before you plan |
+| Outputs a task breakdown | Outputs ready-to-use `.kiro/` config files |
+| Assumes developer competence | Adapts to experience level (beginner/novice/expert) |
+| Freeform conversation | Structured 12-section kickoff template |
+| No guardrails by default | Curated hook presets with security defaults |
+
+**What this tool adds:**
+
+1. **Experience-level adaptation** — Beginners get questions in plain language ("How do users log in?") while experts get technical depth ("What consistency model fits your use case?"). The plan agent doesn't adjust its language.
+
+2. **Ready-to-use Kiro files** — This tool outputs actual `.kiro/steering/*.md` files and `.kiro.hook` files you can drop into your project. The plan agent outputs a plan, not config files.
+
+3. **Opinionated hook presets** — Light, Basic, Default, and Strict presets encode best practices. Beginners don't know they need a secret scan on `agentStop` — this tool gives it to them.
+
+4. **Forbidden jargon for beginners** — The question generator actively avoids terms like "API", "middleware", "OAuth" when talking to beginners. It uses analogies instead ("like a membership card at a store").
+
+5. **Community gallery** — Browse what others generated, learn from their project structures, rate and share configurations.
+
+**Think of it this way:** The plan agent helps you plan *what* to build. This tool helps you configure *how* Kiro should help you build it — with guardrails appropriate to your skill level.
+
 ## What It Does
 
 BetterKiroPrompts helps developers create high-quality Kiro configurations through an AI-driven workflow:
