@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Config
+config.toml
+
 # OS
 .DS_Store
 Thumbs.db
