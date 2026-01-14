@@ -34,9 +34,16 @@ frontend/dist/
 frontend/dist-ssr/
 *.local
 
-# Backend
+# Backend - Go binaries and build artifacts
 backend/server
 backend/tmp/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+*.test
+*.prof
 
 # Test
 coverage/
@@ -47,4 +54,3 @@ coverage/
 frontend/test-results/
 frontend/playwright-report/
 frontend/playwright/.cache/
-backend/server
