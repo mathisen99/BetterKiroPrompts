@@ -6,8 +6,8 @@
 
 **Developer:** Tommy Mathisen  
 **Hackathon:** Kiro CLI Hackathon  
-**Total Commits:** 213  
-**Development Period:** January 8–15, 2026 (8 days)
+**Total Commits:** 221  
+**Development Period:** January 8–16, 2026 (9 days)
 
 ### Why This Exists
 
@@ -148,6 +148,18 @@ The meta aspect is satisfying: using Kiro to build a tool that helps others use 
 
 The meta aspect is satisfying: using Kiro to build a tool that helps others use Kiro better.
 
+### Day 8: Crossing the Finish Line
+
+The final day was about polish and presentation. Fixed a lingering scanner container naming issue, added graceful test skipping for CI environments, and created the visual documentation. Seven screenshots covering the entire user journey — from landing page to security scan results.
+
+221 commits. 9 days. One complete tool.
+
+Looking back, the most valuable lesson wasn't technical — it was about workflow. The spec-first approach prevented scope creep. The atomic commits made debugging trivial. The steering files kept the AI from going off-script. And the `/next` automation loop turned development into a rhythm.
+
+Would I do anything differently? Start the devlog on day 1. Record demo clips during development. Design the scanner isolation model before implementation. But those are refinements, not regrets.
+
+The tool works. Beginners can generate better Kiro configurations. The gallery lets people learn from each other. The scanner catches security issues before they become problems. That's what matters.
+
 ---
 
 ## Time Estimate
@@ -166,7 +178,8 @@ The meta aspect is satisfying: using Kiro to build a tool that helps others use 
 | Documentation | 4h | API docs, guides, README |
 | Polish & Security | 4h | Config system, hardening, cleanup |
 | CI/CD & SEO | 3h | Workflows, badges, meta tags, sitemap |
-| **Total** | **~67h** | |
+| Final Polish | 2h | Screenshots, fixes, submission |
+| **Total** | **~69h** | |
 
 ---
 
@@ -650,13 +663,53 @@ No commits. Likely reviewing progress and planning next steps.
 - **False positives notice** — Added explanation in scan results about common false positives (test files, docs, config examples)
 - **SEO** — Full meta tags, Open Graph, Twitter Cards, robots.txt, sitemap.xml, and cache headers
 
-### Evening: Production Deployment (commit 213)
+### Evening: Production Deployment (commits 213–214)
 
 | Commit | Description |
 |--------|-------------|
-| `617c76a` | chore: change default port from 8080 to 8090 |
+| `29bfcda` | updated port to 8090 to not collide with my other services |
+| `224b5dc` | updated port for prod compose file to 8090 |
 
 Deployed to production server for real-world testing. Changed default port from 8080 to 8090 to avoid conflicts with other services running on the VPS (OpenTripPlanner was already using 8080).
+
+---
+
+## Day 8 — January 16, 2026
+
+**Commits:** 7  
+**Focus:** Final fixes, documentation, and hackathon submission
+
+### Morning: Scanner Fixes (commits 215–217)
+
+| Commit | Description |
+|--------|-------------|
+| `b4ca14c` | chore: change default port from 8080 to 8090 |
+| `c8998b5` | fix: correct scanner container name for docker exec |
+| `43390d1` | test: skip docker-dependent scanner tests when container unavailable |
+
+Fixed the scanner container integration — the container name had changed and tests were failing in CI where Docker wasn't available.
+
+### Afternoon: Documentation and Screenshots (commits 218–221)
+
+| Commit | Description |
+|--------|-------------|
+| `389686b` | docs: add screenshots showcase and images to README |
+
+Added visual documentation with 7 screenshots showcasing all features. Created a dedicated `docs/screenshots.md` for the full visual tour, with key images in the main README as clickable thumbnails.
+
+**Final release:** Tagged as v1.0.3 for hackathon submission.
+
+---
+
+### The Final Push
+
+Day 8 was about crossing the finish line. The scanner container name issue had been lurking — it worked locally but the container naming convention differed slightly. Fixed that, made tests gracefully skip when Docker isn't available (CI environments), and focused on presentation.
+
+The screenshots were the last piece. Seven images covering the entire user journey: landing page, question flow, generation results, how-to-use guide, gallery, and security scanner. Added them to a dedicated screenshots page with the main README showing just enough to entice without overwhelming.
+
+221 commits over 9 days. From a blank repo to a fully functional tool that generates Kiro configurations, hosts a community gallery, and scans repositories for security issues. The structured workflow (specs → tasks → quality gates → commits) made this possible.
+
+The meta satisfaction remains: using Kiro to build a tool that helps others use Kiro better. The prompts I created to make Kiro CLI generate specs? They're exactly the kind of thing this tool helps beginners create.
 
 ---
 
@@ -670,14 +723,15 @@ Deployed to production server for real-world testing. Changed default port from 
 | 4 | Jan 12 | 12 | AI + UI |
 | 5 | Jan 13 | 61 | Gallery + Scanner + Logging |
 | 6 | Jan 14 | 16 | Config + Docs + Security |
-| 7 | Jan 15 | 10 | CI/CD + Bug Fixes + SEO + Production Deploy |
-| **Total** | | **213** | |
+| 7 | Jan 15 | 10 | CI/CD + Bug Fixes + SEO |
+| 8 | Jan 16 | 8 | Final Fixes + Screenshots + Submission |
+| **Total** | | **221** | |
 
 ### By Type
-- `feat:` — 140 commits (66%)
-- `fix:` — 18 commits (8%)
-- `chore:` — 22 commits (10%)
-- `docs:` — 13 commits (6%)
-- `test:` — 12 commits (6%)
+- `feat:` — 140 commits (63%)
+- `fix:` — 20 commits (9%)
+- `chore:` — 24 commits (11%)
+- `docs:` — 15 commits (7%)
+- `test:` — 14 commits (6%)
 - `refactor:` — 2 commits (1%)
-- Other — 5 commits (3%)
+- Other — 6 commits (3%)
