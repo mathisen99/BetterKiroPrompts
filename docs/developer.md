@@ -445,10 +445,10 @@ Change log level at runtime via API:
 
 ```bash
 # Get current level
-curl http://localhost:8080/api/admin/log-level
+curl http://localhost:8090/api/admin/log-level
 
 # Set new level
-curl -X POST http://localhost:8080/api/admin/log-level \
+curl -X POST http://localhost:8090/api/admin/log-level \
   -H "Content-Type: application/json" \
   -d '{"level": "DEBUG"}'
 ```

@@ -107,7 +107,7 @@ cp config.example.toml config.toml
 ./build.sh
 ```
 
-Open http://localhost:8080 in your browser.
+Open http://localhost:8090 in your browser.
 
 ### Production Deployment
 
@@ -183,7 +183,7 @@ POSTGRES_DB=betterkiro
 **Common `config.toml` settings:**
 ```toml
 [server]
-port = 8080
+port = 8090
 
 [openai]
 model = "gpt-5.2"            # Current standard model

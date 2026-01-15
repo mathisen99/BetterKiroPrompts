@@ -43,14 +43,14 @@ case "${1:-}" in
         build_all
         log "Starting containers..."
         docker compose -f docker-compose.prod.yml --profile scan up -d
-        log "Stack running at http://localhost:8080"
+        log "Stack running at http://localhost:8090"
         ;;
     --restart)
         # ./build.sh --restart - just restart without rebuild
         log "Restarting containers..."
         docker compose -f docker-compose.prod.yml --profile scan down 2>/dev/null || true
         docker compose -f docker-compose.prod.yml --profile scan up -d
-        log "Stack running at http://localhost:8080"
+        log "Stack running at http://localhost:8090"
         ;;
     --stop)
         # ./build.sh --stop - stop everything

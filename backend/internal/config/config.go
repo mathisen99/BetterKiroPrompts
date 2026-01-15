@@ -107,7 +107,7 @@ func (d Duration) Duration() time.Duration {
 func DefaultConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port:            8080,
+			Port:            8090,
 			Host:            "0.0.0.0",
 			ShutdownTimeout: Duration(30 * time.Second),
 		},

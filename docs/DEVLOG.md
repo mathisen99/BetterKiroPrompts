@@ -6,7 +6,7 @@
 
 **Developer:** Tommy Mathisen  
 **Hackathon:** Kiro CLI Hackathon  
-**Total Commits:** 212  
+**Total Commits:** 213  
 **Development Period:** January 8–15, 2026 (8 days)
 
 ### Why This Exists
@@ -108,7 +108,7 @@ Finally, proper SEO: meta tags, Open Graph, Twitter Cards, robots.txt, sitemap.x
 
 ### The Meta Satisfaction
 
-212 commits in 8 days. The structured workflow made it possible — specs define what "done" looks like, tasks break it into atomic pieces, quality gates catch mistakes, commits track progress. The CLI-to-IDE transition worked well: rapid scaffolding with CLI automation, then detailed work with IDE visibility.
+212 commits in 8 days. The structured workflow (specs → tasks → quality gates → commits) made this possible. The CLI-to-IDE transition worked well: rapid scaffolding with CLI automation, then detailed work with IDE visibility.
 
 The meta aspect is satisfying: using Kiro to build a tool that helps others use Kiro better. The prompts I created to make Kiro CLI generate specs? They're exactly the kind of thing this tool helps beginners create.
 
@@ -650,6 +650,14 @@ No commits. Likely reviewing progress and planning next steps.
 - **False positives notice** — Added explanation in scan results about common false positives (test files, docs, config examples)
 - **SEO** — Full meta tags, Open Graph, Twitter Cards, robots.txt, sitemap.xml, and cache headers
 
+### Evening: Production Deployment (commit 213)
+
+| Commit | Description |
+|--------|-------------|
+| `617c76a` | chore: change default port from 8080 to 8090 |
+
+Deployed to production server for real-world testing. Changed default port from 8080 to 8090 to avoid conflicts with other services running on the VPS (OpenTripPlanner was already using 8080).
+
 ---
 
 ## Commit Statistics
@@ -662,8 +670,8 @@ No commits. Likely reviewing progress and planning next steps.
 | 4 | Jan 12 | 12 | AI + UI |
 | 5 | Jan 13 | 61 | Gallery + Scanner + Logging |
 | 6 | Jan 14 | 16 | Config + Docs + Security |
-| 7 | Jan 15 | 9 | CI/CD + Bug Fixes + SEO |
-| **Total** | | **212** | |
+| 7 | Jan 15 | 10 | CI/CD + Bug Fixes + SEO + Production Deploy |
+| **Total** | | **213** | |
 
 ### By Type
 - `feat:` — 140 commits (66%)

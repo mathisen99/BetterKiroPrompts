@@ -23,7 +23,7 @@
 [server]
 # Port to listen on (1-65535)
 # Can be overridden with PORT environment variable
-port = 8080
+port = 8090
 
 # Host/IP address to bind to
 # Use "0.0.0.0" to listen on all interfaces

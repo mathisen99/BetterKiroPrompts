@@ -1,6 +1,6 @@
 # API Documentation
 
-Base URL: `http://localhost:8080/api`
+Base URL: `http://localhost:8090/api`
 
 ## Overview
 
@@ -47,7 +47,7 @@ Check if the API is running.
 
 **Example:**
 ```bash
-curl http://localhost:8080/api/health
+curl http://localhost:8090/api/health
 ```
 
 ---
@@ -175,7 +175,7 @@ List gallery items with pagination and filtering.
 
 **Example:**
 ```bash
-curl "http://localhost:8080/api/gallery?sort=highest_rated&page=1"
+curl "http://localhost:8090/api/gallery?sort=highest_rated&page=1"
 ```
 
 ---

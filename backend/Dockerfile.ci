@@ -28,6 +28,6 @@ COPY --from=builder /app/server .
 COPY static ./static
 COPY config.example.toml config.toml
 
-EXPOSE 8080
+EXPOSE 8090
 
 CMD ["./server"]

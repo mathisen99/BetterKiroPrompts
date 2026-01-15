@@ -11,8 +11,8 @@ func TestExampleConfigLoads(t *testing.T) {
 	}
 
 	// Verify default values are set correctly
-	if cfg.Server.Port != 8080 {
-		t.Errorf("Expected server.port = 8080, got %d", cfg.Server.Port)
+	if cfg.Server.Port != 8090 {
+		t.Errorf("Expected server.port = 8090, got %d", cfg.Server.Port)
 	}
 	if cfg.OpenAI.Model != "gpt-5.2" {
 		t.Errorf("Expected openai.model = gpt-5.2, got %s", cfg.OpenAI.Model)

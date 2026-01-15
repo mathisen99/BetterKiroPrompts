@@ -20,7 +20,7 @@ Stack: Go 1.25.5 backend + React 19 frontend + PostgreSQL 18.1, all in Docker Co
 # Stop all containers
 ./build.sh --stop
 
-# Backend runs on :8080, serves API and built frontend
+# Backend runs on :8090, serves API and built frontend
 ```
 
 ## Code Style

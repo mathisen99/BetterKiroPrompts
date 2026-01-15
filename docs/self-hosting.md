@@ -62,7 +62,7 @@ See [Resource Requirements](#resource-requirements) for detailed recommendations
 
 5. **Access the application**
    
-   Open http://localhost:8080 in your browser.
+   Open http://localhost:8090 in your browser.
 
 ---
 
@@ -83,7 +83,7 @@ BetterKiroPrompts uses a two-file configuration approach:
 
 | Option | Type | Default | Range | Description |
 |--------|------|---------|-------|-------------|
-| `server.port` | int | `8080` | 1-65535 | HTTP server port |
+| `server.port` | int | `8090` | 1-65535 | HTTP server port |
 | `server.host` | string | `"0.0.0.0"` | - | Bind address (`0.0.0.0` for all interfaces) |
 | `server.shutdown_timeout` | duration | `"30s"` | ≥1s | Graceful shutdown timeout |
 
@@ -167,7 +167,7 @@ For basic prompt generation without security scanning:
 # config.toml - Minimal setup
 
 [server]
-port = 8080
+port = 8090
 
 [openai]
 model = "gpt-5.2"
@@ -188,7 +188,7 @@ All features enabled with balanced settings:
 # config.toml - Full-featured setup
 
 [server]
-port = 8080
+port = 8090
 host = "0.0.0.0"
 shutdown_timeout = "30s"
 
@@ -239,7 +239,7 @@ Strict rate limits and conservative settings for public deployments:
 # config.toml - High-security setup
 
 [server]
-port = 8080
+port = 8090
 host = "127.0.0.1"  # Local only, use reverse proxy
 shutdown_timeout = "60s"
 
@@ -555,7 +555,7 @@ AND created_at < NOW() - INTERVAL '90 days';
 The backend exposes a health endpoint:
 
 ```bash
-curl http://localhost:8080/api/health
+curl http://localhost:8090/api/health
 ```
 
 Response:

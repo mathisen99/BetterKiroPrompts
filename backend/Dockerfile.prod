@@ -12,6 +12,6 @@ COPY static ./static
 # Copy default config (can be overridden via volume mount)
 COPY config.example.toml config.toml
 
-EXPOSE 8080
+EXPOSE 8090
 
 CMD ["./server"]
