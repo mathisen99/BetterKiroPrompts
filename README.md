@@ -208,6 +208,28 @@ level = "INFO"               # DEBUG, INFO, WARN, ERROR
 
 See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration reference.
 
+### OpenAI Model Pricing
+
+The application uses OpenAI's API for AI generation. Current pricing (per 1M tokens):
+
+| Model | Input | Cached Input | Output |
+|-------|-------|--------------|--------|
+| gpt-5.2 | $1.75 | $0.175 | $14.00 |
+| gpt-5.1-codex-max | $1.25 | $0.125 | $10.00 |
+
+**Cost considerations:**
+- A typical generation uses ~2-5K input tokens and ~1-3K output tokens
+- Estimated cost per generation: $0.02-0.05 with gpt-5.2
+- Security scans with AI review may use more tokens depending on repository size
+- Monitor your OpenAI dashboard for actual usage
+
+**Rate limits** are configured in `config.toml` to help control costs:
+```toml
+[rate_limit]
+generation_limit_per_hour = 10  # Generations per IP per hour
+scan_limit_per_hour = 5         # Security scans per IP per hour
+```
+
 ## Development Commands
 
 ```bash
