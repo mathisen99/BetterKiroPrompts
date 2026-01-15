@@ -9,6 +9,16 @@
 
 A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking—not write applications for them.
 
+[![Main Interface](images/main.png)](images/main.png)
+
+<p align="center">
+  <a href="images/generation-result.png"><img src="images/generation-result.png" width="280" alt="Generation Results"></a>
+  <a href="images/gallery.png"><img src="images/gallery.png" width="280" alt="Gallery"></a>
+  <a href="images/security-scan.png"><img src="images/security-scan.png" width="280" alt="Security Scanner"></a>
+</p>
+
+<p align="center"><em>Click thumbnails to enlarge • <a href="docs/screenshots.md">View all screenshots</a></em></p>
+
 ## Why This Exists
 
 This project was designed primarily for beginners. When you're new to Kiro (or AI-assisted development in general), you don't know what you don't know. You might build something that works but has security holes, missing error handling, or architectural problems that will bite you later.
@@ -210,6 +220,7 @@ See [docs/self-hosting.md](docs/self-hosting.md) for complete configuration refe
 
 | Document | Description |
 |----------|-------------|
+| [Screenshots](docs/screenshots.md) | Visual tour of all features |
 | [Development Log](docs/DEVLOG.md) | Project journey, decisions, and lessons learned |
 | [API Reference](docs/api.md) | Complete API endpoint documentation |
 | [Developer Guide](docs/developer.md) | Architecture, packages, and customization |
