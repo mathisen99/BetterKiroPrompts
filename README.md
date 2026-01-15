@@ -9,6 +9,8 @@
 
 A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking—not write applications for them.
 
+🌐 **Live Demo:** [https://hackathon.mathizen.net/](https://hackathon.mathizen.net/)
+
 [![Main Interface](images/main.png)](images/main.png)
 
 <p align="center">

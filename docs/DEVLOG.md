@@ -4,6 +4,8 @@
 
 **BetterKiroPrompts** — A tool that generates better prompts, steering documents, and Kiro hooks to improve beginner thinking, not write applications for them.
 
+🌐 **Live Demo:** [https://hackathon.mathizen.net/](https://hackathon.mathizen.net/)
+
 **Developer:** Tommy Mathisen  
 **Hackathon:** Kiro CLI Hackathon  
 **Total Commits:** 222  
