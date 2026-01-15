@@ -6,7 +6,7 @@
 
 **Developer:** Tommy Mathisen  
 **Hackathon:** Kiro CLI Hackathon  
-**Total Commits:** 221  
+**Total Commits:** 222  
 **Development Period:** January 8–16, 2026 (9 days)
 
 ### Why This Exists
@@ -106,11 +106,17 @@ Added a "Common False Positives" notice to the security scanner results. When sc
 
 Finally, proper SEO: meta tags, Open Graph, Twitter Cards, robots.txt, sitemap.xml, and cache headers for static assets. The kind of polish that makes a project feel complete.
 
-### The Meta Satisfaction
+### Day 8: Crossing the Finish Line
 
-212 commits in 8 days. The structured workflow (specs → tasks → quality gates → commits) made this possible. The CLI-to-IDE transition worked well: rapid scaffolding with CLI automation, then detailed work with IDE visibility.
+The final day was about polish and presentation. Fixed a lingering scanner container naming issue, added graceful test skipping for CI environments, and created the visual documentation. Seven screenshots covering the entire user journey — from landing page to security scan results.
 
-The meta aspect is satisfying: using Kiro to build a tool that helps others use Kiro better. The prompts I created to make Kiro CLI generate specs? They're exactly the kind of thing this tool helps beginners create.
+222 commits. 9 days. One complete tool.
+
+Looking back, the most valuable lesson wasn't technical — it was about workflow. The spec-first approach prevented scope creep. The atomic commits made debugging trivial. The steering files kept the AI from going off-script. And the `/next` automation loop turned development into a rhythm.
+
+Would I do anything differently? Start the devlog on day 1. Record demo clips during development. Design the scanner isolation model before implementation. But those are refinements, not regrets.
+
+The tool works. Beginners can generate better Kiro configurations. The gallery lets people learn from each other. The scanner catches security issues before they become problems. That's what matters.
 
 ---
 
@@ -120,7 +126,7 @@ The meta aspect is satisfying: using Kiro to build a tool that helps others use 
 
 2. **The `/next` automation loop** — Find task → implement → quality gates → commit. Development became rhythmic. Almost meditative.
 
-3. **Atomic commits** — 212 small commits made progress trackable and rollback easy. When something broke, I knew exactly where to look.
+3. **Atomic commits** — 221 small commits made progress trackable and rollback easy. When something broke, I knew exactly where to look.
 
 4. **Steering files as guardrails** — Rules written down and automatically included kept the AI focused. No more "helpful" suggestions that derail the project.
 
@@ -139,26 +145,6 @@ The meta aspect is satisfying: using Kiro to build a tool that helps others use 
 3. **Record demo clips during development** — Final demo video would be easier to produce if I had clips from each phase.
 
 4. **Scanner architecture review** — Should have designed the isolation model before implementation. Ended up with a broken state that took time to fix.
-
----
-
-## Final Thoughts
-
-212 commits in 8 days. The structured workflow (specs → tasks → quality gates → commits) made this possible. Kiro's steering files kept the AI focused, and the `/next` prompt automated the boring parts.
-
-The meta aspect is satisfying: using Kiro to build a tool that helps others use Kiro better.
-
-### Day 8: Crossing the Finish Line
-
-The final day was about polish and presentation. Fixed a lingering scanner container naming issue, added graceful test skipping for CI environments, and created the visual documentation. Seven screenshots covering the entire user journey — from landing page to security scan results.
-
-221 commits. 9 days. One complete tool.
-
-Looking back, the most valuable lesson wasn't technical — it was about workflow. The spec-first approach prevented scope creep. The atomic commits made debugging trivial. The steering files kept the AI from going off-script. And the `/next` automation loop turned development into a rhythm.
-
-Would I do anything differently? Start the devlog on day 1. Record demo clips during development. Design the scanner isolation model before implementation. But those are refinements, not regrets.
-
-The tool works. Beginners can generate better Kiro configurations. The gallery lets people learn from each other. The scanner catches security issues before they become problems. That's what matters.
 
 ---
 
@@ -226,8 +212,6 @@ The tool works. Beginners can generate better Kiro configurations. The gallery l
 ### Challenge 5: Vote manipulation
 **Problem:** Anonymous voting could be gamed.  
 **Solution:** IP-based voter hashes with deduplication.
-
----
 
 ---
 
@@ -624,7 +608,7 @@ No commits. Likely reviewing progress and planning next steps.
 
 ## Day 7 — January 15, 2026
 
-**Commits:** 9  
+**Commits:** 10  
 **Focus:** CI/CD, documentation, bug fixes, and polish
 
 ### Morning: CI/CD Setup (commits 204–208)
@@ -676,7 +660,7 @@ Deployed to production server for real-world testing. Changed default port from 
 
 ## Day 8 — January 16, 2026
 
-**Commits:** 7  
+**Commits:** 8  
 **Focus:** Final fixes, documentation, and hackathon submission
 
 ### Morning: Scanner Fixes (commits 215–217)
@@ -689,11 +673,12 @@ Deployed to production server for real-world testing. Changed default port from 
 
 Fixed the scanner container integration — the container name had changed and tests were failing in CI where Docker wasn't available.
 
-### Afternoon: Documentation and Screenshots (commits 218–221)
+### Afternoon: Documentation and Screenshots (commits 218–222)
 
 | Commit | Description |
 |--------|-------------|
 | `389686b` | docs: add screenshots showcase and images to README |
+| `895bd28` | docs: update devlog with day 8 commits and final journey reflection |
 
 Added visual documentation with 7 screenshots showcasing all features. Created a dedicated `docs/screenshots.md` for the full visual tour, with key images in the main README as clickable thumbnails.
 
@@ -725,7 +710,7 @@ The meta satisfaction remains: using Kiro to build a tool that helps others use 
 | 6 | Jan 14 | 16 | Config + Docs + Security |
 | 7 | Jan 15 | 10 | CI/CD + Bug Fixes + SEO |
 | 8 | Jan 16 | 8 | Final Fixes + Screenshots + Submission |
-| **Total** | | **221** | |
+| **Total** | | **222** | |
 
 ### By Type
 - `feat:` — 140 commits (63%)
