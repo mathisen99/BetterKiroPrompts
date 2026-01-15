@@ -62,7 +62,7 @@ type RawFinding struct {
 
 // scannerContainer is the name of the scanner container for docker exec.
 // This can be overridden via environment variable SCANNER_CONTAINER.
-var scannerContainer = "better-kiro-prompts-scanner-1"
+var scannerContainer = "betterkiroprompts-scanner-1"
 
 // SetScannerContainer sets the scanner container name.
 func SetScannerContainer(name string) {

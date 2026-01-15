@@ -11,7 +11,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - PORT=8090
       - ENV=production
-      - SCANNER_CONTAINER=better-kiro-prompts-scanner-1
+      - SCANNER_CONTAINER=betterkiroprompts-scanner-1
     volumes:
       - scan-repos:/scan/repos
       - /var/run/docker.sock:/var/run/docker.sock
