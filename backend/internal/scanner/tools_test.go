@@ -123,10 +123,14 @@ func TestToolRunner_RunToolByName_UnknownTool(t *testing.T) {
 // Property-Based Tests for Tool Timeout
 // =============================================================================
 
-// skipIfNoDocker skips the test if Docker is not available (e.g., in CI)
+// skipIfNoDocker skips the test if Docker or the scanner container is not available
 func skipIfNoDocker(t *testing.T) {
 	if os.Getenv("CI") != "" {
 		t.Skip("Skipping test that requires Docker in CI environment")
+	}
+	// Also skip if scanner container is not running
+	if os.Getenv("SCANNER_CONTAINER_AVAILABLE") == "" {
+		t.Skip("Skipping test: scanner container not available (set SCANNER_CONTAINER_AVAILABLE=1 to run)")
 	}
 }
 
